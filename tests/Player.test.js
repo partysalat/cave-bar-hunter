@@ -39,4 +39,23 @@ describe('Player', () => {
         expect(player.weapon).toBe('stone-spear');
         expect(player.health).toBe(2);
     });
+
+    it('constrains position to arena bounds', () => {
+        const player = new Player(mockScene, 0, 0, 0, 0);
+
+        // Try to move out of bounds
+        player.worldX = -5;
+        player.worldY = -5;
+        player.constrainToArena(0, 30, 0, 25);
+
+        expect(player.worldX).toBe(0);
+        expect(player.worldY).toBe(0);
+
+        player.worldX = 35;
+        player.worldY = 30;
+        player.constrainToArena(0, 30, 0, 25);
+
+        expect(player.worldX).toBe(30);
+        expect(player.worldY).toBe(25);
+    });
 });

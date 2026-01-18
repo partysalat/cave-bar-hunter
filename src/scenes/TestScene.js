@@ -57,6 +57,9 @@ export default class TestScene extends Phaser.Scene {
 
             this.player.update(delta);
 
+            // Constrain to arena (30x25 world units from design doc)
+            this.player.constrainToArena(0, 30, 0, 25);
+
             // Check collision with dinosaur
             if (this.testDino && !this.testDino.isDead) {
                 if (sphereVsSphere(this.player, this.testDino)) {

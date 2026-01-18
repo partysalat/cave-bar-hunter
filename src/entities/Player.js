@@ -103,4 +103,16 @@ export default class Player extends Entity {
     addScore(points) {
         this.score += points;
     }
+
+    /**
+     * Constrains player position to arena boundaries
+     * @param {number} minX - Min world X
+     * @param {number} maxX - Max world X
+     * @param {number} minY - Min world Y
+     * @param {number} maxY - Max world Y
+     */
+    constrainToArena(minX, maxX, minY, maxY) {
+        this.worldX = Math.max(minX, Math.min(maxX, this.worldX));
+        this.worldY = Math.max(minY, Math.min(maxY, this.worldY));
+    }
 }
