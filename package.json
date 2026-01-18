@@ -1,0 +1,21 @@
+{
+  "name": "cave-bar-hunter",
+  "version": "0.1.0",
+  "description": "",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "serve -l 8000",
+    "dev": "serve -l 8000"
+  },
+  "keywords": [
+    "game",
+    "phaser",
+    "shooter"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "serve": "^14.2.1"
+  }
+}
