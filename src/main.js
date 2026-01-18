@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import TestScene from './scenes/TestScene.js';
 
 const config = {
     type: Phaser.AUTO,
@@ -6,7 +7,7 @@ const config = {
     height: 1080,
     backgroundColor: '#2d2d2d',
     parent: 'game-container',
-    scene: []
+    scene: [TestScene]
 };
 
 const game = new Phaser.Game(config);
