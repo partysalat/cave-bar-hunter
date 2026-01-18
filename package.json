@@ -1,21 +1,17 @@
 {
-  "name": "cave-bar-hunter",
+  "name": "prehistoric-hunter",
   "version": "0.1.0",
-  "description": "",
-  "type": "module",
-  "private": true,
+  "description": "4-player cooperative dinosaur hunting bar game",
+  "main": "src/main.js",
   "scripts": {
-    "start": "serve -l 8000",
-    "dev": "serve -l 8000"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
-  "keywords": [
-    "game",
-    "phaser",
-    "shooter"
-  ],
-  "author": "",
-  "license": "ISC",
+  "dependencies": {
+    "phaser": "^3.80.1"
+  },
   "devDependencies": {
-    "serve": "^14.2.1"
+    "vite": "^5.0.0"
   }
 }
