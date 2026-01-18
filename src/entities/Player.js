@@ -41,6 +41,9 @@ export default class Player extends Entity {
         // Movement stats
         this.moveSpeed = 8; // world units per second
 
+        // Collision
+        this.radius = 0.5; // world units
+
         // Apply color tint to sprite
         this.sprite.setTint(this.color);
     }

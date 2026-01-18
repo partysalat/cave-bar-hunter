@@ -3,6 +3,7 @@ import Player from '../entities/Player.js';
 import Dinosaur from '../entities/Dinosaur.js';
 import { worldToScreen } from '../systems/CoordinateSystem.js';
 import InputManager from '../systems/InputManager.js';
+import { sphereVsSphere } from '../systems/PhysicsManager.js';
 
 /**
  * Test scene for Phase 1 development
@@ -51,6 +52,15 @@ export default class TestScene extends Phaser.Scene {
             }
 
             this.player.update(delta);
+
+            // Check collision with dinosaur
+            if (this.testDino && !this.testDino.isDead) {
+                if (sphereVsSphere(this.player, this.testDino)) {
+                    // Phase 1: Just log collision
+                    // Later: damage, knockback, etc.
+                    console.log('Player collided with dinosaur!');
+                }
+            }
         }
 
         if (this.testDino) {

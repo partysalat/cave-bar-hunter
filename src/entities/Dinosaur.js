@@ -20,9 +20,26 @@ export default class Dinosaur extends Entity {
         this.maxHealth = this.health;
         this.isDead = false;
 
+        // Collision
+        this.radius = this.getRadiusForType(type);
+
         // Color tint based on type (temporary visualization)
         const color = type === 'compy' ? 0xff00ff : 0x00ffff;
         this.sprite.setTint(color);
+    }
+
+    /**
+     * Gets collision radius for dinosaur type
+     * @param {string} type
+     * @returns {number}
+     */
+    getRadiusForType(type) {
+        const radiusMap = {
+            'compy': 0.8,
+            'dilophosaurus': 1.5,
+            'raptor': 2.0
+        };
+        return radiusMap[type] || 1.0;
     }
 
     /**
