@@ -4,6 +4,7 @@ import Dinosaur from '../entities/Dinosaur.js';
 import { worldToScreen } from '../systems/CoordinateSystem.js';
 import InputManager from '../systems/InputManager.js';
 import { sphereVsSphere } from '../systems/PhysicsManager.js';
+import CameraController from '../systems/CameraController.js';
 
 /**
  * Test scene for Phase 1 development
@@ -27,6 +28,9 @@ export default class TestScene extends Phaser.Scene {
         // Setup input
         this.inputManager = new InputManager(this);
         this.inputManager.setupKeyboard(); // For testing without gamepad
+
+        // Setup camera controller
+        this.cameraController = new CameraController(this.cameras.main);
 
         // Add debug text
         this.debugText = this.add.text(10, 10, '', {
@@ -66,6 +70,9 @@ export default class TestScene extends Phaser.Scene {
         if (this.testDino) {
             this.testDino.update(delta);
         }
+
+        // Update camera to follow player
+        this.cameraController.update([this.player]);
 
         if (this.player) {
             // Update debug info
