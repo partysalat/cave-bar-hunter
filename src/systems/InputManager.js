@@ -15,6 +15,23 @@ export default class InputManager {
     }
 
     /**
+     * Setup keyboard fallback for player 0 (testing without gamepad)
+     */
+    setupKeyboard() {
+        const scene = this.scene;
+        this.keyboardKeys = {
+            W: scene.input.keyboard.addKey('W'),
+            A: scene.input.keyboard.addKey('A'),
+            S: scene.input.keyboard.addKey('S'),
+            D: scene.input.keyboard.addKey('D'),
+            SPACE: scene.input.keyboard.addKey('SPACE'),
+            SHIFT: scene.input.keyboard.addKey('SHIFT'),
+            E: scene.input.keyboard.addKey('E'),
+            Q: scene.input.keyboard.addKey('Q')
+        };
+    }
+
+    /**
      * Called when gamepad connects
      */
     onGamepadConnected(pad) {
@@ -88,5 +105,37 @@ export default class InputManager {
                 lt: pad.L2  // Dodge
             }
         };
+    }
+
+    /**
+     * Gets input with keyboard fallback for player 0
+     * @param {number} playerIndex
+     * @returns {Object|null} Input state
+     */
+    getPlayerInputWithKeyboard(playerIndex) {
+        // Try gamepad first
+        let input = this.getPlayerInput(playerIndex);
+
+        // Fallback to keyboard for player 0
+        if (!input && playerIndex === 0 && this.keyboardKeys) {
+            input = {
+                dpad: {
+                    up: this.keyboardKeys.W.isDown,
+                    down: this.keyboardKeys.S.isDown,
+                    left: this.keyboardKeys.A.isDown,
+                    right: this.keyboardKeys.D.isDown
+                },
+                buttons: {
+                    a: this.keyboardKeys.E.isDown,
+                    b: this.keyboardKeys.Q.isDown,
+                    x: this.keyboardKeys.SPACE.isDown,
+                    y: false,
+                    rt: this.scene.input.mousePointer.isDown,
+                    lt: this.keyboardKeys.SHIFT.isDown
+                }
+            };
+        }
+
+        return input;
     }
 }

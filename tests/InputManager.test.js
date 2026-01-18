@@ -38,4 +38,25 @@ describe('InputManager', () => {
         expect(result.x).toBeCloseTo(0.707, 2);
         expect(result.y).toBeCloseTo(-0.707, 2);
     });
+
+    it('provides keyboard fallback for player 0', () => {
+        const mockKeys = {
+            W: { isDown: true },
+            A: { isDown: false },
+            S: { isDown: false },
+            D: { isDown: false },
+            SPACE: { isDown: false },
+            SHIFT: { isDown: false },
+            E: { isDown: false },
+            Q: { isDown: false }
+        };
+
+        mockScene.input.mousePointer = { isDown: false };
+
+        const inputMgr = new InputManager(mockScene);
+        inputMgr.keyboardKeys = mockKeys;
+
+        const input = inputMgr.getPlayerInputWithKeyboard(0);
+        expect(input.dpad.up).toBe(true);
+    });
 });
