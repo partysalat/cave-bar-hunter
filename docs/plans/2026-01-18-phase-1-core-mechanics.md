@@ -84,8 +84,8 @@ import Phaser from 'phaser';
 
 const config = {
     type: Phaser.AUTO,
-    width: 1920,
-    height: 1080,
+    width: 2560,  // 2K resolution
+    height: 1440, // 2K resolution
     backgroundColor: '#2d2d2d',
     parent: 'game-container',
     scene: []
@@ -102,7 +102,7 @@ Expected: Dependencies installed successfully
 **Step 6: Run dev server and verify**
 
 Run: `npm run dev`
-Expected: Dev server starts, browser shows empty Phaser canvas at 1920x1080
+Expected: Dev server starts, browser shows empty Phaser canvas at 2560×1440 (2K resolution)
 
 **Step 7: Commit**
 
@@ -130,20 +130,20 @@ import { worldToScreen, screenToWorld, calculateDepth } from '../src/systems/Coo
 describe('CoordinateSystem', () => {
     it('converts world origin to screen center', () => {
         const result = worldToScreen(0, 0, 0);
-        expect(result.x).toBe(960); // SCREEN_CENTER_X
-        expect(result.y).toBe(540); // SCREEN_CENTER_Y
+        expect(result.x).toBe(1280); // SCREEN_CENTER_X (2K)
+        expect(result.y).toBe(720);  // SCREEN_CENTER_Y (2K)
     });
 
     it('converts world position to isometric screen position', () => {
         const result = worldToScreen(10, 5, 0);
-        expect(result.x).toBe(960 + (10 - 5) * 32); // (worldX - worldY) * (TILE_WIDTH/2)
-        expect(result.y).toBe(540 + (10 + 5) * 16); // (worldX + worldY) * (TILE_HEIGHT/2)
+        expect(result.x).toBe(1280 + (10 - 5) * 64); // (worldX - worldY) * (TILE_WIDTH/2)
+        expect(result.y).toBe(720 + (10 + 5) * 32);  // (worldX + worldY) * (TILE_HEIGHT/2)
     });
 
     it('applies Z height offset to screen Y', () => {
         const result = worldToScreen(0, 0, 2);
-        expect(result.x).toBe(960);
-        expect(result.y).toBe(540 - 2 * 50); // Z * HEIGHT_SCALE
+        expect(result.x).toBe(1280);
+        expect(result.y).toBe(720 - 2 * 100); // Z * HEIGHT_SCALE (2× scaled)
     });
 });
 ```
@@ -180,12 +180,12 @@ Expected: FAIL - module not found
 Create: `src/systems/CoordinateSystem.js`
 
 ```javascript
-// Constants from design doc
-export const TILE_WIDTH = 64;
-export const TILE_HEIGHT = 32;
-export const HEIGHT_SCALE = 50; // pixels per world unit in Z axis
-export const SCREEN_CENTER_X = 960; // 1920 / 2
-export const SCREEN_CENTER_Y = 540; // 1080 / 2
+// Constants from design doc (2K Resolution - 2× Scale)
+export const TILE_WIDTH = 128; // 2× for 2560×1440
+export const TILE_HEIGHT = 64; // 2× for 2560×1440
+export const HEIGHT_SCALE = 100; // pixels per world unit in Z axis (2× scaled)
+export const SCREEN_CENTER_X = 1280; // 2560 / 2
+export const SCREEN_CENTER_Y = 720; // 1440 / 2
 
 /**
  * Converts 3D world coordinates to 2D isometric screen coordinates
@@ -284,9 +284,9 @@ describe('Entity', () => {
         const entity = new Entity(mockScene, 10, 5, 0);
         entity.updateScreenPosition();
 
-        // Should convert (10, 5, 0) to screen coords
-        expect(entity.sprite.x).toBe(960 + (10 - 5) * 32);
-        expect(entity.sprite.y).toBe(540 + (10 + 5) * 16);
+        // Should convert (10, 5, 0) to screen coords (2K resolution)
+        expect(entity.sprite.x).toBe(1280 + (10 - 5) * 64);
+        expect(entity.sprite.y).toBe(720 + (10 + 5) * 32);
     });
 
     it('updates depth based on world position', () => {
@@ -668,8 +668,8 @@ import TestScene from './scenes/TestScene.js';
 
 const config = {
     type: Phaser.AUTO,
-    width: 1920,
-    height: 1080,
+    width: 2560,  // 2K resolution
+    height: 1440, // 2K resolution
     backgroundColor: '#2d2d2d',
     parent: 'game-container',
     scene: [TestScene]
@@ -1508,9 +1508,9 @@ export default class CameraController {
         const screenPos = worldToScreen(center.worldX, center.worldY, 0);
 
         // Camera scroll targets the center
-        // Subtract half screen dimensions to center on target
-        const targetX = screenPos.x - 1920 / 2;
-        const targetY = screenPos.y - 1080 / 2;
+        // Subtract half screen dimensions to center on target (2K resolution)
+        const targetX = screenPos.x - 2560 / 2;
+        const targetY = screenPos.y - 1440 / 2;
 
         // Smooth lerp to target
         const currentX = this.camera.scrollX;
@@ -1664,7 +1664,7 @@ Create: `docs/phase-1-complete.md`
 - Isometric projection (worldToScreen, screenToWorld)
 - 3D world space (X, Y, Z axes)
 - Depth sorting calculation
-- Constants: TILE_WIDTH=64, TILE_HEIGHT=32, HEIGHT_SCALE=50
+- Constants (2K Resolution): TILE_WIDTH=128, TILE_HEIGHT=64, HEIGHT_SCALE=100, SCREEN_CENTER=1280×720
 
 ### Entity System ✓
 - Base Entity class with world/screen position management

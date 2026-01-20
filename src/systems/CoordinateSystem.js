@@ -1,9 +1,9 @@
-// Constants from design doc
-export const TILE_WIDTH = 64;
-export const TILE_HEIGHT = 32;
-export const HEIGHT_SCALE = 50; // pixels per world unit in Z axis
-export const SCREEN_CENTER_X = 960; // 1920 / 2
-export const SCREEN_CENTER_Y = 540; // 1080 / 2
+// Constants from design doc (2K Resolution - 2× Scale)
+export const TILE_WIDTH = 128; // 2× for 2560×1440
+export const TILE_HEIGHT = 64; // 2× for 2560×1440
+export const HEIGHT_SCALE = 100; // pixels per world unit in Z axis (2× scaled)
+export const SCREEN_CENTER_X = 1280; // 2560 / 2
+export const SCREEN_CENTER_Y = 720; // 1440 / 2
 
 /**
  * Converts 3D world coordinates to 2D isometric screen coordinates

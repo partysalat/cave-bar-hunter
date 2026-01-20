@@ -42,9 +42,9 @@ export default class CameraController {
         const screenPos = worldToScreen(center.worldX, center.worldY, 0);
 
         // Camera scroll targets the center
-        // Subtract half screen dimensions to center on target
-        const targetX = screenPos.x - 1920 / 2;
-        const targetY = screenPos.y - 1080 / 2;
+        // Subtract half screen dimensions to center on target (2K resolution)
+        const targetX = screenPos.x - 2560 / 2;
+        const targetY = screenPos.y - 1440 / 2;
 
         // Smooth lerp to target
         const currentX = this.camera.scrollX;

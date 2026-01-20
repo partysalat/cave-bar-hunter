@@ -3,8 +3,8 @@ import TestScene from './scenes/TestScene.js';
 
 const config = {
     type: Phaser.AUTO,
-    width: 1920,
-    height: 1080,
+    width: 2560,  // 2K resolution
+    height: 1440, // 2K resolution
     backgroundColor: '#2d2d2d',
     parent: 'game-container',
     scene: [TestScene]
