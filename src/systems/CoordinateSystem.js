@@ -38,6 +38,20 @@ export function screenToWorld(screenX, screenY) {
 }
 
 /**
+ * Converts 2D screen direction to world direction for isometric movement
+ * In isometric view, screen directions don't align with world axes
+ * @param {number} screenDirX - Screen X direction (-1, 0, 1)
+ * @param {number} screenDirY - Screen Y direction (-1, 0, 1)
+ * @returns {{x: number, y: number}} World direction (unnormalized)
+ */
+export function screenToWorldDirection(screenDirX, screenDirY) {
+    return {
+        x: screenDirX + screenDirY,
+        y: -screenDirX + screenDirY
+    };
+}
+
+/**
  * Calculates depth value for sprite sorting
  * Objects further "back" (higher worldY) render in front
  * @param {number} worldY - World Y position

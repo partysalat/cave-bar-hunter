@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import Player from '../entities/Player.js';
 import Dinosaur from '../entities/Dinosaur.js';
-import { worldToScreen } from '../systems/CoordinateSystem.js';
+import { worldToScreen, screenToWorldDirection } from '../systems/CoordinateSystem.js';
 import InputManager from '../systems/InputManager.js';
 import { sphereVsSphere } from '../systems/PhysicsManager.js';
 import CameraController from '../systems/CameraController.js';
@@ -46,10 +46,12 @@ export default class TestScene extends Phaser.Scene {
             const input = this.inputManager.getPlayerInputWithKeyboard(0);
 
             if (input) {
-                const direction = this.inputManager.getDPadDirection(input.dpad);
+                const screenDirection = this.inputManager.getDPadDirection(input.dpad);
 
-                if (direction.x !== 0 || direction.y !== 0) {
-                    this.player.move(direction.x, direction.y);
+                if (screenDirection.x !== 0 || screenDirection.y !== 0) {
+                    // Convert screen-space input to world-space direction
+                    const worldDirection = screenToWorldDirection(screenDirection.x, screenDirection.y);
+                    this.player.move(worldDirection.x, worldDirection.y);
                 } else {
                     this.player.stop();
                 }
