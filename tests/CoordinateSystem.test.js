@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { worldToScreen, screenToWorld, calculateDepth } from '../src/systems/CoordinateSystem.js';
+import { worldToScreen, screenToWorld, calculateDepth, screenToWorldDirection } from '../src/systems/CoordinateSystem.js';
 
 describe('CoordinateSystem', () => {
     it('converts world origin to screen center', () => {
@@ -18,5 +18,31 @@ describe('CoordinateSystem', () => {
         const result = worldToScreen(0, 0, 2);
         expect(result.x).toBe(960);
         expect(result.y).toBe(540 - 2 * 50); // Z * HEIGHT_SCALE
+    });
+
+    describe('screenToWorldDirection', () => {
+        it('converts screen up (W) to world direction that moves straight up on screen', () => {
+            const result = screenToWorldDirection(0, -1);
+            expect(result.x).toBe(-1);
+            expect(result.y).toBe(-1);
+        });
+
+        it('converts screen down (S) to world direction that moves straight down on screen', () => {
+            const result = screenToWorldDirection(0, 1);
+            expect(result.x).toBe(1);
+            expect(result.y).toBe(1);
+        });
+
+        it('converts screen left (A) to world direction that moves straight left on screen', () => {
+            const result = screenToWorldDirection(-1, 0);
+            expect(result.x).toBe(-1);
+            expect(result.y).toBe(1);
+        });
+
+        it('converts screen right (D) to world direction that moves straight right on screen', () => {
+            const result = screenToWorldDirection(1, 0);
+            expect(result.x).toBe(1);
+            expect(result.y).toBe(-1);
+        });
     });
 });

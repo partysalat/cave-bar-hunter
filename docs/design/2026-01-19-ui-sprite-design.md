@@ -2,9 +2,9 @@
 
 **Project:** Prehistoric Hunter - Isometric Pixel Art Bar Game
 **Art Pipeline:** PixelLab MCP Server
-**Target Resolution:** 1920×1080 (64×32 isometric tiles)
+**Target Resolution:** 2560×1440 (128×64 isometric tiles)
 **Design Date:** 2026-01-19
-**Version:** 1.0
+**Version:** 1.1 (Updated for 2K resolution)
 
 ## Table of Contents
 
@@ -49,19 +49,19 @@ The game uses a consistent "Flintstones meets Monster Hunter" aesthetic with:
 
 ### Scale Relationships
 
-**Character Scale Chart:**
+**Character Scale Chart (2K Resolution - 2× Scale):**
 ```
-Chibi Player:     64px canvas  → ~38px tall
-Weapons:          32-48px      → handheld size
-Small Dino:       48-64px      → 1-1.5× player
-Medium Dino:      128px        → 2× player
-Large Dino:       160px        → 2.5× player
-Huge Dino:        192px        → 3× player
-Apex Dino:        256px        → 4× player
-Small Props:      48px         → decorative
-Medium Props:     64px         → obstacles
-Large Props:      96-128px     → cover/platforms
-Environment Tile: 32px         → ground unit
+Chibi Player:     128px canvas → ~76px tall
+Weapons:          64-96px      → handheld size
+Small Dino:       96-128px     → 1-1.5× player
+Medium Dino:      256px        → 2× player
+Large Dino:       320px        → 2.5× player
+Huge Dino:        384px        → 3× player
+Apex Dino:        512px        → 4× player
+Small Props:      96px         → decorative
+Medium Props:     128px        → obstacles
+Large Props:      192-256px    → cover/platforms
+Environment Tile: 64px         → ground unit
 ```
 
 ---
@@ -72,37 +72,37 @@ Before generating the full sprite catalog, we'll create a validation set to ensu
 
 ### Validation Set Contents
 
-#### 1. Red Caveman Character (Player 1)
+#### 1. Red Hero Champion (Player 1)
 
 **Generation Parameters:**
-- **Canvas Size:** 64px
+- **Canvas Size:** 128px (2× for 2K resolution)
 - **Directions:** 8 (south, south-west, west, north-west, north, north-east, east, south-east)
-- **Body Proportions:** Chibi (large head, small body)
+- **Body Proportions:** Chibi (large head, muscular build)
 - **View Angle:** High top-down
 - **Outline:** Single color black outline
 - **Shading:** Basic shading
 - **Detail:** Medium detail
 - **AI Freedom:** 750
-- **Description:** "Cute prehistoric hunter in red tribal outfit, red face markings, wielding stone spear, caveman style"
+- **Description:** "Heroic prehistoric barbarian champion in red fur cape and tribal war paint, thick wild brown beard, fierce confident grin, muscular chibi build, bone necklace trophy, red face paint stripes, legendary hunter, bold heroic stance"
 - **Generation Time:** 3-5 minutes
 
 #### 2. Dilophosaurus Enemy
 
 **Generation Parameters:**
-- **Canvas Size:** 128px
+- **Canvas Size:** 256px (2× for 2K resolution)
 - **Directions:** 8 (matching player directions)
 - **View Angle:** High top-down
 - **Outline:** Single color black outline
 - **Shading:** Basic shading
 - **Detail:** Medium detail
 - **AI Freedom:** 750
-- **Description:** "Cartoon dilophosaurus with distinctive neck frill, green and yellow coloring, medium-sized theropod dinosaur"
+- **Description:** "Aggressive dilophosaurus with sharp teeth, fierce expression, distinctive neck frill raised, green and yellow coloring, menacing predatory stance, threatening theropod"
 - **Generation Time:** 3-5 minutes
 
 #### 3. Cave Bar Floor Tile
 
 **Generation Parameters:**
-- **Canvas Size:** 32px
+- **Canvas Size:** 64px (2× for 2K resolution)
 - **Tile Shape:** Thick tile (~25% height for isometric depth)
 - **Outline:** Single color black outline
 - **Shading:** Basic shading
@@ -129,7 +129,7 @@ Before generating the full sprite catalog, we'll create a validation set to ensu
 **4 Color Variants Required:** Red, Blue, Yellow, Green
 
 Each player needs:
-- **Canvas Size:** 64px
+- **Canvas Size:** 128px (2× for 2K resolution)
 - **Directions:** 8 per character
 - **Body Proportions:** Chibi
 - **View Angle:** High top-down
@@ -138,17 +138,34 @@ Each player needs:
 - **Detail:** Medium detail
 - **AI Freedom:** 750
 
-**Color Variations:**
-- **Player 1 (Red):** Red outfit, red face paint, red spear wrap
-- **Player 2 (Blue):** Blue outfit, blue face paint, blue spear wrap
-- **Player 3 (Yellow):** Yellow outfit, yellow face paint, yellow spear wrap
-- **Player 4 (Green):** Green outfit, green face paint, green spear wrap
+**Heroic Character Design:**
+All players are legendary barbarian hunters with distinctive heroic features. Each should look like a main character - bold, confident, and immediately recognizable as heroes.
+
+**Shared Heroic Elements (All Players):**
+- Thick wild beard (barbarian warrior style)
+- Fierce confident grin or laugh (jovial, likes to drink and have fun)
+- Fur cape/mantle (heroic silhouette)
+- Bone trophy necklace (legendary hunter status)
+- Tribal war paint stripes (color-coded)
+- Muscular chibi build
+- Bold heroic stance
+- **NO WEAPONS in base sprite** (weapons added as overlays)
+
+**Individual Character Variations:**
+
+- **Player 1 (Red Hero):** Red fur cape, red tribal war paint stripes on face, thick brown beard, red outfit, bone necklace trophy, fierce confident grin
+
+- **Player 2 (Blue Hero):** Blue fur cape, blue tribal war paint stripes on face, thick black beard, blue outfit, bone necklace trophy, hearty laughing expression
+
+- **Player 3 (Yellow Hero):** Yellow fur cape, yellow tribal war paint stripes on face, thick blonde beard, yellow outfit, bone necklace trophy, bold confident smile
+
+- **Player 4 (Green Hero):** Green fur cape, green tribal war paint stripes on face, thick red beard, green outfit, bone necklace trophy, fierce grinning expression
 
 **Base Descriptions:**
-- Red: "Cute prehistoric hunter in red tribal outfit, red face markings, wielding stone spear, caveman style"
-- Blue: "Cute prehistoric hunter in blue tribal outfit, blue face markings, wielding stone spear, caveman style"
-- Yellow: "Cute prehistoric hunter in yellow tribal outfit, yellow face markings, wielding stone spear, caveman style"
-- Green: "Cute prehistoric hunter in green tribal outfit, green face markings, wielding stone spear, caveman style"
+- Red: "Heroic prehistoric barbarian champion in red fur cape and tribal war paint, thick wild brown beard, fierce confident grin, muscular chibi build, bone necklace trophy, red face paint stripes, legendary hunter, bold heroic stance"
+- Blue: "Heroic prehistoric barbarian champion in blue fur cape and tribal war paint, thick wild black beard, hearty laugh, muscular chibi build, bone necklace trophy, blue face paint stripes, legendary hunter, bold heroic stance"
+- Yellow: "Heroic prehistoric barbarian champion in yellow fur cape and tribal war paint, thick wild blonde beard, bold confident smile, muscular chibi build, bone necklace trophy, yellow face paint stripes, legendary hunter, bold heroic stance"
+- Green: "Heroic prehistoric barbarian champion in green fur cape and tribal war paint, thick wild red beard, fierce grinning expression, muscular chibi build, bone necklace trophy, green face paint stripes, legendary hunter, bold heroic stance"
 
 **Total Player Character Generations:** 4 characters (one per color)
 
@@ -159,7 +176,7 @@ Each player needs:
 **Weapon Sprites Needed (as separate map objects):**
 
 Each weapon sprite:
-- **Canvas Size:** 48-64px (weapon-sized for visibility)
+- **Canvas Size:** 96-128px (weapon-sized for visibility, 2× scale)
 - **View Angle:** High top-down
 - **Transparent Background:** Yes
 - **Outline:** Single color black outline
@@ -170,30 +187,30 @@ Each weapon sprite:
 
 1. **Stone Spear** (Reference from base character)
    - Description: "Stone spear weapon with wrapped leather grip, primitive prehistoric spear"
-   - Size: 48px
+   - Size: 96px
 
 2. **Bone Club**
    - Description: "Large bone club weapon with thick head, prehistoric melee weapon"
-   - Size: 48px
+   - Size: 96px
 
 3. **Sling**
    - Description: "Leather sling with stone ammunition pouch, prehistoric ranged weapon"
-   - Size: 48px
+   - Size: 96px
 
 4. **Fire Spear**
    - Description: "Stone spear with flaming tip, burning prehistoric weapon with fire effect"
-   - Size: 48px
+   - Size: 96px
 
 5. **Net Launcher**
    - Description: "Crossbow-style net launcher weapon, prehistoric support weapon"
-   - Size: 48px
+   - Size: 96px
 
 **Total Weapon Generations:** 5 weapons
 
 ### Bartender NPC
 
 **Cave Bar Bartender Character:**
-- **Canvas Size:** 64px (same as players)
+- **Canvas Size:** 128px (same as players, 2× scale)
 - **Directions:** 8
 - **Body Proportions:** Chibi (stocky/muscular, wider build than players)
 - **View Angle:** High top-down
@@ -220,56 +237,56 @@ Your design doc specifies 12 unique dinosaurs across 5 tiers. All dinosaurs use 
 - **Detail:** Medium detail
 - **AI Freedom:** 750
 
-**Size Categories by Canvas:**
-- **Small (Tier 1 - Swarm):** 48-64px canvas → ~1x1 world units
-- **Medium (Tier 1-2):** 128px canvas → ~2x2 world units
-- **Large (Tier 2-3):** 160px canvas → ~3-4x3 world units
-- **Huge (Tier 4):** 192px canvas → ~4-5x4 world units
-- **Apex (Tier 5):** 256px canvas → ~6x4 world units
+**Size Categories by Canvas (2K Resolution - 2× Scale):**
+- **Small (Tier 1 - Swarm):** 96-128px canvas → ~1x1 world units
+- **Medium (Tier 1-2):** 256px canvas → ~2x2 world units
+- **Large (Tier 2-3):** 320px canvas → ~3-4x3 world units
+- **Huge (Tier 4):** 384px canvas → ~4-5x4 world units
+- **Apex (Tier 5):** 512px canvas → ~6x4 world units
 
 ### Tier 1: Warm-up Hunts (2 dinosaurs)
 
-**1. Compy Pack** - 48px canvas
-- **Description:** "Cute small compsognathus dinosaur, pack hunter, green and brown coloring, cartoon style"
+**1. Compy Pack** - 96px canvas (2× scale)
+- **Description:** "Small compsognathus dinosaur, pack hunter, green and brown coloring, stylized chibi proportions"
 - **Note:** Generate as individual enemy, spawn 5× in-game
 
-**2. Dilophosaurus** - 128px canvas (VALIDATION SET)
-- **Description:** "Cartoon dilophosaurus with distinctive neck frill, green and yellow coloring, medium-sized theropod dinosaur"
+**2. Dilophosaurus** - 256px canvas (VALIDATION SET, 2× scale)
+- **Description:** "Aggressive dilophosaurus with sharp teeth, fierce expression, distinctive neck frill raised, green and yellow coloring, menacing predatory stance, threatening theropod"
 
 ### Tier 2: Herbivores (2 dinosaurs)
 
-**3. Triceratops** - 160px canvas
-- **Description:** "Cartoon triceratops with three horns and neck frill, stocky build, gray and brown coloring, large herbivore dinosaur"
+**3. Triceratops** - 320px canvas (2× scale)
+- **Description:** "Triceratops with three horns and neck frill, stocky muscular build, gray and brown coloring, imposing herbivore with dangerous horns"
 
-**4. Stegosaurus** - 160px canvas
-- **Description:** "Cartoon stegosaurus with distinctive back plates and tail spikes, gray-green coloring, large plated dinosaur"
+**4. Stegosaurus** - 320px canvas (2× scale)
+- **Description:** "Stegosaurus with distinctive back plates and spiked tail, gray-green coloring, large armored dinosaur with dangerous tail weapon"
 
 ### Tier 3: Aggressive Carnivores (2 dinosaurs)
 
-**5. Raptor Alpha** - 128px canvas
-- **Description:** "Cartoon velociraptor alpha with intelligent eyes, brown and orange stripes, lean athletic build, pack leader dinosaur"
+**5. Raptor Alpha** - 256px canvas (2× scale)
+- **Description:** "Velociraptor alpha with intelligent cunning eyes, brown and orange stripes, lean athletic build, fierce pack leader"
 
-**6. Carnotaurus** - 192px canvas
-- **Description:** "Cartoon carnotaurus with short horns and muscular build, red and dark brown coloring, aggressive bull-like carnivore dinosaur"
+**6. Carnotaurus** - 384px canvas (2× scale)
+- **Description:** "Carnotaurus with short horns and muscular build, red and dark brown coloring, aggressive bull-like carnivore, intimidating presence"
 
 ### Tier 4: Elite Predators (2 dinosaurs)
 
-**7. Spinosaurus** - 192px canvas
-- **Description:** "Cartoon spinosaurus with large sail on back, blue-green amphibious coloring, long crocodile-like snout, aquatic predator dinosaur"
+**7. Spinosaurus** - 384px canvas (2× scale)
+- **Description:** "Spinosaurus with large sail on back, blue-green amphibious coloring, long crocodile-like snout, fearsome aquatic predator"
 
-**8. Allosaurus** - 192px canvas
-- **Description:** "Cartoon allosaurus with pronounced brow ridges, purple and dark gray coloring, powerful carnivore with large head"
+**8. Allosaurus** - 384px canvas (2× scale)
+- **Description:** "Allosaurus with pronounced brow ridges, purple and dark gray coloring, powerful carnivore with massive head, apex predator stance"
 
 ### Tier 5: Apex Bosses (3 dinosaurs)
 
-**9. Tyrannosaurus Rex** - 256px canvas
-- **Description:** "Cartoon T-Rex with massive head and tiny arms, dark green and brown coloring, towering apex predator dinosaur, intimidating but stylized"
+**9. Tyrannosaurus Rex** - 512px canvas (2× scale)
+- **Description:** "T-Rex with massive head and tiny arms, dark green and brown coloring, towering apex predator, intimidating presence, stylized chibi"
 
-**10. Giganotosaurus** - 256px canvas
-- **Description:** "Cartoon giganotosaurus, larger than T-Rex with longer skull, dark red and black coloring, aggressive apex carnivore dinosaur"
+**10. Giganotosaurus** - 512px canvas (2× scale)
+- **Description:** "Giganotosaurus, larger than T-Rex with longer skull, dark red and black coloring, aggressive apex carnivore, menacing stature"
 
-**11. Quetzalcoatlus** - 256px canvas
-- **Description:** "Cartoon quetzalcoatlus pterosaur with massive wingspan, tan and orange coloring, prehistoric flying reptile with long neck"
+**11. Quetzalcoatlus** - 512px canvas (2× scale)
+- **Description:** "Quetzalcoatlus pterosaur with massive wingspan, tan and orange coloring, prehistoric flying predator with long neck, formidable aerial hunter"
 
 **Total Dinosaur Generations:** 12 unique dinosaurs
 
@@ -282,7 +299,7 @@ Your design doc specifies 6 arena environments plus the Cave Bar hub. Each arena
 ### Universal Environment Specifications
 
 **Ground Tiles:**
-- **Canvas Size:** 32px
+- **Canvas Size:** 64px (2× for 2K resolution)
 - **Tile Shape:** Thick tile (~25% height for isometric depth)
 - **Outline:** Single color black outline
 - **Shading:** Basic shading
@@ -290,7 +307,7 @@ Your design doc specifies 6 arena environments plus the Cave Bar hub. Each arena
 - **Text Guidance Scale:** 8
 
 **Props (rocks, trees, obstacles):**
-- **Canvas Size:** 48-96px (varies by prop size)
+- **Canvas Size:** 96-192px (varies by prop size, 2× scale)
 - **View Angle:** High top-down (matching game perspective)
 - **Transparent Background:** Yes (for placement flexibility)
 - **Outline:** Single color black outline
@@ -300,158 +317,158 @@ Your design doc specifies 6 arena environments plus the Cave Bar hub. Each arena
 ### Arena 1: Tar Pits
 
 **Ground Tiles:**
-1. **Base Ground** (32px)
+1. **Base Ground** (64px, 2× scale)
    - Description: "Prehistoric dirt ground with sparse grass, dry earth tones, brown and tan"
 
-2. **Tar Pool** (32px)
+2. **Tar Pool** (64px, 2× scale)
    - Description: "Bubbling black tar pit surface, glossy dark texture, prehistoric tar"
 
-3. **Transition Tile** (32px)
+3. **Transition Tile** (64px, 2× scale)
    - Description: "Ground edge blending into tar pit, half dirt half tar"
 
 **Props:**
-4. **Scattered Bones** (64px)
+4. **Scattered Bones** (128px, 2× scale)
    - Description: "Prehistoric animal skeleton bones scattered on ground, white and gray weathered bones"
 
-5. **Prehistoric Plant** (48px)
+5. **Prehistoric Plant** (96px, 2× scale)
    - Description: "Small prehistoric fern plant, green foliage, primitive vegetation"
 
 ### Arena 2: Volcanic Rocks
 
 **Ground Tiles:**
-6. **Obsidian Ground** (32px)
+6. **Obsidian Ground** (64px, 2× scale)
    - Description: "Cracked obsidian volcanic rock floor, orange and red glow from cracks, dark gray stone"
 
-7. **Lava Stream Edge** (32px)
+7. **Lava Stream Edge** (64px, 2× scale)
    - Description: "Volcanic rock bordering glowing lava, bright orange molten rock, dangerous terrain"
 
-8. **Geyser Tile** (32px)
+8. **Geyser Tile** (64px, 2× scale)
    - Description: "Volcanic geyser vent in stone floor, steam effects, circular opening"
 
 **Props:**
-9. **Sharp Rock Formation** (64px)
+9. **Sharp Rock Formation** (128px, 2× scale)
    - Description: "Jagged volcanic rock spike, dark gray with orange glow, pointed stone"
 
-10. **Steam Vent** (48px)
+10. **Steam Vent** (96px, 2× scale)
     - Description: "Small volcanic steam vent with smoke, glowing crater"
 
 ### Arena 3: Dense Jungle
 
 **Ground Tiles:**
-11. **Jungle Floor** (32px)
+11. **Jungle Floor** (64px, 2× scale)
     - Description: "Lush jungle ground with fallen leaves, rich brown dirt, tropical forest floor"
 
-12. **Grass Patch** (32px)
+12. **Grass Patch** (64px, 2× scale)
     - Description: "Dense green grass and ferns, vibrant jungle vegetation, thick undergrowth"
 
-13. **Root-Covered Ground** (32px)
+13. **Root-Covered Ground** (64px, 2× scale)
     - Description: "Jungle floor with exposed tree roots, brown roots over dirt"
 
 **Props:**
-14. **Large Tree Trunk** (96px)
+14. **Large Tree Trunk** (192px, 2× scale)
     - Description: "Massive prehistoric tree trunk with thick bark, brown and gray, provides cover"
 
-15. **Rock Formation** (64px)
+15. **Rock Formation** (128px, 2× scale)
     - Description: "Moss-covered jungle rock, green moss on gray stone"
 
-16. **Hanging Vines** (48px)
+16. **Hanging Vines** (96px, 2× scale)
     - Description: "Dangling jungle vines, green leafy vines, decorative foliage"
 
 ### Arena 4: Frozen Tundra
 
 **Ground Tiles:**
-17. **Snow Ground** (32px)
+17. **Snow Ground** (64px, 2× scale)
     - Description: "Snow-covered tundra ground, white and light blue, frozen wasteland"
 
-18. **Ice Patch** (32px)
+18. **Ice Patch** (64px, 2× scale)
     - Description: "Slippery ice surface, glossy blue-white ice, transparent reflective texture"
 
-19. **Frozen Rock** (32px)
+19. **Frozen Rock** (64px, 2× scale)
     - Description: "Ice-covered stone ground, blue-gray frost on rocks"
 
 **Props:**
-20. **Icicle Formation** (64px)
+20. **Icicle Formation** (128px, 2× scale)
     - Description: "Hanging icicles cluster, sharp blue ice formations"
 
-21. **Snow Drift** (48px)
+21. **Snow Drift** (96px, 2× scale)
     - Description: "Small snow pile mound, white powdery snow accumulation"
 
 ### Arena 5: Bone Graveyard
 
 **Ground Tiles:**
-22. **Dusty Ground** (32px)
+22. **Dusty Ground** (64px, 2× scale)
     - Description: "Bone graveyard dirt, dusty gray and tan earth, ancient burial ground"
 
-23. **Bone Fragment Ground** (32px)
+23. **Bone Fragment Ground** (64px, 2× scale)
     - Description: "Ground littered with small bone fragments, dusty with scattered bones"
 
-24. **Cracked Earth** (32px)
+24. **Cracked Earth** (64px, 2× scale)
     - Description: "Dry cracked desert ground, deep fissures, barren wasteland"
 
 **Props:**
-25. **Giant Rib Cage** (96px)
+25. **Giant Rib Cage** (192px, 2× scale)
     - Description: "Massive dinosaur rib bones forming structure, white weathered bones, climbable"
 
-26. **Dinosaur Skull** (96px)
+26. **Dinosaur Skull** (192px, 2× scale)
     - Description: "Large prehistoric skull half-buried in ground, dramatic fossil"
 
-27. **Bone Pile** (64px)
+27. **Bone Pile** (128px, 2× scale)
     - Description: "Stack of various bones, white and gray skeletal remains"
 
 ### Arena 6: Open Savanna
 
 **Ground Tiles:**
-28. **Savanna Grass** (32px)
+28. **Savanna Grass** (64px, 2× scale)
     - Description: "Golden savanna grassland, yellow-green tall grass, African plains"
 
-29. **Watering Hole Edge** (32px)
+29. **Watering Hole Edge** (64px, 2× scale)
     - Description: "Muddy ground at water's edge, brown wet earth, waterside terrain"
 
 **Props:**
-30. **Acacia Tree** (96px)
+30. **Acacia Tree** (192px, 2× scale)
     - Description: "Small acacia tree at edge, iconic African tree silhouette, sparse foliage"
 
-31. **Flat Rock** (48px)
+31. **Flat Rock** (96px, 2× scale)
     - Description: "Smooth savanna stone, gray flat rock, simple obstacle"
 
 ### Cave Bar Hub
 
 **Ground Tiles:**
-32. **Cave Stone Floor** (32px) - VALIDATION SET
+32. **Cave Stone Floor** (64px, 2× scale) - VALIDATION SET
     - Description: "Ancient cave floor with rough stone blocks, torch-lit dungeon style, gray and brown tones"
 
-33. **Polished Cave Floor** (32px)
+33. **Polished Cave Floor** (64px, 2× scale)
     - Description: "Smoother cave stone floor, worn path, gray stone with slight shine"
 
-34. **Cave Wall Base** (32px)
+34. **Cave Wall Base** (64px, 2× scale)
     - Description: "Cave wall bottom edge tile, rough stone texture, creates depth"
 
-35. **Decorative Floor** (32px)
+35. **Decorative Floor** (64px, 2× scale)
     - Description: "Cave floor with primitive tribal patterns carved in, ceremonial stone"
 
 **Props:**
-36. **Stone Bar Counter** (128px)
+36. **Stone Bar Counter** (256px, 2× scale)
     - Description: "Prehistoric bar counter, wide stone surface, cave bar centerpiece"
 
-37. **Wooden Bar Stool** (48px)
+37. **Wooden Bar Stool** (96px, 2× scale)
     - Description: "Primitive wooden stool, log seat, rustic furniture"
 
-38. **Weapon Rack** (96px)
+38. **Weapon Rack** (192px, 2× scale)
     - Description: "Stone and wood weapon display rack, holds spears and clubs"
 
-39. **Cave Painting Panel** (64px)
+39. **Cave Painting Panel** (128px, 2× scale)
     - Description: "Cave wall with tribal art, animal paintings, upgrade station marker"
 
-40. **Trophy Skull Mount** (64px)
+40. **Trophy Skull Mount** (128px, 2× scale)
     - Description: "Dinosaur skull mounted on wall, hunter trophy display"
 
-41. **Torch Sconce** (48px)
+41. **Torch Sconce** (96px, 2× scale)
     - Description: "Wall-mounted torch with flame, orange glowing light source"
 
-42. **Bone Mug** (32px)
+42. **Bone Mug** (64px, 2× scale)
     - Description: "Primitive drinking mug made from bone, bar prop"
 
-43. **Scoreboard Stone** (96px)
+43. **Scoreboard Stone** (192px, 2× scale)
     - Description: "Carved stone tablet displaying scores, stone leaderboard"
 
 **Total Environment Assets:** 43 tiles and props
@@ -574,15 +591,15 @@ PixelLab supports character animation using template-based generation. After gen
 
 **Interactive Environment Elements:**
 
-1. **Volcanic Geyser Eruption** (64px)
+1. **Volcanic Geyser Eruption** (128px, 2× scale)
    - **Description:** "Steam and lava erupting from ground, volcanic geyser blast"
    - **Frames:** 6-8 frame cycle
 
-2. **Tar Pit Bubbling** (32px)
+2. **Tar Pit Bubbling** (64px, 2× scale)
    - **Description:** "Bubbling black tar surface, slow popping bubbles"
    - **Frames:** 4-6 frame loop
 
-3. **Torch Flames** (32px)
+3. **Torch Flames** (64px, 2× scale)
    - **Description:** "Flickering orange flame on torch, dancing fire"
    - **Frames:** 4 frame loop (cave bar lighting)
 
@@ -592,15 +609,15 @@ PixelLab supports character animation using template-based generation. After gen
 
 **Consumable Items (if animated):**
 
-1. **Bear Trap** (48px)
+1. **Bear Trap** (96px, 2× scale)
    - Open state → Closing animation → Closed state
    - 3-4 frames mechanical snap
 
-2. **Smoke Bomb** (64px)
+2. **Smoke Bomb** (128px, 2× scale)
    - Expanding smoke cloud effect
    - 6-8 frame dissipation
 
-3. **Damage Totem** (48px)
+3. **Damage Totem** (96px, 2× scale)
    - Pulsing glow effect
    - 4 frame loop
 
@@ -618,7 +635,7 @@ PixelLab supports character animation using template-based generation. After gen
    - Brief white glow around player
    - 3 frame flash effect
 
-3. **Stagger Break Effect** (96px)
+3. **Stagger Break Effect** (192px, 2× scale)
    - Radiating impact lines
    - 6 frame burst
 
@@ -986,23 +1003,23 @@ cave-bar-hunter/
 
 ### Phaser 3 Asset Loading
 
-**Preload Structure:**
+**Preload Structure (2K Resolution - 2× Scale):**
 ```javascript
 // Example preload in Phaser scene
 preload() {
   // Character sprite sheets (8 directions, multiple animations)
   this.load.spritesheet('player_red_walk',
     'assets/characters/players/red/red_caveman_walk.png',
-    { frameWidth: 64, frameHeight: 64 });
+    { frameWidth: 128, frameHeight: 128 }); // 2× scale
 
   // Dinosaur sprite sheets
   this.load.spritesheet('dilophosaurus_idle',
     'assets/dinosaurs/tier1/dilophosaurus_idle.png',
-    { frameWidth: 128, frameHeight: 128 });
+    { frameWidth: 256, frameHeight: 256 }); // 2× scale
 
   // Environment tiles
   this.load.image('cave_floor',
-    'assets/environments/cave_bar/tiles/cave_stone_floor.png');
+    'assets/environments/cave_bar/tiles/cave_stone_floor.png'); // 64×64px
 }
 ```
 
@@ -1031,7 +1048,7 @@ To maintain visual cohesion across all 200+ assets, follow these strict paramete
 - **AI Freedom:** 750 (balanced between prompt adherence and natural variation)
 
 **For Environment Tiles:**
-- **Size:** 32px canvas
+- **Size:** 64px canvas (2× for 2K resolution)
 - **Tile Shape:** Thick tile
 - **Text Guidance Scale:** 8 (standard prompt adherence)
 
@@ -1057,19 +1074,19 @@ To maintain visual cohesion across all 200+ assets, follow these strict paramete
 
 ### Size Relationships Reference
 
-**Character Scale Chart:**
+**Character Scale Chart (2K Resolution - 2× Scale):**
 ```
-Chibi Player:     64px canvas  → ~38px tall
-Weapons:          32-48px      → handheld size
-Small Dino:       48-64px      → 1-1.5× player
-Medium Dino:      128px        → 2× player
-Large Dino:       160px        → 2.5× player
-Huge Dino:        192px        → 3× player
-Apex Dino:        256px        → 4× player
-Small Props:      48px         → decorative
-Medium Props:     64px         → obstacles
-Large Props:      96-128px     → cover/platforms
-Environment Tile: 32px         → ground unit
+Chibi Player:     128px canvas → ~76px tall
+Weapons:          64-96px      → handheld size
+Small Dino:       96-128px     → 1-1.5× player
+Medium Dino:      256px        → 2× player
+Large Dino:       320px        → 2.5× player
+Huge Dino:        384px        → 3× player
+Apex Dino:        512px        → 4× player
+Small Props:      96px         → decorative
+Medium Props:     128px        → obstacles
+Large Props:      192-256px    → cover/platforms
+Environment Tile: 64px         → ground unit
 ```
 
 ### Visual Style Checklist
@@ -1262,9 +1279,9 @@ This UI design document provides:
 
 ### PixelLab Generation Parameters Template
 
-**Character Generation:**
+**Character Generation (2K Resolution - 2× Scale):**
 ```
-Canvas Size: [64px / 128px / 192px / 256px]
+Canvas Size: [128px / 256px / 384px / 512px]
 Directions: 8
 Proportions: chibi / default / cartoon
 View: high top-down
@@ -1275,9 +1292,9 @@ AI Freedom: 750
 Description: "[Entity description with style keywords]"
 ```
 
-**Environment Tile Generation:**
+**Environment Tile Generation (2K Resolution - 2× Scale):**
 ```
-Canvas Size: 32px
+Canvas Size: 64px
 Tile Shape: thick tile
 Outline: single color black outline
 Shading: basic shading
@@ -1286,9 +1303,9 @@ Text Guidance Scale: 8
 Description: "[Tile description with material and atmosphere]"
 ```
 
-**Map Object/Prop Generation:**
+**Map Object/Prop Generation (2K Resolution - 2× Scale):**
 ```
-Canvas Size: [48px / 64px / 96px]
+Canvas Size: [96px / 128px / 192px / 256px]
 View: high top-down
 Transparent Background: Yes
 Outline: single color black outline

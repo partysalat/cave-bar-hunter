@@ -560,12 +560,12 @@ screenX = (worldX - worldY) * (TILE_WIDTH / 2) + SCREEN_CENTER_X
 screenY = (worldX + worldY) * (TILE_HEIGHT / 2) - (worldZ * HEIGHT_SCALE) + SCREEN_CENTER_Y
 ```
 
-**Constants:**
-- TILE_WIDTH = 64 pixels
-- TILE_HEIGHT = 32 pixels (maintains 2:1 isometric ratio)
-- HEIGHT_SCALE = 50 pixels per world unit (Z axis)
-- SCREEN_CENTER_X = 960 pixels (1920 / 2)
-- SCREEN_CENTER_Y = 540 pixels (1080 / 2)
+**Constants (2K Resolution - 2× Scale):**
+- TILE_WIDTH = 128 pixels (2× for higher detail)
+- TILE_HEIGHT = 64 pixels (maintains 2:1 isometric ratio)
+- HEIGHT_SCALE = 100 pixels per world unit (Z axis, 2× scaled)
+- SCREEN_CENTER_X = 1280 pixels (2560 / 2)
+- SCREEN_CENTER_Y = 720 pixels (1440 / 2)
 
 **Screen Space Usage:**
 - Sprite rendering positions (sprite.x, sprite.y)
@@ -1214,7 +1214,7 @@ AttractScene or retry HuntScene
 
 **Display:**
 - Large TV/monitor: 55"+ recommended for visibility
-- 1920x1080 resolution minimum
+- 2560×1440 resolution (2K/QHD) for enhanced detail
 - Mounted at standing eye level (bar patron height)
 - Position: Visible from bar seating and standing areas
 - HDMI connection to game PC
