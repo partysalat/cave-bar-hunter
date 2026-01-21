@@ -1,10 +1,11 @@
 import Phaser from 'phaser';
 import TestScene from './scenes/TestScene.js';
+import { SCREEN_WIDTH, SCREEN_HEIGHT } from './systems/CoordinateSystem.js';
 
 const config = {
     type: Phaser.AUTO,
-    width: 2560,  // 2K resolution
-    height: 1440, // 2K resolution
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT,
     backgroundColor: '#2d2d2d',
     parent: 'game-container',
     scene: [TestScene]

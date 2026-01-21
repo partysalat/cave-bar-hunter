@@ -26,9 +26,9 @@ describe('Entity', () => {
         const entity = new Entity(mockScene, 10, 5, 0);
         entity.updateScreenPosition();
 
-        // Should convert (10, 5, 0) to screen coords
-        expect(entity.sprite.x).toBe(960 + (10 - 5) * 32);
-        expect(entity.sprite.y).toBe(540 + (10 + 5) * 16);
+        // Should convert (10, 5, 0) to screen coords (2K resolution)
+        expect(entity.sprite.x).toBe(1280 + (10 - 5) * 64); // TILE_WIDTH/2 = 64
+        expect(entity.sprite.y).toBe(720 + (10 + 5) * 32);  // TILE_HEIGHT/2 = 32
     });
 
     it('updates depth based on world position', () => {

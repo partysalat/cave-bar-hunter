@@ -81,11 +81,12 @@ dist/
 
 ```javascript
 import Phaser from 'phaser';
+import { SCREEN_WIDTH, SCREEN_HEIGHT } from './systems/CoordinateSystem.js';
 
 const config = {
     type: Phaser.AUTO,
-    width: 2560,  // 2K resolution
-    height: 1440, // 2K resolution
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT,
     backgroundColor: '#2d2d2d',
     parent: 'game-container',
     scene: []
@@ -181,11 +182,13 @@ Create: `src/systems/CoordinateSystem.js`
 
 ```javascript
 // Constants from design doc (2K Resolution - 2× Scale)
-export const TILE_WIDTH = 128; // 2× for 2560×1440
-export const TILE_HEIGHT = 64; // 2× for 2560×1440
-export const HEIGHT_SCALE = 100; // pixels per world unit in Z axis (2× scaled)
-export const SCREEN_CENTER_X = 1280; // 2560 / 2
-export const SCREEN_CENTER_Y = 720; // 1440 / 2
+export const SCREEN_WIDTH = 2560;   // 2K resolution
+export const SCREEN_HEIGHT = 1440;  // 2K resolution
+export const TILE_WIDTH = 128;      // 2× for 2K resolution
+export const TILE_HEIGHT = 64;      // 2× for 2K resolution
+export const HEIGHT_SCALE = 100;    // pixels per world unit in Z axis (2× scaled)
+export const SCREEN_CENTER_X = SCREEN_WIDTH / 2;  // 1280
+export const SCREEN_CENTER_Y = SCREEN_HEIGHT / 2; // 720
 
 /**
  * Converts 3D world coordinates to 2D isometric screen coordinates
@@ -665,11 +668,12 @@ Modify: `src/main.js`
 ```javascript
 import Phaser from 'phaser';
 import TestScene from './scenes/TestScene.js';
+import { SCREEN_WIDTH, SCREEN_HEIGHT } from './systems/CoordinateSystem.js';
 
 const config = {
     type: Phaser.AUTO,
-    width: 2560,  // 2K resolution
-    height: 1440, // 2K resolution
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT,
     backgroundColor: '#2d2d2d',
     parent: 'game-container',
     scene: [TestScene]
@@ -1464,7 +1468,7 @@ Expected: FAIL - module not found
 Create: `src/systems/CameraController.js`
 
 ```javascript
-import { worldToScreen } from './CoordinateSystem.js';
+import { worldToScreen, SCREEN_WIDTH, SCREEN_HEIGHT } from './CoordinateSystem.js';
 
 /**
  * Controls camera to follow players with smooth movement
@@ -1508,9 +1512,9 @@ export default class CameraController {
         const screenPos = worldToScreen(center.worldX, center.worldY, 0);
 
         // Camera scroll targets the center
-        // Subtract half screen dimensions to center on target (2K resolution)
-        const targetX = screenPos.x - 2560 / 2;
-        const targetY = screenPos.y - 1440 / 2;
+        // Subtract half screen dimensions to center on target
+        const targetX = screenPos.x - SCREEN_WIDTH / 2;
+        const targetY = screenPos.y - SCREEN_HEIGHT / 2;
 
         // Smooth lerp to target
         const currentX = this.camera.scrollX;
@@ -1664,7 +1668,11 @@ Create: `docs/phase-1-complete.md`
 - Isometric projection (worldToScreen, screenToWorld)
 - 3D world space (X, Y, Z axes)
 - Depth sorting calculation
-- Constants (2K Resolution): TILE_WIDTH=128, TILE_HEIGHT=64, HEIGHT_SCALE=100, SCREEN_CENTER=1280×720
+- Global constants (2K Resolution):
+  - SCREEN_WIDTH=2560, SCREEN_HEIGHT=1440
+  - TILE_WIDTH=128, TILE_HEIGHT=64
+  - HEIGHT_SCALE=100
+  - SCREEN_CENTER_X=1280, SCREEN_CENTER_Y=720
 
 ### Entity System ✓
 - Base Entity class with world/screen position management
