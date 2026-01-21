@@ -14,7 +14,7 @@ const config = {
         // - ENVELOP: Scales to fill browser, maintains aspect ratio, may crop edges
         // - RESIZE: Dynamically resizes canvas to match browser (changes game dimensions)
         // - EXPAND: Expands to fill browser, maintains aspect ratio
-        mode: Phaser.Scale.FIT,
+        mode: Phaser.Scale.ENVELOP,
         autoCenter: Phaser.Scale.CENTER_BOTH
     },
     scene: [TestScene]
