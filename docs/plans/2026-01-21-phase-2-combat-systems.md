@@ -12,6 +12,19 @@
 
 ---
 
+## Critical Fixes Applied
+
+This plan has been reviewed and the following critical issues have been fixed:
+
+1. ✅ **Task 0 Added**: Verify Phase 1 completeness before starting implementation
+2. ✅ **Projectile API Fixed**: Added `damageMultiplier` default parameter in Task 1 to prevent breaking changes in Task 6
+3. ✅ **ScoreManager Typos Fixed**: Corrected `teammateSaves` spelling (was `teammateS aves` and `teammmateSaves`)
+4. ✅ **Dinosaur Death Handling**: Added death state and detection in Task 4
+5. ✅ **Perfect Dodge Note**: Added documentation about Phase 3 dependency for attack telegraphs
+6. ✅ **Revival System Note**: Documented that revival trigger requires Phase 3 proximity detection
+
+---
+
 ## Overview
 
 Phase 2 builds the combat foundation on top of Phase 1's movement and rendering systems. We'll implement:
@@ -26,6 +39,105 @@ Phase 2 builds the combat foundation on top of Phase 1's movement and rendering 
 8. **HUD Display** - Health bars, scores, dinosaur health, indicators
 
 Each task follows TDD principles with tests first, minimal implementation, verification, and frequent commits.
+
+---
+
+## Task 0: Verify Phase 1 Dependencies
+
+**Goal:** Verify that Phase 1 is complete and provides the expected API for Phase 2 implementation.
+
+**Step 1: Check existing files and APIs**
+
+Verify the following files exist with expected structure:
+
+```bash
+# Check file existence
+ls src/entities/Entity.js
+ls src/entities/Player.js
+ls src/entities/Dinosaur.js
+ls src/systems/PhysicsManager.js
+ls src/systems/InputManager.js
+ls src/scenes/TestScene.js
+ls tests/
+```
+
+**Step 2: Review Entity.js API**
+
+Read `src/entities/Entity.js` and verify it provides:
+- Constructor: `constructor(scene, worldX, worldY, worldZ)`
+- Properties: `sprite`, `worldX`, `worldY`, `worldZ`, `velocityX`, `velocityY`, `velocityZ`
+- Methods: `update(delta)`, `destroy()`
+
+**Step 3: Review Player.js API**
+
+Read `src/entities/Player.js` and verify it provides:
+- Constructor: `constructor(scene, playerNumber, worldX, worldY, worldZ)`
+- Properties: `health`, `maxHealth`, `isDowned`, `playerNumber`, `moveSpeed`
+- Methods: `move(dirX, dirY)`, `stop()`
+
+**Step 4: Review Dinosaur.js API**
+
+Read `src/entities/Dinosaur.js` and verify it provides:
+- Constructor: `constructor(scene, type, worldX, worldY, worldZ)`
+- Properties: `health`, `maxHealth`, `type`, `radius`
+- Methods: `takeDamage(damage)` OR that we need to add it
+
+**Step 5: Review PhysicsManager.js**
+
+Read `src/systems/PhysicsManager.js` and verify it exports:
+- Function: `distance3D(x1, y1, z1, x2, y2, z2)` for collision detection
+
+If this function doesn't exist, add it:
+
+```javascript
+/**
+ * Calculate 3D distance between two points
+ * @param {number} x1
+ * @param {number} y1
+ * @param {number} z1
+ * @param {number} x2
+ * @param {number} y2
+ * @param {number} z2
+ * @returns {number}
+ */
+export function distance3D(x1, y1, z1, x2, y2, z2) {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const dz = z2 - z1;
+    return Math.sqrt(dx * dx + dy * dy + dz * dz);
+}
+```
+
+**Step 6: Verify test setup**
+
+Run existing tests to ensure Phase 1 is stable:
+
+```bash
+npm test
+```
+
+Expected: All Phase 1 tests pass
+
+**Step 7: Document Phase 1 API**
+
+Create a quick reference note in this plan about what's available:
+
+```
+PHASE 1 API VERIFIED:
+- Entity: Base class with worldX/Y/Z, velocityX/Y/Z, sprite, update(), destroy()
+- Player: extends Entity, has health, move(), stop(), playerNumber
+- Dinosaur: extends Entity, has health, type, radius, takeDamage()
+- PhysicsManager: distance3D() for collision detection
+- InputManager: getDPadDirection() for input
+- TestScene: Main test environment
+```
+
+**Step 8: Commit verification**
+
+```bash
+git add -A  # If any fixes were needed
+git commit -m "chore: verify Phase 1 dependencies for Phase 2"
+```
 
 ---
 
@@ -111,14 +223,16 @@ export default class Projectile extends Entity {
      * @param {number} dirX - Direction vector (normalized)
      * @param {number} dirY
      * @param {number} dirZ
+     * @param {number} damageMultiplier - Buff multiplier from player (default 1.0)
      */
-    constructor(scene, ownerPlayerNumber, worldX, worldY, worldZ, dirX, dirY, dirZ = 0) {
+    constructor(scene, ownerPlayerNumber, worldX, worldY, worldZ, dirX, dirY, dirZ = 0, damageMultiplier = 1.0) {
         super(scene, worldX, worldY, worldZ);
 
         this.ownerPlayerNumber = ownerPlayerNumber;
 
         // Combat stats
-        this.damage = 10; // Base damage
+        this.baseDamage = 10; // Base damage
+        this.damage = this.baseDamage * damageMultiplier; // Apply buff multiplier
         this.weakPointMultiplier = 2.0; // Damage multiplier on weak points
 
         // Physics
@@ -783,6 +897,13 @@ Update projectile update loop:
                             this.testDino.takeDamage(result.damage);
                             proj.onHit();
                             console.log(`Body hit! Damage: ${result.damage}`);
+
+                            // Check if dinosaur died
+                            if (this.testDino.health <= 0 && !this.testDino.isDead) {
+                                this.testDino.isDead = true;
+                                console.log('DINOSAUR DEFEATED!');
+                                // Phase 3 will add death animations, scoring bonuses, etc.
+                            }
                         }
                     }
                 }
@@ -794,12 +915,40 @@ Update projectile update loop:
             }
 ```
 
-**Step 6: Test combat manually**
+**Step 6: Add dinosaur death state to Dinosaur.js**
+
+Modify: `src/entities/Dinosaur.js` - add to constructor:
+
+```javascript
+        // Death state
+        this.isDead = false;
+```
+
+Add takeDamage override to check death:
+
+```javascript
+    /**
+     * Apply damage to dinosaur
+     * @param {number} damage
+     */
+    takeDamage(damage) {
+        if (this.isDead) return;
+
+        this.health -= damage;
+
+        if (this.health <= 0) {
+            this.health = 0;
+            this.isDead = true;
+        }
+    }
+```
+
+**Step 7: Test combat manually**
 
 Run: `npm run dev`
-Expected: Throw spears at dinosaur, see console logs for hits, weak point breaks, damage numbers
+Expected: Throw spears at dinosaur, see console logs for hits, weak point breaks, damage numbers, dinosaur death message
 
-**Step 7: Commit**
+**Step 8: Commit**
 
 ```bash
 git add tests/CombatSystem.test.js src/systems/CombatSystem.js src/scenes/TestScene.js
@@ -1225,33 +1374,7 @@ Add methods:
 
 **Step 6: Apply buff to projectile damage**
 
-Modify: `src/entities/Projectile.js` - update constructor to accept damage multiplier:
-
-```javascript
-    /**
-     * @param {Phaser.Scene} scene
-     * @param {number} ownerPlayerNumber - Player who fired this
-     * @param {number} worldX - Starting position
-     * @param {number} worldY
-     * @param {number} worldZ
-     * @param {number} dirX - Direction vector (normalized)
-     * @param {number} dirY
-     * @param {number} dirZ
-     * @param {number} damageMultiplier - Buff multiplier from player (default 1.0)
-     */
-    constructor(scene, ownerPlayerNumber, worldX, worldY, worldZ, dirX, dirY, dirZ = 0, damageMultiplier = 1.0) {
-        super(scene, worldX, worldY, worldZ);
-
-        this.ownerPlayerNumber = ownerPlayerNumber;
-
-        // Combat stats
-        this.baseDamage = 10; // Base damage
-        this.damage = this.baseDamage * damageMultiplier; // Apply buff
-        this.weakPointMultiplier = 2.0; // Damage multiplier on weak points
-
-        // ... rest of constructor
-    }
-```
+Note: `Projectile.js` already accepts `damageMultiplier` parameter from Task 1, so we just need to pass it from Player.
 
 Modify: `src/entities/Player.js` - update throwSpear to pass multiplier:
 
@@ -1310,6 +1433,15 @@ Modify: `src/scenes/TestScene.js` - update projectile creation:
 ```bash
 git add tests/TimingSystem.test.js src/systems/TimingSystem.js src/entities/Player.js src/entities/Projectile.js src/scenes/TestScene.js
 git commit -m "feat: implement perfect dodge timing and damage buff"
+```
+
+**Note:** The TimingSystem is complete but Phase 2 has no dinosaur attacks to test perfect dodge timing against. The damage buff system works, but the "perfect dodge" detection requires attack telegraphs which will be added in Phase 3. For now, you can manually trigger the buff for testing:
+
+```javascript
+// In TestScene for testing - add to input handling
+if (someTestKey) {
+    this.player.grantPerfectDodgeBuff();
+}
 ```
 
 ---
@@ -1393,7 +1525,7 @@ export default class ScoreManager {
         // Stats tracking
         this.perfectDodges = [0, 0, 0, 0];
         this.weakPointHits = [0, 0, 0, 0];
-        this.teammateS aves = [0, 0, 0, 0];
+        this.teammateSaves = [0, 0, 0, 0];
     }
 
     /**
@@ -1441,7 +1573,7 @@ export default class ScoreManager {
      */
     awardTeammateSave(playerIndex) {
         this.scores[playerIndex] += 10;
-        this.teammmateSaves[playerIndex]++;
+        this.teammateSaves[playerIndex]++;
     }
 
     /**
@@ -1470,7 +1602,7 @@ export default class ScoreManager {
             score: this.scores[playerIndex],
             perfectDodges: this.perfectDodges[playerIndex],
             weakPointHits: this.weakPointHits[playerIndex],
-            teammmateSaves: this.teammmateSaves[playerIndex]
+            teammateSaves: this.teammateSaves[playerIndex]
         };
     }
 
@@ -1481,7 +1613,7 @@ export default class ScoreManager {
         this.scores = [0, 0, 0, 0];
         this.perfectDodges = [0, 0, 0, 0];
         this.weakPointHits = [0, 0, 0, 0];
-        this.teammmateSaves = [0, 0, 0, 0];
+        this.teammateSaves = [0, 0, 0, 0];
     }
 }
 ```
@@ -1955,6 +2087,15 @@ git add tests/Player.test.js src/entities/Player.js src/ui/HUD.js
 git commit -m "feat: implement downed state with crawling and timer"
 ```
 
+**Note:** The `revive()` method is implemented and tested but not wired to gameplay. Phase 2 provides the framework only. To fully implement revival in Phase 3, add:
+
+1. Proximity detection between players (use distance3D)
+2. Revival interaction trigger (A/B button when near downed teammate)
+3. Revival progress bar (hold button for ~2 seconds)
+4. Score award on successful revival (10 points)
+
+For now, the revival system can be tested manually via unit tests or console commands.
+
 ---
 
 ## Task 10: Phase 2 Documentation and Summary
@@ -2159,7 +2300,7 @@ Ready for Phase 3: Content Creation"
 **Phase 2 implementation plan complete and saved.**
 
 This plan builds a complete combat system with:
-- **9 tasks** covering all Phase 2 requirements from the design doc
+- **11 tasks** covering all Phase 2 requirements from the design doc (Task 0 verifies dependencies, Tasks 1-10 implement features)
 - Test-driven development (50 total tests)
 - Proper separation of concerns (systems, entities, UI)
 - Progressive implementation (each task builds on previous)
