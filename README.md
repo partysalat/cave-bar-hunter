@@ -51,13 +51,24 @@ docs/
 - Camera following
 - Screen-to-world direction conversion for proper isometric movement
 
-🔄 **Phase 2: Combat & Systems** - Not started
+✅ **Phase 2: Combat & Systems** - Complete
+- Projectile system (spear throwing)
+- Weak point targeting
+- Dodge roll with invincibility frames
+- Perfect dodge timing and buffs
+- Scoring system (damage, weak points, dodges)
+- Downed state and revival
+- HUD display (health, score, dinosaur health)
 
-See `docs/phase-1-complete.md` for details.
+🔄 **Phase 3: Content Creation** - Not started
+
+See `docs/phase-2-complete.md` for details.
 
 ## Controls (Keyboard Testing)
 
 - WASD: Move player
+- SHIFT: Dodge roll
+- Left Click: Throw spear
 - (Gamepad support implemented, connect controller)
 
 ## Design Document
