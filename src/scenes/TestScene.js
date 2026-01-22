@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import Player from '../entities/Player.js';
 import Dinosaur from '../entities/Dinosaur.js';
 import Projectile from '../entities/Projectile.js';
+import CombatSystem from '../systems/CombatSystem.js';
 import { worldToScreen, screenToWorldDirection } from '../systems/CoordinateSystem.js';
 import InputManager from '../systems/InputManager.js';
 import { sphereVsSphere } from '../systems/PhysicsManager.js';
@@ -32,6 +33,9 @@ export default class TestScene extends Phaser.Scene {
 
         // Setup camera controller
         this.cameraController = new CameraController(this.cameras.main);
+
+        // Setup combat system
+        this.combatSystem = new CombatSystem();
 
         // Track projectiles
         this.projectiles = [];
@@ -85,10 +89,44 @@ export default class TestScene extends Phaser.Scene {
 
             this.player.update(delta);
 
-            // Update projectiles
+            // Update projectiles and check collisions
             for (let i = this.projectiles.length - 1; i >= 0; i--) {
                 const proj = this.projectiles[i];
                 proj.update(delta);
+
+                // Check hit on test dinosaur weak points
+                if (this.testDino && !this.testDino.isDead) {
+                    for (const wp of this.testDino.weakPoints) {
+                        const result = this.combatSystem.checkProjectileHit(proj, wp);
+
+                        if (result.hit) {
+                            const broke = wp.takeDamage(result.damage);
+                            proj.onHit();
+
+                            console.log(`Hit ${wp.type}! Damage: ${result.damage.toFixed(1)}`);
+                            if (broke) {
+                                console.log(`${wp.type} weak point BROKEN!`);
+                            }
+                        }
+                    }
+
+                    // Check body hit if no weak point hit
+                    if (!proj.isExpired) {
+                        const result = this.combatSystem.checkProjectileHitDinosaur(proj, this.testDino);
+                        if (result.hit) {
+                            this.testDino.takeDamage(result.damage);
+                            proj.onHit();
+                            console.log(`Body hit! Damage: ${result.damage}`);
+
+                            // Check if dinosaur died
+                            if (this.testDino.health <= 0 && !this.testDino.isDead) {
+                                this.testDino.isDead = true;
+                                console.log('DINOSAUR DEFEATED!');
+                                // Phase 3 will add death animations, scoring bonuses, etc.
+                            }
+                        }
+                    }
+                }
 
                 if (proj.isExpired) {
                     proj.destroy();
