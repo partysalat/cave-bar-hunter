@@ -10,7 +10,12 @@ describe('Player', () => {
                 sprite: () => ({
                     setOrigin: () => ({}),
                     setDepth: () => ({}),
-                    setTint: () => ({})
+                    setTint: () => ({}),
+                    setTexture: () => ({}),
+                    play: () => ({}),
+                    anims: {
+                        currentAnim: null
+                    }
                 })
             }
         };

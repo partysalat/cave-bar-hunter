@@ -54,6 +54,20 @@ export function screenToWorldDirection(screenDirX, screenDirY) {
 }
 
 /**
+ * Converts world direction back to screen direction (inverse of screenToWorldDirection)
+ * Used for selecting correct sprite direction based on world-space facing
+ * @param {number} worldDirX - World X direction
+ * @param {number} worldDirY - World Y direction
+ * @returns {{x: number, y: number}} Screen direction
+ */
+export function worldToScreenDirection(worldDirX, worldDirY) {
+    return {
+        x: (worldDirX - worldDirY) / 2,
+        y: (worldDirX + worldDirY) / 2
+    };
+}
+
+/**
  * Calculates depth value for sprite sorting
  * Objects further "back" (higher worldY) render in front
  * @param {number} worldY - World Y position

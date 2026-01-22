@@ -19,7 +19,38 @@ export default class TestScene extends Phaser.Scene {
         super({ key: 'TestScene' });
     }
 
+    preload() {
+        // Load player character animations
+        const playerColors = ['red', 'blue', 'yellow', 'green'];
+        const directions = ['south', 'south-east', 'east', 'north-east', 'north', 'north-west', 'west', 'south-west'];
+
+        playerColors.forEach((color, playerIndex) => {
+            directions.forEach(direction => {
+                // Load running animation frames (8 frames per direction)
+                const runningFrames = [];
+                for (let i = 0; i < 8; i++) {
+                    const frameKey = `player-${playerIndex}-run-${direction}-${i}`;
+                    const framePath = `/assets/characters/${color}-hero/animations/running-8-frames/${direction}/frame_00${i}.png`;
+                    this.load.image(frameKey, framePath);
+                    runningFrames.push({ key: frameKey });
+                }
+
+                // Load breathing idle animation frames (4 frames per direction)
+                const idleFrames = [];
+                for (let i = 0; i < 4; i++) {
+                    const frameKey = `player-${playerIndex}-idle-${direction}-${i}`;
+                    const framePath = `/assets/characters/${color}-hero/animations/breathing-idle/${direction}/frame_00${i}.png`;
+                    this.load.image(frameKey, framePath);
+                    idleFrames.push({ key: frameKey });
+                }
+            });
+        });
+    }
+
     create() {
+        // Create player animations
+        this.createPlayerAnimations();
+
         // Draw isometric ground grid for visualization
         this.drawGroundGrid();
 
@@ -175,6 +206,43 @@ export default class TestScene extends Phaser.Scene {
                 this.scoreManager.getScore(0),
                 this.testDino
             );
+        }
+    }
+
+    /**
+     * Creates player animations for all directions and all players
+     */
+    createPlayerAnimations() {
+        const directions = ['south', 'south-east', 'east', 'north-east', 'north', 'north-west', 'west', 'south-west'];
+
+        for (let playerIndex = 0; playerIndex < 4; playerIndex++) {
+            directions.forEach(direction => {
+                // Create running animation (8 frames, 12 fps)
+                const runKey = `player-${playerIndex}-run-${direction}`;
+                const runFrames = [];
+                for (let i = 0; i < 8; i++) {
+                    runFrames.push({ key: `player-${playerIndex}-run-${direction}-${i}` });
+                }
+                this.anims.create({
+                    key: runKey,
+                    frames: runFrames,
+                    frameRate: 12,
+                    repeat: -1 // Loop forever
+                });
+
+                // Create idle animation (4 frames, 6 fps for slower breathing)
+                const idleKey = `player-${playerIndex}-idle-${direction}`;
+                const idleFrames = [];
+                for (let i = 0; i < 4; i++) {
+                    idleFrames.push({ key: `player-${playerIndex}-idle-${direction}-${i}` });
+                }
+                this.anims.create({
+                    key: idleKey,
+                    frames: idleFrames,
+                    frameRate: 6,
+                    repeat: -1 // Loop forever
+                });
+            });
         }
     }
 

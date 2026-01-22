@@ -1,6 +1,7 @@
 import Entity from './Entity.js';
+import { updatePlayerAnimation, getPlayerAnimationKey } from '../systems/SpriteDirectionSystem.js';
 
-// Player color mapping from design doc
+// Player color mapping from design doc (kept for reference, now using PixelLab sprites)
 const PLAYER_COLORS = [
     0xff0000, // Player 1: Red
     0x0000ff, // Player 2: Blue
@@ -25,6 +26,13 @@ export default class Player extends Entity {
         this.playerNumber = playerNumber;
         this.color = PLAYER_COLORS[playerNumber];
 
+        // Initialize sprite with idle animation facing south
+        const initialAnimKey = getPlayerAnimationKey(playerNumber, 'south', false);
+        this.sprite.play(initialAnimKey);
+
+        // Movement state
+        this.isMoving = false;
+
         // Combat stats
         this.health = 2; // Takes 2 hits before downed
         this.maxHealth = 2;
@@ -47,8 +55,8 @@ export default class Player extends Entity {
         // Attack stats
         this.spearCooldown = 0; // ms until can throw again
         this.spearCooldownTime = 2000; // 2 seconds (from design doc)
-        this.facingX = 1; // Direction player is facing
-        this.facingY = 0;
+        this.facingX = 0; // Direction player is facing
+        this.facingY = 1; // Start facing south
 
         // Dodge stats (from design doc)
         this.isDodging = false;
@@ -68,9 +76,6 @@ export default class Player extends Entity {
         this.downedTimer = 0; // Time spent downed
         this.downedMaxTime = 10000; // 10 seconds before death (from design doc)
         this.crawlSpeed = 2; // Slower than normal movement
-
-        // Apply color tint to sprite
-        this.sprite.setTint(this.color);
     }
 
     /**
@@ -94,10 +99,12 @@ export default class Player extends Entity {
         this.velocityX = dirX * speed;
         this.velocityY = dirY * speed;
 
-        // Update facing
+        // Update facing and animation
         if (dirX !== 0 || dirY !== 0) {
             this.facingX = dirX;
             this.facingY = dirY;
+            this.isMoving = true;
+            updatePlayerAnimation(this.sprite, this.playerNumber, this.facingX, this.facingY, this.isMoving);
         }
     }
 
@@ -107,6 +114,8 @@ export default class Player extends Entity {
     stop() {
         this.velocityX = 0;
         this.velocityY = 0;
+        this.isMoving = false;
+        updatePlayerAnimation(this.sprite, this.playerNumber, this.facingX, this.facingY, this.isMoving);
     }
 
     /**
@@ -188,9 +197,10 @@ export default class Player extends Entity {
         dirX /= length;
         dirY /= length;
 
-        // Update facing direction
+        // Update facing direction and animation
         this.facingX = dirX;
         this.facingY = dirY;
+        updatePlayerAnimation(this.sprite, this.playerNumber, this.facingX, this.facingY, this.isMoving);
 
         // Start cooldown
         this.spearCooldown = this.spearCooldownTime;
