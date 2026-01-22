@@ -1,4 +1,5 @@
 import Entity from './Entity.js';
+import WeakPoint from './WeakPoint.js';
 
 /**
  * Base dinosaur entity
@@ -22,6 +23,9 @@ export default class Dinosaur extends Entity {
 
         // Collision
         this.radius = this.getRadiusForType(type);
+
+        // Weak points based on type
+        this.weakPoints = this.createWeakPointsForType(type);
 
         // Color tint based on type (temporary visualization)
         const color = type === 'compy' ? 0xff00ff : 0x00ffff;
@@ -57,6 +61,28 @@ export default class Dinosaur extends Entity {
     }
 
     /**
+     * Create weak points based on dinosaur type
+     * @param {string} type
+     * @returns {Array<WeakPoint>}
+     */
+    createWeakPointsForType(type) {
+        // Default weak points for most dinosaurs
+        const points = [
+            new WeakPoint('head', 30, 2.0, 0, -1.5, 1.0),  // Front, elevated
+            new WeakPoint('tail', 40, 1.5, 0, 1.5, 0.5),   // Rear
+            new WeakPoint('legs', 50, 1.0, 0, 0, 0)        // Center, ground level
+        ];
+
+        // Type-specific adjustments (can expand later)
+        if (type === 'compy') {
+            // Small dinosaur, only one weak point
+            return [new WeakPoint('body', 20, 1.5, 0, 0, 0.3)];
+        }
+
+        return points;
+    }
+
+    /**
      * Applies damage to dinosaur
      * @param {number} damage
      */
@@ -82,13 +108,18 @@ export default class Dinosaur extends Entity {
     }
 
     /**
-     * Update AI behavior
+     * Update AI behavior and weak points
      * @param {number} delta
      */
     update(delta) {
         super.update(delta);
 
-        // Phase 1: No AI yet, just exists
+        // Update weak point positions relative to dinosaur
+        for (const wp of this.weakPoints) {
+            wp.updatePosition(this.worldX, this.worldY, this.worldZ);
+        }
+
+        // Phase 2: No AI yet, just exists
         // Later: state machine, attacks, etc.
     }
 }

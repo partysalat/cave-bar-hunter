@@ -34,4 +34,10 @@ describe('Dinosaur', () => {
         expect(dino.health).toBe(0);
         expect(dino.isDead).toBe(true);
     });
+
+    it('initializes with weak points based on type', () => {
+        const dino = new Dinosaur(mockScene, 'raptor', 20, 15, 0);
+        expect(dino.weakPoints).toBeDefined();
+        expect(dino.weakPoints.length).toBeGreaterThan(0);
+    });
 });
