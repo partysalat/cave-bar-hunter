@@ -4,6 +4,7 @@ import Dinosaur from '../entities/Dinosaur.js';
 import Projectile from '../entities/Projectile.js';
 import CombatSystem from '../systems/CombatSystem.js';
 import ScoreManager from '../systems/ScoreManager.js';
+import HUD from '../ui/HUD.js';
 import { worldToScreen, screenToWorldDirection } from '../systems/CoordinateSystem.js';
 import InputManager from '../systems/InputManager.js';
 import { sphereVsSphere } from '../systems/PhysicsManager.js';
@@ -44,12 +45,8 @@ export default class TestScene extends Phaser.Scene {
         // Track projectiles
         this.projectiles = [];
 
-        // Add debug text
-        this.debugText = this.add.text(10, 10, '', {
-            font: '16px monospace',
-            fill: '#00ff00'
-        });
-        this.debugText.setDepth(10000);
+        // Create HUD
+        this.hud = new HUD(this);
     }
 
     update(time, delta) {
@@ -171,15 +168,13 @@ export default class TestScene extends Phaser.Scene {
         // Update camera to follow player
         this.cameraController.update([this.player]);
 
+        // Update HUD
         if (this.player) {
-            // Update debug info
-            this.debugText.setText([
-                `Score: ${this.scoreManager.getScore(0)}`,
-                `World: (${this.player.worldX.toFixed(1)}, ${this.player.worldY.toFixed(1)}, ${this.player.worldZ.toFixed(1)})`,
-                `Dodging: ${this.player.isDodging} | Cooldown: ${(this.player.dodgeCooldown / 1000).toFixed(1)}s`,
-                `Dino HP: ${this.testDino.health}/${this.testDino.maxHealth}`,
-                `Controls: WASD=move, SHIFT=dodge, CLICK=throw`
-            ]);
+            this.hud.update(
+                this.player,
+                this.scoreManager.getScore(0),
+                this.testDino
+            );
         }
     }
 
