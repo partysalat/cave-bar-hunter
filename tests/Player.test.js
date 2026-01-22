@@ -68,4 +68,34 @@ describe('Player', () => {
 
         expect(player.canThrowSpear()).toBe(false); // Cooldown active
     });
+
+    it('performs dodge roll with cooldown', () => {
+        const player = new Player(mockScene, 0, 15, 12, 0);
+
+        expect(player.canDodge()).toBe(true);
+
+        player.startDodge();
+
+        expect(player.isDodging).toBe(true);
+        expect(player.canDodge()).toBe(false); // Cooldown active
+    });
+
+    it('has invincibility frames during dodge', () => {
+        const player = new Player(mockScene, 0, 15, 12, 0);
+
+        player.startDodge();
+
+        expect(player.isInvincible()).toBe(true);
+    });
+
+    it('ends dodge after duration', () => {
+        const player = new Player(mockScene, 0, 15, 12, 0);
+
+        player.startDodge();
+        expect(player.isDodging).toBe(true);
+
+        player.updateDodge(600); // 0.6 seconds (exceeds 0.5s dodge duration)
+
+        expect(player.isDodging).toBe(false);
+    });
 });

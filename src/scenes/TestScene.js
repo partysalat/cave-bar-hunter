@@ -85,6 +85,11 @@ export default class TestScene extends Phaser.Scene {
                         this.projectiles.push(projectile);
                     }
                 }
+
+                // Dodge roll (LT button)
+                if (input.buttons.lt && this.player.canDodge()) {
+                    this.player.startDodge();
+                }
             }
 
             this.player.update(delta);
@@ -160,7 +165,8 @@ export default class TestScene extends Phaser.Scene {
                 `World: (${this.player.worldX.toFixed(1)}, ${this.player.worldY.toFixed(1)}, ${this.player.worldZ.toFixed(1)})`,
                 `Screen: (${this.player.sprite.x.toFixed(0)}, ${this.player.sprite.y.toFixed(0)})`,
                 `Velocity: (${this.player.velocityX.toFixed(1)}, ${this.player.velocityY.toFixed(1)})`,
-                `Controls: WASD to move`
+                `Dodging: ${this.player.isDodging} | Cooldown: ${(this.player.dodgeCooldown / 1000).toFixed(1)}s`,
+                `Controls: WASD=move, SHIFT=dodge, CLICK=throw`
             ]);
         }
     }

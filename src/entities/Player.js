@@ -50,6 +50,16 @@ export default class Player extends Entity {
         this.facingX = 1; // Direction player is facing
         this.facingY = 0;
 
+        // Dodge stats (from design doc)
+        this.isDodging = false;
+        this.dodgeTimer = 0;
+        this.dodgeDuration = 500; // 0.5 seconds (invincibility frames)
+        this.dodgeCooldown = 0;
+        this.dodgeCooldownTime = 3000; // 3 seconds (from design doc)
+        this.dodgeSpeed = 16; // 2× normal speed during roll
+        this.dodgeDirectionX = 0;
+        this.dodgeDirectionY = 0;
+
         // Apply color tint to sprite
         this.sprite.setTint(this.color);
     }
@@ -60,6 +70,8 @@ export default class Player extends Entity {
      * @param {number} dirY - Y direction (-1, 0, 1)
      */
     move(dirX, dirY) {
+        if (this.isDodging) return; // Can't change direction during dodge
+
         // Normalize diagonal movement
         if (dirX !== 0 && dirY !== 0) {
             const length = Math.sqrt(dirX * dirX + dirY * dirY);
@@ -69,6 +81,12 @@ export default class Player extends Entity {
 
         this.velocityX = dirX * this.moveSpeed;
         this.velocityY = dirY * this.moveSpeed;
+
+        // Update facing
+        if (dirX !== 0 || dirY !== 0) {
+            this.facingX = dirX;
+            this.facingY = dirY;
+        }
     }
 
     /**
@@ -84,7 +102,7 @@ export default class Player extends Entity {
      * @param {number} damage - Amount of damage (usually 1)
      */
     takeDamage(damage) {
-        if (this.isDowned) return;
+        if (this.isInvincible() || this.isDowned) return;
 
         this.health -= damage;
 
@@ -176,10 +194,80 @@ export default class Player extends Entity {
     }
 
     /**
-     * Override update to include cooldowns
+     * Check if player can dodge
+     * @returns {boolean}
+     */
+    canDodge() {
+        return this.dodgeCooldown === 0 && !this.isDowned && !this.isDodging;
+    }
+
+    /**
+     * Start dodge roll
+     * @param {number} dirX - Direction to dodge (optional, uses facing if not provided)
+     * @param {number} dirY
+     */
+    startDodge(dirX = this.facingX, dirY = this.facingY) {
+        if (!this.canDodge()) return;
+
+        // Normalize direction
+        const length = Math.sqrt(dirX * dirX + dirY * dirY);
+        if (length === 0) {
+            dirX = this.facingX;
+            dirY = this.facingY;
+        } else {
+            dirX /= length;
+            dirY /= length;
+        }
+
+        this.isDodging = true;
+        this.dodgeTimer = 0;
+        this.dodgeDirectionX = dirX;
+        this.dodgeDirectionY = dirY;
+        this.dodgeCooldown = this.dodgeCooldownTime;
+
+        // Set dodge velocity
+        this.velocityX = dirX * this.dodgeSpeed;
+        this.velocityY = dirY * this.dodgeSpeed;
+    }
+
+    /**
+     * Check if player has invincibility frames
+     * @returns {boolean}
+     */
+    isInvincible() {
+        return this.isDodging;
+    }
+
+    /**
+     * Update dodge state
+     * @param {number} delta - Time in ms
+     */
+    updateDodge(delta) {
+        if (!this.isDodging) return;
+
+        this.dodgeTimer += delta;
+
+        if (this.dodgeTimer >= this.dodgeDuration) {
+            // End dodge
+            this.isDodging = false;
+            this.dodgeTimer = 0;
+            this.velocityX = 0;
+            this.velocityY = 0;
+        }
+    }
+
+    /**
+     * Override update to include dodge
      */
     update(delta) {
         super.update(delta);
         this.updateCooldowns(delta);
+        this.updateDodge(delta);
+
+        // Update dodge cooldown
+        if (this.dodgeCooldown > 0) {
+            this.dodgeCooldown -= delta;
+            if (this.dodgeCooldown < 0) this.dodgeCooldown = 0;
+        }
     }
 }
