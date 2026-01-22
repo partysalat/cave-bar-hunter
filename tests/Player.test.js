@@ -98,4 +98,34 @@ describe('Player', () => {
 
         expect(player.isDodging).toBe(false);
     });
+
+    it('enters downed state at 0 health', () => {
+        const player = new Player(mockScene, 0, 15, 12, 0);
+
+        player.takeDamage(2); // Full damage
+
+        expect(player.health).toBe(0);
+        expect(player.isDowned).toBe(true);
+    });
+
+    it('can crawl while downed at reduced speed', () => {
+        const player = new Player(mockScene, 0, 15, 12, 0);
+        player.isDowned = true;
+
+        player.move(1, 0);
+
+        expect(player.velocityX).toBeGreaterThan(0);
+        expect(player.velocityX).toBeLessThan(player.moveSpeed); // Slower than normal
+    });
+
+    it('can be revived by teammate', () => {
+        const player = new Player(mockScene, 0, 15, 12, 0);
+        player.isDowned = true;
+        player.health = 0;
+
+        player.revive();
+
+        expect(player.isDowned).toBe(false);
+        expect(player.health).toBe(1); // Partial health on revive
+    });
 });

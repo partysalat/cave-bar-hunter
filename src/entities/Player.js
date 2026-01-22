@@ -64,6 +64,11 @@ export default class Player extends Entity {
         this.perfectDodgeBuff = 0; // ms remaining of damage buff
         this.perfectDodgeMultiplier = 1.5; // 1.5× damage
 
+        // Downed state (from design doc)
+        this.downedTimer = 0; // Time spent downed
+        this.downedMaxTime = 10000; // 10 seconds before death (from design doc)
+        this.crawlSpeed = 2; // Slower than normal movement
+
         // Apply color tint to sprite
         this.sprite.setTint(this.color);
     }
@@ -83,8 +88,11 @@ export default class Player extends Entity {
             dirY /= length;
         }
 
-        this.velocityX = dirX * this.moveSpeed;
-        this.velocityY = dirY * this.moveSpeed;
+        // Use crawl speed if downed, normal speed otherwise
+        const speed = this.isDowned ? this.crawlSpeed : this.moveSpeed;
+
+        this.velocityX = dirX * speed;
+        this.velocityY = dirY * speed;
 
         // Update facing
         if (dirX !== 0 || dirY !== 0) {
@@ -121,7 +129,8 @@ export default class Player extends Entity {
      */
     revive() {
         this.isDowned = false;
-        this.health = 1; // Revive with partial health
+        this.downedTimer = 0;
+        this.health = 1; // Revive with partial health (from design doc)
     }
 
     /**
@@ -294,12 +303,30 @@ export default class Player extends Entity {
     }
 
     /**
-     * Override update to include buffs
+     * Update downed state timer
+     * @param {number} delta - Time in ms
+     */
+    updateDownedState(delta) {
+        if (!this.isDowned) return;
+
+        this.downedTimer += delta;
+
+        // Permanent death after 10 seconds (design doc)
+        if (this.downedTimer >= this.downedMaxTime) {
+            // Phase 2: Just mark as dead
+            // Later: game over, respawn system, etc.
+            console.log(`Player ${this.playerNumber + 1} died permanently!`);
+        }
+    }
+
+    /**
+     * Override update to include downed state
      */
     update(delta) {
         super.update(delta);
         this.updateCooldowns(delta);
         this.updateDodge(delta);
+        this.updateDownedState(delta);
 
         // Update dodge cooldown
         if (this.dodgeCooldown > 0) {

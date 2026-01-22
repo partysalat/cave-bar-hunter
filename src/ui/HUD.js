@@ -73,7 +73,10 @@ export default class HUD {
 
         let text = `P1: ${hearts}\nScore: ${score}`;
 
-        if (player.isDodging) {
+        if (player.isDowned) {
+            const timeLeft = ((player.downedMaxTime - player.downedTimer) / 1000).toFixed(1);
+            text += `\n[DOWNED: ${timeLeft}s]`;
+        } else if (player.isDodging) {
             text += '\n[DODGING]';
         }
 
