@@ -3,6 +3,7 @@ import Player from '../entities/Player.js';
 import Dinosaur from '../entities/Dinosaur.js';
 import Projectile from '../entities/Projectile.js';
 import CombatSystem from '../systems/CombatSystem.js';
+import ScoreManager from '../systems/ScoreManager.js';
 import { worldToScreen, screenToWorldDirection } from '../systems/CoordinateSystem.js';
 import InputManager from '../systems/InputManager.js';
 import { sphereVsSphere } from '../systems/PhysicsManager.js';
@@ -36,6 +37,9 @@ export default class TestScene extends Phaser.Scene {
 
         // Setup combat system
         this.combatSystem = new CombatSystem();
+
+        // Setup score manager
+        this.scoreManager = new ScoreManager();
 
         // Track projectiles
         this.projectiles = [];
@@ -109,7 +113,10 @@ export default class TestScene extends Phaser.Scene {
                             const broke = wp.takeDamage(result.damage);
                             proj.onHit();
 
-                            console.log(`Hit ${wp.type}! Damage: ${result.damage.toFixed(1)}`);
+                            // Award points for weak point hit
+                            this.scoreManager.awardWeakPointHit(proj.ownerPlayerNumber, result.damage);
+
+                            console.log(`Hit ${wp.type}! Damage: ${result.damage.toFixed(1)} | Score: ${this.scoreManager.getScore(0)}`);
                             if (broke) {
                                 console.log(`${wp.type} weak point BROKEN!`);
                             }
@@ -122,7 +129,11 @@ export default class TestScene extends Phaser.Scene {
                         if (result.hit) {
                             this.testDino.takeDamage(result.damage);
                             proj.onHit();
-                            console.log(`Body hit! Damage: ${result.damage}`);
+
+                            // Award points for regular damage
+                            this.scoreManager.awardDamagePoints(proj.ownerPlayerNumber, result.damage);
+
+                            console.log(`Body hit! Damage: ${result.damage} | Score: ${this.scoreManager.getScore(0)}`);
 
                             // Check if dinosaur died
                             if (this.testDino.health <= 0 && !this.testDino.isDead) {
@@ -163,10 +174,10 @@ export default class TestScene extends Phaser.Scene {
         if (this.player) {
             // Update debug info
             this.debugText.setText([
+                `Score: ${this.scoreManager.getScore(0)}`,
                 `World: (${this.player.worldX.toFixed(1)}, ${this.player.worldY.toFixed(1)}, ${this.player.worldZ.toFixed(1)})`,
-                `Screen: (${this.player.sprite.x.toFixed(0)}, ${this.player.sprite.y.toFixed(0)})`,
-                `Velocity: (${this.player.velocityX.toFixed(1)}, ${this.player.velocityY.toFixed(1)})`,
                 `Dodging: ${this.player.isDodging} | Cooldown: ${(this.player.dodgeCooldown / 1000).toFixed(1)}s`,
+                `Dino HP: ${this.testDino.health}/${this.testDino.maxHealth}`,
                 `Controls: WASD=move, SHIFT=dodge, CLICK=throw`
             ]);
         }
