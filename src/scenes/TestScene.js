@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import Player from '../entities/Player.js';
 import Dinosaur from '../entities/Dinosaur.js';
+import Projectile from '../entities/Projectile.js';
 import { worldToScreen, screenToWorldDirection } from '../systems/CoordinateSystem.js';
 import InputManager from '../systems/InputManager.js';
 import { sphereVsSphere } from '../systems/PhysicsManager.js';
@@ -32,6 +33,9 @@ export default class TestScene extends Phaser.Scene {
         // Setup camera controller
         this.cameraController = new CameraController(this.cameras.main);
 
+        // Track projectiles
+        this.projectiles = [];
+
         // Add debug text
         this.debugText = this.add.text(10, 10, '', {
             font: '16px monospace',
@@ -55,9 +59,42 @@ export default class TestScene extends Phaser.Scene {
                 } else {
                     this.player.stop();
                 }
+
+                // Spear throwing (RT button)
+                if (input.buttons.rt && this.player.canThrowSpear()) {
+                    const throwData = this.player.throwSpear(
+                        this.player.facingX,
+                        this.player.facingY
+                    );
+
+                    if (throwData) {
+                        const projectile = new Projectile(
+                            this,
+                            this.player.playerNumber,
+                            throwData.worldX,
+                            throwData.worldY,
+                            throwData.worldZ,
+                            throwData.dirX,
+                            throwData.dirY,
+                            throwData.dirZ
+                        );
+                        this.projectiles.push(projectile);
+                    }
+                }
             }
 
             this.player.update(delta);
+
+            // Update projectiles
+            for (let i = this.projectiles.length - 1; i >= 0; i--) {
+                const proj = this.projectiles[i];
+                proj.update(delta);
+
+                if (proj.isExpired) {
+                    proj.destroy();
+                    this.projectiles.splice(i, 1);
+                }
+            }
 
             // Constrain to arena (30x25 world units from design doc)
             this.player.constrainToArena(0, 30, 0, 25);

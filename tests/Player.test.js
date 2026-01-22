@@ -58,4 +58,14 @@ describe('Player', () => {
         expect(player.worldX).toBe(30);
         expect(player.worldY).toBe(25);
     });
+
+    it('throws spear with cooldown', () => {
+        const player = new Player(mockScene, 0, 15, 12, 0);
+
+        expect(player.canThrowSpear()).toBe(true);
+
+        player.throwSpear(1, 0); // Throw right
+
+        expect(player.canThrowSpear()).toBe(false); // Cooldown active
+    });
 });

@@ -44,6 +44,12 @@ export default class Player extends Entity {
         // Collision
         this.radius = 0.5; // world units
 
+        // Attack stats
+        this.spearCooldown = 0; // ms until can throw again
+        this.spearCooldownTime = 2000; // 2 seconds (from design doc)
+        this.facingX = 1; // Direction player is facing
+        this.facingY = 0;
+
         // Apply color tint to sprite
         this.sprite.setTint(this.color);
     }
@@ -114,5 +120,66 @@ export default class Player extends Entity {
     constrainToArena(minX, maxX, minY, maxY) {
         this.worldX = Math.max(minX, Math.min(maxX, this.worldX));
         this.worldY = Math.max(minY, Math.min(maxY, this.worldY));
+    }
+
+    /**
+     * Updates cooldowns
+     * @param {number} delta - Time in ms
+     */
+    updateCooldowns(delta) {
+        if (this.spearCooldown > 0) {
+            this.spearCooldown -= delta;
+            if (this.spearCooldown < 0) this.spearCooldown = 0;
+        }
+    }
+
+    /**
+     * Check if player can throw spear
+     * @returns {boolean}
+     */
+    canThrowSpear() {
+        return this.spearCooldown === 0 && !this.isDowned;
+    }
+
+    /**
+     * Throws spear in specified direction
+     * @param {number} dirX - Direction to throw
+     * @param {number} dirY
+     * @returns {Object|null} Projectile data or null if can't throw
+     */
+    throwSpear(dirX, dirY) {
+        if (!this.canThrowSpear()) return null;
+
+        // Normalize direction
+        const length = Math.sqrt(dirX * dirX + dirY * dirY);
+        if (length === 0) return null;
+
+        dirX /= length;
+        dirY /= length;
+
+        // Update facing direction
+        this.facingX = dirX;
+        this.facingY = dirY;
+
+        // Start cooldown
+        this.spearCooldown = this.spearCooldownTime;
+
+        // Return projectile creation data
+        return {
+            worldX: this.worldX,
+            worldY: this.worldY,
+            worldZ: this.worldZ + 0.5, // Throw from chest height
+            dirX,
+            dirY,
+            dirZ: 0
+        };
+    }
+
+    /**
+     * Override update to include cooldowns
+     */
+    update(delta) {
+        super.update(delta);
+        this.updateCooldowns(delta);
     }
 }
