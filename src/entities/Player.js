@@ -60,6 +60,10 @@ export default class Player extends Entity {
         this.dodgeDirectionX = 0;
         this.dodgeDirectionY = 0;
 
+        // Perfect dodge buff
+        this.perfectDodgeBuff = 0; // ms remaining of damage buff
+        this.perfectDodgeMultiplier = 1.5; // 1.5× damage
+
         // Apply color tint to sprite
         this.sprite.setTint(this.color);
     }
@@ -182,14 +186,15 @@ export default class Player extends Entity {
         // Start cooldown
         this.spearCooldown = this.spearCooldownTime;
 
-        // Return projectile creation data
+        // Return projectile creation data with damage multiplier
         return {
             worldX: this.worldX,
             worldY: this.worldY,
             worldZ: this.worldZ + 0.5, // Throw from chest height
             dirX,
             dirY,
-            dirZ: 0
+            dirZ: 0,
+            damageMultiplier: this.getDamageMultiplier() // Include buffs
         };
     }
 
@@ -257,7 +262,39 @@ export default class Player extends Entity {
     }
 
     /**
-     * Override update to include dodge
+     * Grant perfect dodge damage buff
+     */
+    grantPerfectDodgeBuff() {
+        this.perfectDodgeBuff = 3000; // 3 seconds
+        console.log('PERFECT DODGE! +50% damage for 3s');
+    }
+
+    /**
+     * Check if player has perfect dodge buff active
+     * @returns {boolean}
+     */
+    hasPerfectDodgeBuff() {
+        return this.perfectDodgeBuff > 0;
+    }
+
+    /**
+     * Get current damage multiplier from buffs
+     * @returns {number}
+     */
+    getDamageMultiplier() {
+        let multiplier = 1.0;
+
+        if (this.hasPerfectDodgeBuff()) {
+            multiplier *= this.perfectDodgeMultiplier;
+        }
+
+        // Can add cocktail buffs here later
+
+        return multiplier;
+    }
+
+    /**
+     * Override update to include buffs
      */
     update(delta) {
         super.update(delta);
@@ -268,6 +305,12 @@ export default class Player extends Entity {
         if (this.dodgeCooldown > 0) {
             this.dodgeCooldown -= delta;
             if (this.dodgeCooldown < 0) this.dodgeCooldown = 0;
+        }
+
+        // Update perfect dodge buff
+        if (this.perfectDodgeBuff > 0) {
+            this.perfectDodgeBuff -= delta;
+            if (this.perfectDodgeBuff < 0) this.perfectDodgeBuff = 0;
         }
     }
 }

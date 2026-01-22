@@ -80,7 +80,8 @@ export default class TestScene extends Phaser.Scene {
                             throwData.worldZ,
                             throwData.dirX,
                             throwData.dirY,
-                            throwData.dirZ
+                            throwData.dirZ,
+                            throwData.damageMultiplier // Pass buff multiplier
                         );
                         this.projectiles.push(projectile);
                     }
