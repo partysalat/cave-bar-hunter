@@ -26,6 +26,8 @@ export default class Player extends Entity {
         this.playerNumber = playerNumber;
         this.color = PLAYER_COLORS[playerNumber];
 
+        this.sprite.setScale(1.5);
+
         // Initialize sprite with idle animation facing south
         const initialAnimKey = getPlayerAnimationKey(playerNumber, 'south', false);
         this.sprite.play(initialAnimKey);

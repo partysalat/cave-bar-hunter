@@ -29,7 +29,7 @@ This section documents ALL assets needed and their animation requirements.
 - Yellow Hero Champion
 - Green Hero Champion
 
-**Required Animations per Character (5 animations × 4 colors = 20 total):**
+**Required Animations per Character (11 animations × 4 colors = 44 total):**
 
 1. **Walking Animation**
    - **Template:** `walking-8-frames`
@@ -45,28 +45,70 @@ This section documents ALL assets needed and their animation requirements.
    - **Use:** Default state when stationary
    - **Loop:** Yes
 
-3. **Attack/Throw Animation**
+3. **Jump Animation**
+   - **Template:** `jumping-1`
+   - **Action:** "jumping upward with weapon held"
+   - **Duration:** 6-8 frames (covers 0.8s jump cycle)
+   - **Use:** Vertical movement (Z=0 to Z=2.0), avoiding attacks, reaching platforms, jumping over hazards
+   - **Loop:** No
+
+4. **Attack/Throw Animation**
    - **Template:** `throw-object`
    - **Action:** "throwing spear with wind-up motion"
    - **Duration:** 6-8 frames
    - **Use:** Spear throwing mechanic
    - **Loop:** No
 
-4. **Dodge Roll Animation**
+5. **Melee/Club Swing Animation**
+   - **Template:** `roundhouse-kick` or `cross-punch`
+   - **Action:** "swinging club in wide arc, melee attack"
+   - **Duration:** 4-6 frames
+   - **Use:** Bone club melee attack
+   - **Loop:** No
+
+6. **Dodge Roll Animation**
    - **Template:** `front-flip` or `running-slide`
    - **Action:** "quick evasive roll"
    - **Duration:** 4-6 frames
    - **Use:** Invincibility frame dodge (0.5s duration)
    - **Loop:** No
 
-5. **Downed State Animation**
+7. **Taking Damage Animation**
    - **Template:** `taking-punch`
-   - **Action:** "falling down injured, crawling"
-   - **Duration:** 6 frames
-   - **Use:** When player health reaches 0
-   - **Loop:** Yes (crawling cycle)
+   - **Action:** "recoiling from hit, brief stagger"
+   - **Duration:** 3-4 frames
+   - **Use:** When player takes damage (not downed yet)
+   - **Loop:** No
 
-**Total Player Assets:** 4 base characters + 20 animations = 24 generations
+8. **Downed State Animation**
+   - **Template:** `falling-back-death` or `taking-punch`
+   - **Action:** "falling down injured, crawling on ground"
+   - **Duration:** 8 frames (fall + crawl cycle)
+   - **Use:** When player health reaches 0, crawling while downed
+   - **Loop:** Yes (crawling portion)
+
+9. **Reviving Teammate Animation** (Performing Revive)
+   - **Template:** `picking-up`
+   - **Action:** "kneeling down helping fallen teammate, pulling them up"
+   - **Duration:** 6-8 frames
+   - **Use:** When holding X button to revive downed teammate (2-second action)
+   - **Loop:** Yes (held during revive duration)
+
+10. **Being Revived Animation**
+    - **Template:** `getting-up`
+    - **Action:** "standing up after being helped by teammate"
+    - **Duration:** 6 frames
+    - **Use:** When teammate completes 2-second revive action
+    - **Loop:** No
+
+11. **Victory Pose Animation**
+    - **Template:** `fight-stance-idle-8-frames` (adapted)
+    - **Action:** "celebrating victory - unique per color: fist pump (red), spear raise (blue), cheer (yellow), triumphant stance (green)"
+    - **Duration:** 6-8 frames
+    - **Use:** Hunt victory screen, synchronized celebration
+    - **Loop:** Yes (hold pose)
+
+**Total Player Assets:** 4 base characters + 44 animations = 48 generations
 
 ---
 
@@ -109,7 +151,7 @@ This section documents ALL assets needed and their animation requirements.
 
 1. **Compy Pack**
    - Canvas: 96px (small)
-   - Description: "Small compsognathus dinosaur, pack hunter, green and brown coloring, stylized chibi proportions"
+   - Description: "Small compsognathus dinosaur, vicious pack hunter, sharp teeth and claws, green and brown coloring, aggressive stance"
 
 2. **Dilophosaurus**
    - Canvas: 256px (medium)
@@ -388,13 +430,13 @@ This section documents ALL assets needed and their animation requirements.
 
 | Category | Base Sprites | Animations | Total Generations |
 |----------|--------------|------------|-------------------|
-| **Players** | 4 | 20 | 24 |
+| **Players** | 4 | 44 | 48 |
 | **Weapons** | 5 | 1 | 6 |
 | **Dinosaurs** | 12 | 72 + ~8 special | 92 |
 | **Bartender** | 1 | 4 | 5 |
 | **Environments** | 43 | 3 | 46 |
 | **UI Elements** | 50-60 | 0 | 50-60 |
-| **TOTAL** | **115-125** | **100** | **223-233** |
+| **TOTAL** | **115-125** | **124** | **247-257** |
 
 ---
 
