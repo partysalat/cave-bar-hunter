@@ -45,6 +45,9 @@ export default class TestScene extends Phaser.Scene {
                 }
             });
         });
+
+        // Load weapon assets
+        this.load.image('bone-club', '/assets/weapons/bone-club.png');
     }
 
     create() {
@@ -56,6 +59,11 @@ export default class TestScene extends Phaser.Scene {
 
         // Create test player at arena center
         this.player = new Player(this, 0, 15, 12, 0);
+
+        // Create and attach bone club to player 1
+        const boneClub = this.add.sprite(0, 0, 'bone-club');
+        boneClub.setScale(0.5); // Scale down the weapon
+        this.player.setWeaponSprite(boneClub);
 
         // Create test dinosaur
         this.testDino = new Dinosaur(this, 'compy', 20, 15, 0);

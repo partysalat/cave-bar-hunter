@@ -32,6 +32,11 @@ export default class Player extends Entity {
         const initialAnimKey = getPlayerAnimationKey(playerNumber, 'south', false);
         this.sprite.play(initialAnimKey);
 
+        // Weapon sprite (optional, can be set later)
+        this.weaponSprite = null;
+        this.weaponOffsetX = 20; // Offset from player center
+        this.weaponOffsetY = 10;
+
         // Movement state
         this.isMoving = false;
 
@@ -332,7 +337,27 @@ export default class Player extends Entity {
     }
 
     /**
-     * Override update to include downed state
+     * Sets a weapon sprite to be held by the player
+     * @param {Phaser.GameObjects.Sprite} weaponSprite
+     */
+    setWeaponSprite(weaponSprite) {
+        this.weaponSprite = weaponSprite;
+        this.updateWeaponPosition();
+    }
+
+    /**
+     * Updates weapon sprite position relative to player
+     */
+    updateWeaponPosition() {
+        if (this.weaponSprite) {
+            this.weaponSprite.x = this.sprite.x + this.weaponOffsetX;
+            this.weaponSprite.y = this.sprite.y + this.weaponOffsetY;
+            this.weaponSprite.setDepth(this.sprite.depth - 1); // Behind player
+        }
+    }
+
+    /**
+     * Override update to include downed state and weapon position
      */
     update(delta) {
         super.update(delta);
@@ -351,5 +376,18 @@ export default class Player extends Entity {
             this.perfectDodgeBuff -= delta;
             if (this.perfectDodgeBuff < 0) this.perfectDodgeBuff = 0;
         }
+
+        // Update weapon position
+        this.updateWeaponPosition();
+    }
+
+    /**
+     * Override destroy to also destroy weapon sprite
+     */
+    destroy() {
+        if (this.weaponSprite) {
+            this.weaponSprite.destroy();
+        }
+        super.destroy();
     }
 }
