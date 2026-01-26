@@ -32,11 +32,12 @@ This section documents ALL assets needed and their animation requirements.
 **Required Animations per Character (11 animations × 4 colors = 44 total):**
 
 1. **Walking Animation**
-   - **Template:** `walking-8-frames`
+   - **Template:** `running-8-frames`
    - **Action:** "walking cautiously with weapon ready"
    - **Duration:** 8 frames
    - **Use:** Primary movement animation
    - **Loop:** Yes
+   - **Status (Red Hero):** ✅ Complete
 
 2. **Idle/Breathing Animation**
    - **Template:** `breathing-idle`
@@ -44,6 +45,7 @@ This section documents ALL assets needed and their animation requirements.
    - **Duration:** 6-8 frames
    - **Use:** Default state when stationary
    - **Loop:** Yes
+   - **Status (Red Hero):** ✅ Complete
 
 3. **Jump Animation**
    - **Template:** `jumping-1`
@@ -51,6 +53,7 @@ This section documents ALL assets needed and their animation requirements.
    - **Duration:** 6-8 frames (covers 0.8s jump cycle)
    - **Use:** Vertical movement (Z=0 to Z=2.0), avoiding attacks, reaching platforms, jumping over hazards
    - **Loop:** No
+   - **Status (Red Hero):** ✅ Complete
 
 4. **Attack/Throw Animation**
    - **Template:** `throw-object`
@@ -58,20 +61,23 @@ This section documents ALL assets needed and their animation requirements.
    - **Duration:** 6-8 frames
    - **Use:** Spear throwing mechanic
    - **Loop:** No
+   - **Status (Red Hero):** ✅ Complete
 
 5. **Melee/Club Swing Animation**
-   - **Template:** `roundhouse-kick` or `cross-punch`
+   - **Template:** `cross-punch`
    - **Action:** "swinging club in wide arc, melee attack"
    - **Duration:** 4-6 frames
    - **Use:** Bone club melee attack
    - **Loop:** No
+   - **Status (Red Hero):** ✅ Complete
 
 6. **Dodge Roll Animation**
-   - **Template:** `front-flip` or `running-slide`
+   - **Template:** Custom `dodge-roll`
    - **Action:** "quick evasive roll"
    - **Duration:** 4-6 frames
    - **Use:** Invincibility frame dodge (0.5s duration)
    - **Loop:** No
+   - **Status (Red Hero):** ✅ Complete
 
 7. **Taking Damage Animation**
    - **Template:** `taking-punch`
@@ -79,13 +85,15 @@ This section documents ALL assets needed and their animation requirements.
    - **Duration:** 3-4 frames
    - **Use:** When player takes damage (not downed yet)
    - **Loop:** No
+   - **Status (Red Hero):** ✅ Complete
 
 8. **Downed State Animation**
-   - **Template:** `falling-back-death` or `taking-punch`
+   - **Template:** `falling-back-death`
    - **Action:** "falling down injured, crawling on ground"
    - **Duration:** 8 frames (fall + crawl cycle)
    - **Use:** When player health reaches 0, crawling while downed
    - **Loop:** Yes (crawling portion)
+   - **Status (Red Hero):** ✅ Complete
 
 9. **Reviving Teammate Animation** (Performing Revive)
    - **Template:** `picking-up`
@@ -93,6 +101,7 @@ This section documents ALL assets needed and their animation requirements.
    - **Duration:** 6-8 frames
    - **Use:** When holding X button to revive downed teammate (2-second action)
    - **Loop:** Yes (held during revive duration)
+   - **Status (Red Hero):** ✅ Complete
 
 10. **Being Revived Animation**
     - **Template:** `getting-up`
@@ -100,15 +109,25 @@ This section documents ALL assets needed and their animation requirements.
     - **Duration:** 6 frames
     - **Use:** When teammate completes 2-second revive action
     - **Loop:** No
+    - **Status (Red Hero):** ✅ Complete
 
 11. **Victory Pose Animation**
-    - **Template:** `fight-stance-idle-8-frames` (adapted)
+    - **Template:** `fight-stance-idle-8-frames`
     - **Action:** "celebrating victory - unique per color: fist pump (red), spear raise (blue), cheer (yellow), triumphant stance (green)"
-    - **Duration:** 6-8 frames
+    - **Duration:** 8 frames
     - **Use:** Hunt victory screen, synchronized celebration
     - **Loop:** Yes (hold pose)
+    - **Status (Red Hero):** 🔄 Generating (ETA: 2-4 minutes)
+
+**Additional Bonus Animations (Red Hero):**
+- `custom-throw-a-slingshot` - Sling weapon specific throw
+- `drinking` - Flavor/celebration animation
+- `running-jump` - Advanced movement combo
 
 **Total Player Assets:** 4 base characters + 44 animations = 48 generations
+
+**Progress:**
+- **Red Hero:** 11/11 animations complete (✅ 10 complete, 🔄 1 generating)
 
 ---
 
