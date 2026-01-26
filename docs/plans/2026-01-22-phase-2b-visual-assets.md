@@ -67,7 +67,7 @@ This section documents ALL assets needed and their animation requirements.
    - **Template:** `cross-punch`
    - **Action:** "swinging club in wide arc, melee attack"
    - **Duration:** 4-6 frames
-   - **Use:** Bone club melee attack
+   - **Use:** Wooden club melee attack
    - **Loop:** No
    - **Status (Red Hero):** ✅ Complete
 
@@ -140,9 +140,9 @@ This section documents ALL assets needed and their animation requirements.
    - Description: "Stone spear weapon with wrapped leather grip, primitive prehistoric spear"
    - Animations: None (sprite rotation in Phaser)
 
-2. **Bone Club**
+2. **Wooden Club**
    - Canvas: 96px
-   - Description: "Large bone club weapon with thick head, prehistoric melee weapon"
+   - Description: "Primitive wooden club with thick rounded knob head, natural wood grain texture, rough bark on handle, simple prehistoric melee weapon"
    - Animations: None (sprite rotation)
 
 3. **Sling**
@@ -224,45 +224,51 @@ This section documents ALL assets needed and their animation requirements.
 
 1. **Idle/Breathing Animation**
    - **Template:** `breathing-idle`
-   - **Action:** "standing menacingly, heavy breathing"
+   - **Action:** "standing in menacing pose with heavy breathing motion, slight body sway, predatory alertness"
    - **Duration:** 8 frames
    - **Use:** Default state between attacks
    - **Loop:** Yes
+   - **Notes:** Works for both bipedal and quadrupedal dinosaurs
 
 2. **Walking/Stalking Animation**
    - **Template:** `scary-walk` or `walking-6-frames`
-   - **Action:** "stalking prey slowly, predatory movement"
+   - **Action:** "stalking forward slowly with predatory movement, low prowling gait, hunting approach"
    - **Duration:** 6-8 frames
    - **Use:** Movement toward players
    - **Loop:** Yes
+   - **Notes:** Quadrupeds use all four legs, bipeds use upright walking
 
 3. **Attack Wind-up Animation (Telegraph)**
    - **Template:** `fight-stance-idle-8-frames`
-   - **Action:** "preparing to attack, charging up"
+   - **Action:** "winding up for attack, body tensing and coiling back, preparing to strike with building energy"
    - **Duration:** 8 frames (2-3 seconds)
    - **Use:** Attack telegraph phase
    - **Loop:** No
+   - **Notes:** Body language shows impending attack
 
 4. **Attack Execution - Bite**
    - **Template:** `cross-punch` (fast strike motion)
-   - **Action:** "lunging forward with jaws snapping"
+   - **Action:** "lunging forward explosively with jaws snapping open and shut, aggressive bite strike"
    - **Duration:** 4-6 frames
    - **Use:** Bite attack
    - **Loop:** No
+   - **Notes:** Fast, aggressive forward motion
 
 5. **Stagger/Stunned Animation**
    - **Template:** `taking-punch`
-   - **Action:** "stumbling, dazed and vulnerable"
+   - **Action:** "stumbling and reeling backward, dazed and off-balance, vulnerable stagger"
    - **Duration:** 6 frames
    - **Use:** When weak point broken
    - **Loop:** No
+   - **Notes:** Shows disorientation and loss of stability
 
 6. **Death Animation**
    - **Template:** `falling-back-death`
-   - **Action:** "collapsing dramatically, defeated"
+   - **Action:** "collapsing to ground dramatically, body going limp and falling, final defeated pose"
    - **Duration:** 8-10 frames
    - **Use:** Hunt complete
    - **Loop:** No
+   - **Notes:** Can fall forward, backward, or sideways depending on dinosaur type
 
 **Note:** Each dinosaur may need additional attack execution variants (charge, tail sweep, stomp) based on their unique attack patterns. Plan for 1-2 additional attack animations per large/apex dinosaur.
 
