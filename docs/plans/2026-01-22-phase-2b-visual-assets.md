@@ -122,7 +122,7 @@ This section documents ALL assets needed and their animation requirements.
 **Weapon-Specific Animations (All Heroes):**
 - `custom-swing-a-club` - Club melee attack (replaces cross-punch) - ✅ Complete
 - `custom-throw-a-spear` - Stone spear throw animation - ✅ Complete
-- `custom-throw-a-slingshot` - Sling weapon specific throw
+- `custom-throw-a-slingshot` - Sling weapon specific throw - ✅ Complete
 
 **Additional Bonus Animations (Red Hero):**
 - `drinking` - Flavor/celebration animation
@@ -135,6 +135,7 @@ This section documents ALL assets needed and their animation requirements.
   - ✅ Walking, Idle, Jump, Dodge, Damage, Downed, Revive animations
   - ✅ Club swing attack (`custom-swing-a-club`)
   - ✅ Spear throw attack (`custom-throw-a-spear`)
+  - ✅ Slingshot throw attack (`custom-throw-a-slingshot`)
   - 🔄 Victory poses (fight-stance-idle) - generating
 
 ---
@@ -157,7 +158,7 @@ These descriptions guide how weapons should appear in character animations:
 
 3. **Sling**
    - Visual: "Leather sling with stone ammunition pouch, prehistoric ranged weapon"
-   - Used in: Throw animation variant (future), idle animations
+   - Used in: Throw animation (`custom-throw-a-slingshot`), idle animations
 
 4. **Fire Spear**
    - Visual: "Stone spear with flaming tip, burning prehistoric weapon with fire effect"
@@ -169,7 +170,7 @@ These descriptions guide how weapons should appear in character animations:
 
 **Weapon Animation Variants:**
 - Weapon-specific animations are generated as part of the character animation set
-- Examples: `custom-swing-a-club` for club melee, `custom-throw-a-slingshot` for sling ranged
+- Completed: `custom-swing-a-club` (club melee), `custom-throw-a-spear` (spear ranged), `custom-throw-a-slingshot` (sling ranged)
 - Base animations (throw, idle, walk) use the default stone spear
 - Additional weapon variants are generated as needed per weapon type
 - Each weapon variant is a full character animation (8 directions) integrated with the weapon visual
