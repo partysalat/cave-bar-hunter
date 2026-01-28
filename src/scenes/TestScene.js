@@ -97,6 +97,9 @@ export default class TestScene extends Phaser.Scene {
         this.inputManager = new InputManager(this);
         this.inputManager.setupKeyboard(); // For testing without gamepad
 
+        // Track button states for attack (press once, not hold)
+        this.lastAttackButton = false;
+
         // Setup camera controller
         this.cameraController = new CameraController(this.cameras.main);
 
@@ -128,6 +131,12 @@ export default class TestScene extends Phaser.Scene {
                 } else {
                     this.player.stop();
                 }
+
+                // Club attack (B button) - press once per attack
+                if (input.buttons.b && !this.lastAttackButton) {
+                    this.player.startAttack();
+                }
+                this.lastAttackButton = input.buttons.b;
 
                 // Spear throwing (RT button)
                 if (input.buttons.rt && this.player.canThrowSpear()) {
@@ -209,6 +218,29 @@ export default class TestScene extends Phaser.Scene {
                 if (proj.isExpired) {
                     proj.destroy();
                     this.projectiles.splice(i, 1);
+                }
+            }
+
+            // Check club attack hits
+            if (this.player.attackPhase === 'swing' && this.testDino && !this.testDino.isDead) {
+                const clubHit = this.combatSystem.checkClubHit(this.player, this.testDino);
+
+                if (clubHit.hit) {
+                    // Mark as hit this swing
+                    if (!this.player.hitEnemiesThisSwing.includes(this.testDino.id)) {
+                        this.player.hitEnemiesThisSwing.push(this.testDino.id);
+
+                        this.testDino.takeDamage(clubHit.damage);
+                        this.scoreManager.awardDamagePoints(this.player.playerNumber, clubHit.damage);
+
+                        // TODO: Replace with proper debug UI or remove before production
+                        console.log(`Club hit! Damage: ${clubHit.damage} | Score: ${this.scoreManager.getScore(0)}`);
+
+                        if (this.testDino.health <= 0 && !this.testDino.isDead) {
+                            this.testDino.isDead = true;
+                            console.log('DINOSAUR DEFEATED!');
+                        }
+                    }
                 }
             }
 

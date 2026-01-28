@@ -16,6 +16,7 @@ export default class Dinosaur extends Entity {
     constructor(scene, type, worldX, worldY, worldZ) {
         super(scene, worldX, worldY, worldZ);
 
+        this.id = `dino-${Date.now()}-${Math.random()}`; // Unique ID for hit tracking
         this.type = type;
         this.health = this.getHealthForType(type);
         this.maxHealth = this.health;
