@@ -36,6 +36,8 @@ export default class Player extends Entity {
         this.weaponSprite = null;
         this.weaponOffsetX = 20; // Offset from player center
         this.weaponOffsetY = 10;
+        this.skeletonData = null; // Skeleton data for hand positioning
+        this.hasWeaponDrawn = false; // Track if weapon is equipped
 
         // Movement state
         this.isMoving = false;
@@ -83,6 +85,20 @@ export default class Player extends Entity {
         this.downedTimer = 0; // Time spent downed
         this.downedMaxTime = 10000; // 10 seconds before death (from design doc)
         this.crawlSpeed = 2; // Slower than normal movement
+
+        // Attack stats (club melee)
+        this.isAttacking = false;
+        this.attackTimer = 0;
+        this.attackPhase = 'none'; // 'windup', 'swing', 'recovery', 'none'
+        this.attackCooldown = 0;
+        this.attackCooldownTime = 1000; // 1 second between attacks
+        this.hitEnemiesThisSwing = []; // Track enemies hit this swing
+
+        // Attack phase durations (must sum to attackDuration)
+        this.windupDuration = 150;
+        this.swingDuration = 300;
+        this.recoveryDuration = 200;
+        this.attackDuration = this.windupDuration + this.swingDuration + this.recoveryDuration; // 650ms total
     }
 
     /**
@@ -91,7 +107,7 @@ export default class Player extends Entity {
      * @param {number} dirY - Y direction (-1, 0, 1)
      */
     move(dirX, dirY) {
-        if (this.isDodging) return; // Can't change direction during dodge
+        if (this.isDodging || this.isAttacking) return; // Can't move during dodge or attack
 
         // Normalize diagonal movement
         if (dirX !== 0 && dirY !== 0) {
@@ -122,7 +138,7 @@ export default class Player extends Entity {
         this.velocityX = 0;
         this.velocityY = 0;
         this.isMoving = false;
-        updatePlayerAnimation(this.sprite, this.playerNumber, this.facingX, this.facingY, this.isMoving);
+        this.updateIdleAnimation(); // Use weapon-aware idle animation
     }
 
     /**
@@ -222,6 +238,108 @@ export default class Player extends Entity {
             dirZ: 0,
             damageMultiplier: this.getDamageMultiplier() // Include buffs
         };
+    }
+
+    /**
+     * Check if player can attack
+     * @returns {boolean}
+     */
+    canAttack() {
+        return this.attackCooldown === 0 && !this.isDowned && !this.isAttacking;
+    }
+
+    /**
+     * Start club attack
+     */
+    startAttack() {
+        if (!this.canAttack()) return;
+
+        this.isAttacking = true;
+        this.attackTimer = 0;
+        this.attackPhase = 'windup';
+        this.hitEnemiesThisSwing = [];
+
+        // Stop movement during attack
+        this.velocityX = 0;
+        this.velocityY = 0;
+
+        // Play cross-punch attack animation
+        const direction = this.getCurrentDirection();
+        const crossPunchKey = `player-${this.playerNumber}-cross-punch-${direction}`;
+        this.sprite.play(crossPunchKey);
+    }
+
+    /**
+     * Update attack state
+     * @param {number} delta - Time in ms
+     */
+    updateAttack(delta) {
+        if (!this.isAttacking) return;
+
+        this.attackTimer += delta;
+
+        // Progress through attack phases (check all conditions to allow multi-phase transitions in one update)
+        if (this.attackPhase === 'windup' && this.attackTimer >= this.windupDuration) {
+            this.attackPhase = 'swing';
+        }
+        if (this.attackPhase === 'swing' && this.attackTimer >= this.windupDuration + this.swingDuration) {
+            this.attackPhase = 'recovery';
+        }
+        if (this.attackPhase === 'recovery' && this.attackTimer >= this.attackDuration) {
+            // Attack complete
+            this.isAttacking = false;
+            this.attackPhase = 'none';
+            this.attackTimer = 0;
+            this.attackCooldown = this.attackCooldownTime;
+            this.hitEnemiesThisSwing = [];
+
+            // Restore appropriate idle animation (fight stance if weapon drawn, else normal idle)
+            this.updateIdleAnimation();
+        }
+    }
+
+    /**
+     * Updates idle animation based on weapon state
+     */
+    updateIdleAnimation() {
+        const direction = this.getCurrentDirection();
+
+        if (this.hasWeaponDrawn) {
+            // Use fight stance idle when weapon is equipped
+            const fightStanceKey = `player-${this.playerNumber}-fight-stance-${direction}`;
+            if (this.sprite.anims.currentAnim?.key !== fightStanceKey) {
+                this.sprite.play(fightStanceKey);
+            }
+        } else {
+            // Use normal breathing idle when no weapon
+            const idleKey = `player-${this.playerNumber}-idle-${direction}`;
+            if (this.sprite.anims.currentAnim?.key !== idleKey) {
+                this.sprite.play(idleKey);
+            }
+        }
+    }
+
+    /**
+     * Gets current direction string from facing vector
+     * @returns {string} Direction name
+     */
+    getCurrentDirection() {
+        // Map facing vector to direction string
+        const angle = Math.atan2(this.facingY, this.facingX);
+        const degrees = angle * (180 / Math.PI);
+
+        // Normalize to 0-360
+        const normalizedDegrees = (degrees + 360) % 360;
+
+        // Map to 8 directions (45 degree segments)
+        if (normalizedDegrees < 22.5 || normalizedDegrees >= 337.5) return 'east';
+        if (normalizedDegrees < 67.5) return 'south-east';
+        if (normalizedDegrees < 112.5) return 'south';
+        if (normalizedDegrees < 157.5) return 'south-west';
+        if (normalizedDegrees < 202.5) return 'west';
+        if (normalizedDegrees < 247.5) return 'north-west';
+        if (normalizedDegrees < 292.5) return 'north';
+        return 'north-east';
     }
 
     /**
@@ -364,6 +482,7 @@ export default class Player extends Entity {
         this.updateCooldowns(delta);
         this.updateDodge(delta);
         this.updateDownedState(delta);
+        this.updateAttack(delta); // Add attack update
 
         // Update dodge cooldown
         if (this.dodgeCooldown > 0) {
@@ -375,6 +494,12 @@ export default class Player extends Entity {
         if (this.perfectDodgeBuff > 0) {
             this.perfectDodgeBuff -= delta;
             if (this.perfectDodgeBuff < 0) this.perfectDodgeBuff = 0;
+        }
+
+        // Update attack cooldown
+        if (this.attackCooldown > 0) {
+            this.attackCooldown -= delta;
+            if (this.attackCooldown < 0) this.attackCooldown = 0;
         }
 
         // Update weapon position

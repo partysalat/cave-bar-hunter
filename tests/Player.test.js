@@ -13,10 +13,14 @@ describe('Player', () => {
                     setTint: () => ({}),
                     setTexture: () => ({}),
                     play: () => ({}),
+                    setScale: () => ({}),
                     anims: {
                         currentAnim: null
                     }
                 })
+            },
+            anims: {
+                create: () => ({})
             }
         };
     });
@@ -132,5 +136,115 @@ describe('Player', () => {
 
         expect(player.isDowned).toBe(false);
         expect(player.health).toBe(1); // Partial health on revive
+    });
+});
+
+describe('Player - Club Attack', () => {
+    let mockScene;
+
+    beforeEach(() => {
+        mockScene = {
+            add: {
+                sprite: () => ({
+                    setOrigin: () => ({}),
+                    setDepth: () => ({}),
+                    play: () => ({}),
+                    setScale: () => ({}),
+                    anims: {
+                        currentAnim: null
+                    }
+                })
+            },
+            anims: {
+                create: () => ({})
+            }
+        };
+    });
+
+    it('can start attack when not on cooldown', () => {
+        const player = new Player(mockScene, 0, 10, 10, 0);
+
+        expect(player.canAttack()).toBe(true);
+
+        player.startAttack();
+
+        expect(player.isAttacking).toBe(true);
+        expect(player.attackPhase).toBe('windup');
+    });
+
+    it('cannot attack when already attacking', () => {
+        const player = new Player(mockScene, 0, 10, 10, 0);
+
+        player.startAttack();
+        const canAttackAgain = player.canAttack();
+
+        expect(canAttackAgain).toBe(false);
+    });
+
+    it('cannot attack when on cooldown', () => {
+        const player = new Player(mockScene, 0, 10, 10, 0);
+
+        player.attackCooldown = 500; // Still on cooldown
+
+        expect(player.canAttack()).toBe(false);
+    });
+
+    it('cannot attack when downed', () => {
+        const player = new Player(mockScene, 0, 10, 10, 0);
+
+        player.isDowned = true;
+
+        expect(player.canAttack()).toBe(false);
+    });
+
+    it('progresses through attack phases over time', () => {
+        const player = new Player(mockScene, 0, 10, 10, 0);
+
+        player.startAttack();
+        expect(player.attackPhase).toBe('windup');
+
+        // Advance past windup (150ms)
+        player.update(160);
+        expect(player.attackPhase).toBe('swing');
+
+        // Advance past swing (300ms)
+        player.update(310);
+        expect(player.attackPhase).toBe('recovery');
+
+        // Advance past recovery (200ms)
+        player.update(210);
+        expect(player.attackPhase).toBe('none');
+        expect(player.isAttacking).toBe(false);
+    });
+
+    it('starts cooldown after attack completes', () => {
+        const player = new Player(mockScene, 0, 10, 10, 0);
+
+        player.startAttack();
+
+        // Complete entire attack (650ms)
+        player.update(660);
+
+        expect(player.attackCooldown).toBeGreaterThan(0);
+        expect(player.attackCooldown).toBeLessThanOrEqual(1000);
+    });
+
+    it('clears hit enemies list when starting new attack', () => {
+        const player = new Player(mockScene, 0, 10, 10, 0);
+
+        player.hitEnemiesThisSwing = ['enemy1', 'enemy2'];
+        player.startAttack();
+
+        expect(player.hitEnemiesThisSwing).toEqual([]);
+    });
+
+    it('cannot move while attacking', () => {
+        const player = new Player(mockScene, 0, 10, 10, 0);
+
+        player.startAttack();
+        player.move(1, 0); // Try to move
+
+        expect(player.velocityX).toBe(0);
+        expect(player.velocityY).toBe(0);
     });
 });
