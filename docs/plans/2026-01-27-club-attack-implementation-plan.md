@@ -10,6 +10,23 @@
 
 ---
 
+## Task 0: Pre-Implementation Setup
+
+**Known Issues:**
+- Existing `tests/Player.test.js` has 11 failing tests due to incomplete mock setup (`this.sprite.setScale is not a function`)
+- These failures are pre-existing and unrelated to club attack feature
+- New tests added in Task 3 should pass independently
+
+**Prerequisites:**
+- All 4 player color skeleton JSON files must exist:
+  - `/assets/characters/red-hero/red-hero.json`
+  - `/assets/characters/blue-hero/blue-hero.json`
+  - `/assets/characters/yellow-hero/yellow-hero.json`
+  - `/assets/characters/green-hero/green-hero.json`
+- User will add these before starting implementation
+
+---
+
 ## Task 1: Skeleton Data Loader Utility
 
 **Files:**
@@ -22,7 +39,7 @@ Create `tests/SkeletonDataLoader.test.js`:
 
 ```javascript
 import { describe, it, expect } from 'vitest';
-import { loadSkeletonData, getHandPosition } from '../src/systems/SkeletonDataLoader.js';
+import { getHandPosition } from '../src/systems/SkeletonDataLoader.js';
 
 describe('SkeletonDataLoader', () => {
     it('returns null for invalid skeleton data', () => {
@@ -101,24 +118,9 @@ Create `src/systems/SkeletonDataLoader.js`:
 ```javascript
 /**
  * Loads and parses skeleton data from PixelLab character JSON files
+ * NOTE: Skeleton data is loaded via Phaser's load.json() in preload().
+ * This module provides utility functions to parse the loaded data.
  */
-
-/**
- * Loads skeleton data from JSON file path
- * @param {string} jsonPath - Path to character JSON file
- * @returns {Promise<Object|null>} Skeleton data or null
- */
-export async function loadSkeletonData(jsonPath) {
-    try {
-        const response = await fetch(jsonPath);
-        if (!response.ok) return null;
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.warn(`Failed to load skeleton data from ${jsonPath}:`, error);
-        return null;
-    }
-}
 
 /**
  * Maps direction to which hand is more visible
@@ -564,15 +566,15 @@ Add to `src/entities/Player.js` constructor (after line 85):
 this.isAttacking = false;
 this.attackTimer = 0;
 this.attackPhase = 'none'; // 'windup', 'swing', 'recovery', 'none'
-this.attackDuration = 650; // Total animation time
 this.attackCooldown = 0;
 this.attackCooldownTime = 1000; // 1 second between attacks
 this.hitEnemiesThisSwing = []; // Track enemies hit this swing
 
-// Attack phase durations
+// Attack phase durations (must sum to attackDuration)
 this.windupDuration = 150;
 this.swingDuration = 300;
 this.recoveryDuration = 200;
+this.attackDuration = this.windupDuration + this.swingDuration + this.recoveryDuration; // 650ms total
 ```
 
 Add methods to `src/entities/Player.js` (after throwSpear method, around line 225):
@@ -777,6 +779,12 @@ this.weaponOffsetY = 10;
 this.skeletonData = null; // Skeleton data for hand positioning
 ```
 
+Add import at top of `src/entities/Player.js`:
+
+```javascript
+import { getHandPosition } from '../systems/SkeletonDataLoader.js';
+```
+
 Add method to `src/entities/Player.js` (after setWeaponSprite, around line 346):
 
 ```javascript
@@ -805,7 +813,7 @@ updateWeaponPosition() {
     // Use skeleton data if available
     if (this.skeletonData) {
         const direction = this.getCurrentDirection();
-        const handPos = this.getHandPositionForDirection(direction);
+        const handPos = getHandPosition(this.skeletonData, direction); // Use utility function
 
         if (handPos) {
             // Convert normalized coordinates to sprite pixels
@@ -856,34 +864,6 @@ getCurrentDirection() {
     if (normalizedDegrees < 247.5) return 'north-west';
     if (normalizedDegrees < 292.5) return 'north';
     return 'north-east';
-}
-
-/**
- * Gets hand position from skeleton data for direction
- * @param {string} direction
- * @returns {Object|null} {x, y, z, hand}
- */
-getHandPositionForDirection(direction) {
-    if (!this.skeletonData?.skeletons?.['3d']?.keypoints) {
-        return null;
-    }
-
-    const keypoints = this.skeletonData.skeletons['3d'].keypoints;
-    const rightHandDirections = ['south', 'south-east', 'east', 'north-east'];
-    const hand = rightHandDirections.includes(direction) ? 'right' : 'left';
-    const armKey = hand === 'right' ? 'RIGHT ARM' : 'LEFT ARM';
-
-    const armPosition = keypoints[armKey];
-    if (!armPosition || armPosition.length < 3) {
-        return null;
-    }
-
-    return {
-        x: armPosition[0],
-        y: armPosition[1],
-        z: armPosition[2],
-        hand
-    };
 }
 
 /**
@@ -1037,6 +1017,7 @@ if (this.player.attackPhase === 'swing' && this.testDino && !this.testDino.isDea
             this.testDino.takeDamage(clubHit.damage);
             this.scoreManager.awardDamagePoints(this.player.playerNumber, clubHit.damage);
 
+            // TODO: Replace with proper debug UI or remove before production
             console.log(`Club hit! Damage: ${clubHit.damage} | Score: ${this.scoreManager.getScore(0)}`);
 
             if (this.testDino.health <= 0 && !this.testDino.isDead) {
@@ -1186,10 +1167,19 @@ Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
 
 **DRY Reminders:**
 - Reuse existing patterns: Player cooldowns, CombatSystem hit checks
-- Skeleton data loader is utility, not entity-specific
+- Skeleton data loader is utility, not entity-specific - imported and used by Player
 - Attack state machine similar to dodge roll pattern
+- Player.js imports `getHandPosition()` from SkeletonDataLoader instead of duplicating logic
 
 **Commit Frequency:**
 - Commit after each passing test
 - Commit after each integration step
 - Use conventional commit format: `feat:`, `test:`, `fix:`, `polish:`
+
+**Critical Fixes Applied (2026-01-27 Review):**
+- ✅ Removed duplicate bone-club asset loading (already loaded in TestScene)
+- ✅ Removed unused async `loadSkeletonData()` function (Phaser's load.json used instead)
+- ✅ Fixed DRY violation: Player.js now imports `getHandPosition()` from SkeletonDataLoader
+- ✅ Added validation: `attackDuration` calculated from sum of phase durations
+- ✅ Added note about existing Player test failures (pre-existing issue)
+- ✅ Added TODO for console.log debug code removal
