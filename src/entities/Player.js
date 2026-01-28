@@ -130,12 +130,16 @@ export default class Player extends Entity {
         this.velocityX = dirX * speed;
         this.velocityY = dirY * speed;
 
-        // Update facing and animation
+        // Update facing and animation (but not during attack - attack animation takes priority)
         if (dirX !== 0 || dirY !== 0) {
             this.facingX = dirX;
             this.facingY = dirY;
             this.isMoving = true;
-            updatePlayerAnimation(this.sprite, this.playerNumber, this.facingX, this.facingY, this.isMoving);
+
+            // Don't override attack animation with movement animation
+            if (!this.isAttacking) {
+                updatePlayerAnimation(this.sprite, this.playerNumber, this.facingX, this.facingY, this.isMoving);
+            }
         }
     }
 
@@ -146,7 +150,11 @@ export default class Player extends Entity {
         this.velocityX = 0;
         this.velocityY = 0;
         this.isMoving = false;
-        this.updateIdleAnimation(); // Use weapon-aware idle animation
+
+        // Don't override attack animation with idle animation
+        if (!this.isAttacking) {
+            this.updateIdleAnimation(); // Use weapon-aware idle animation
+        }
     }
 
     /**
