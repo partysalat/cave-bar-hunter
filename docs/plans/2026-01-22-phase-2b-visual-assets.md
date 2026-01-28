@@ -239,7 +239,7 @@ These descriptions guide how weapons should appear in character animations:
 
 1. **Idle/Breathing Animation**
    - **Template:** `breathing-idle`
-   - **Action:** "standing in menacing pose with heavy breathing motion, slight body sway, predatory alertness"
+   - **Custom Prompt:** `standing menacingly with heavy breathing, slight body sway`
    - **Duration:** 8 frames
    - **Use:** Default state between attacks
    - **Loop:** Yes
@@ -247,7 +247,7 @@ These descriptions guide how weapons should appear in character animations:
 
 2. **Walking/Stalking Animation**
    - **Template:** `scary-walk` or `walking-6-frames`
-   - **Action:** "stalking forward slowly with predatory movement, low prowling gait, hunting approach"
+   - **Custom Prompt:** `stalking forward with predatory gait, hunting approach`
    - **Duration:** 6-8 frames
    - **Use:** Movement toward players
    - **Loop:** Yes
@@ -255,7 +255,7 @@ These descriptions guide how weapons should appear in character animations:
 
 3. **Attack Wind-up Animation (Telegraph)**
    - **Template:** `fight-stance-idle-8-frames`
-   - **Action:** "winding up for attack, body tensing and coiling back, preparing to strike with building energy"
+   - **Custom Prompt:** `tensing body and coiling back, preparing to strike`
    - **Duration:** 8 frames (2-3 seconds)
    - **Use:** Attack telegraph phase
    - **Loop:** No
@@ -263,7 +263,7 @@ These descriptions guide how weapons should appear in character animations:
 
 4. **Attack Execution - Bite**
    - **Template:** `cross-punch` (fast strike motion)
-   - **Action:** "lunging forward explosively with jaws snapping open and shut, aggressive bite strike"
+   - **Custom Prompt:** `lunging forward with jaws snapping, aggressive bite strike`
    - **Duration:** 4-6 frames
    - **Use:** Bite attack
    - **Loop:** No
@@ -271,7 +271,7 @@ These descriptions guide how weapons should appear in character animations:
 
 5. **Stagger/Stunned Animation**
    - **Template:** `taking-punch`
-   - **Action:** "stumbling and reeling backward, dazed and off-balance, vulnerable stagger"
+   - **Custom Prompt:** `stumbling backward dazed, off-balance and vulnerable`
    - **Duration:** 6 frames
    - **Use:** When weak point broken
    - **Loop:** No
@@ -279,15 +279,43 @@ These descriptions guide how weapons should appear in character animations:
 
 6. **Death Animation**
    - **Template:** `falling-back-death`
-   - **Action:** "collapsing to ground dramatically, body going limp and falling, final defeated pose"
+   - **Custom Prompt:** `collapsing to ground dramatically, body going limp`
    - **Duration:** 8-10 frames
    - **Use:** Hunt complete
    - **Loop:** No
    - **Notes:** Can fall forward, backward, or sideways depending on dinosaur type
 
-**Note:** Each dinosaur may need additional attack execution variants (charge, tail sweep, stomp) based on their unique attack patterns. Plan for 1-2 additional attack animations per large/apex dinosaur.
+**Additional Attack Variants (for specific dinosaurs):**
 
-**Total Dinosaur Assets:** 12 base characters + 72 standard animations + ~8 special attacks = 92 generations
+7. **Tail Sweep Attack** (Stegosaurus, large theropods)
+   - **Custom Prompt:** `swinging tail in wide horizontal arc, sweeping attack`
+   - **Duration:** 4-6 frames
+   - **Use:** Area-of-effect tail attack
+
+8. **Charge Attack** (Triceratops, Carnotaurus)
+   - **Custom Prompt:** `charging forward with head lowered, ramming attack`
+   - **Duration:** 6-8 frames
+   - **Use:** Rush attack with horns/head
+
+9. **Stomp Attack** (T-Rex, large apex predators)
+   - **Custom Prompt:** `lifting leg high and stomping down forcefully`
+   - **Duration:** 4-6 frames
+   - **Use:** Ground pound attack
+
+10. **Wing Flap/Dive** (Quetzalcoatlus only)
+    - **Custom Prompt:** `diving down from above with wings spread, aerial strike`
+    - **Duration:** 6-8 frames
+    - **Use:** Aerial dive bomb attack
+
+**Note:** Plan for 1-2 additional attack animations per large/apex dinosaur based on their unique behaviors.
+
+**Total Dinosaur Assets:** 12 base characters + 72 standard animations + ~10 special attacks = 94 generations
+
+**Estimated Special Attack Breakdown:**
+- Tail Sweep: 3 dinosaurs (Stegosaurus + select theropods)
+- Charge: 2 dinosaurs (Triceratops, Carnotaurus)
+- Stomp: 4 dinosaurs (T-Rex, Giganotosaurus, Allosaurus, Spinosaurus)
+- Wing Dive: 1 dinosaur (Quetzalcoatlus)
 
 ---
 
@@ -472,11 +500,11 @@ These descriptions guide how weapons should appear in character animations:
 |----------|--------------|------------|-------------------|
 | **Players** | 4 | 44 | 48 |
 | **Weapons** | 0 | 0 | 0* |
-| **Dinosaurs** | 12 | 72 + ~8 special | 92 |
+| **Dinosaurs** | 12 | 72 + ~10 special | 94 |
 | **Bartender** | 1 | 4 | 5 |
 | **Environments** | 43 | 3 | 46 |
 | **UI Elements** | 50-60 | 0 | 50-60 |
-| **TOTAL** | **110-120** | **123** | **241-251** |
+| **TOTAL** | **110-120** | **125** | **243-253** |
 
 \* *Weapons are integrated into character animations, not generated as separate assets*
 
