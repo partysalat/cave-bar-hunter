@@ -1,5 +1,10 @@
 import { distance3D } from './PhysicsManager.js';
 
+// Club attack constants
+const CLUB_ATTACK_RANGE = 2.5; // World units
+const CLUB_ATTACK_CONE_DEGREES = 60; // Total arc angle
+const CLUB_BASE_DAMAGE = 15;
+
 /**
  * Combat system - damage calculations, hit detection, scoring
  */
@@ -74,16 +79,16 @@ export default class CombatSystem {
             return { hit: false, damage: 0 };
         }
 
-        // 3. Check distance (2.5 world units max)
+        // 3. Check distance
         const dx = target.worldX - player.worldX;
         const dy = target.worldY - player.worldY;
         const distance = Math.sqrt(dx * dx + dy * dy);
 
-        if (distance > 2.5) {
+        if (distance > CLUB_ATTACK_RANGE) {
             return { hit: false, damage: 0 };
         }
 
-        // 4. Check if in attack cone (60° arc, ±30° from facing)
+        // 4. Check if in attack cone
         const angleToTarget = Math.atan2(dy, dx);
         const facingAngle = Math.atan2(player.facingY, player.facingX);
         let angleDiff = Math.abs(angleToTarget - facingAngle);
@@ -93,13 +98,13 @@ export default class CombatSystem {
             angleDiff = 2 * Math.PI - angleDiff;
         }
 
-        const maxAngleDiff = (60 / 2) * (Math.PI / 180); // 30° in radians
+        const maxAngleDiff = (CLUB_ATTACK_CONE_DEGREES / 2) * (Math.PI / 180);
 
         if (angleDiff > maxAngleDiff) {
             return { hit: false, damage: 0 };
         }
 
         // 5. Hit confirmed
-        return { hit: true, damage: 15 };
+        return { hit: true, damage: CLUB_BASE_DAMAGE };
     }
 }

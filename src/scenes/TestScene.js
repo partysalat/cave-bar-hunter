@@ -10,6 +10,13 @@ import InputManager from '../systems/InputManager.js';
 import { sphereVsSphere } from '../systems/PhysicsManager.js';
 import CameraController from '../systems/CameraController.js';
 
+// Animation frame rate constants
+const ANIM_FRAMERATE_FIGHT_STANCE = 10; // fps
+const ANIM_FRAMERATE_CROSS_PUNCH = 12; // fps
+
+// Weapon sprite constants
+const BONE_CLUB_SCALE = 0.5;
+
 /**
  * Test scene for Phase 1 development
  * Renders isometric ground grid and test entities
@@ -87,7 +94,7 @@ export default class TestScene extends Phaser.Scene {
 
         // Create and attach bone club to player 1
         const boneClub = this.add.sprite(0, 0, 'bone-club');
-        boneClub.setScale(0.5); // Scale down the weapon
+        boneClub.setScale(BONE_CLUB_SCALE);
         this.player.setWeaponSprite(boneClub);
 
         // Create test dinosaur
@@ -308,7 +315,7 @@ export default class TestScene extends Phaser.Scene {
                     repeat: -1 // Loop forever
                 });
 
-                // Create fight stance idle animation (8 frames, 10 fps)
+                // Create fight stance idle animation (8 frames)
                 const fightStanceKey = `player-${playerIndex}-fight-stance-${direction}`;
                 const fightStanceFrames = [];
                 for (let i = 0; i < 8; i++) {
@@ -317,11 +324,11 @@ export default class TestScene extends Phaser.Scene {
                 this.anims.create({
                     key: fightStanceKey,
                     frames: fightStanceFrames,
-                    frameRate: 10,
+                    frameRate: ANIM_FRAMERATE_FIGHT_STANCE,
                     repeat: -1 // Loop forever
                 });
 
-                // Create cross-punch attack animation (6 frames, 12 fps for snappy attack)
+                // Create cross-punch attack animation (6 frames)
                 const crossPunchKey = `player-${playerIndex}-cross-punch-${direction}`;
                 const crossPunchFrames = [];
                 for (let i = 0; i < 6; i++) {
@@ -330,7 +337,7 @@ export default class TestScene extends Phaser.Scene {
                 this.anims.create({
                     key: crossPunchKey,
                     frames: crossPunchFrames,
-                    frameRate: 12,
+                    frameRate: ANIM_FRAMERATE_CROSS_PUNCH,
                     repeat: 0 // Play once, don't loop
                 });
             });

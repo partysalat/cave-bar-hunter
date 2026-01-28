@@ -10,6 +10,21 @@ const PLAYER_COLORS = [
     0x00ff00  // Player 4: Green
 ];
 
+// Club attack timing constants (milliseconds)
+const ATTACK_WINDUP_DURATION = 150;
+const ATTACK_SWING_DURATION = 300;
+const ATTACK_RECOVERY_DURATION = 200;
+const ATTACK_COOLDOWN_TIME = 1000;
+
+// Club attack animation offsets
+const CLUB_WINDUP_Y_OFFSET = -10;
+const CLUB_WINDUP_ROTATION = -0.5; // ~-30 degrees
+const CLUB_SWING_Y_START = -10;
+const CLUB_SWING_Y_END = 10;
+const CLUB_SWING_ROTATION_START = -0.5; // ~-30 degrees
+const CLUB_SWING_ROTATION_END = 1.6; // ~90 degrees
+const CLUB_HAND_OFFSET_Y = 10; // Additional offset to make weapon look "held"
+
 /**
  * Player entity - represents one of 1-4 caveman hunters
  */
@@ -92,14 +107,14 @@ export default class Player extends Entity {
         this.attackTimer = 0;
         this.attackPhase = 'none'; // 'windup', 'swing', 'recovery', 'none'
         this.attackCooldown = 0;
-        this.attackCooldownTime = 1000; // 1 second between attacks
+        this.attackCooldownTime = ATTACK_COOLDOWN_TIME;
         this.hitEnemiesThisSwing = []; // Track enemies hit this swing
 
         // Attack phase durations (must sum to attackDuration)
-        this.windupDuration = 150;
-        this.swingDuration = 300;
-        this.recoveryDuration = 200;
-        this.attackDuration = this.windupDuration + this.swingDuration + this.recoveryDuration; // 650ms total
+        this.windupDuration = ATTACK_WINDUP_DURATION;
+        this.swingDuration = ATTACK_SWING_DURATION;
+        this.recoveryDuration = ATTACK_RECOVERY_DURATION;
+        this.attackDuration = this.windupDuration + this.swingDuration + this.recoveryDuration;
     }
 
     /**
@@ -505,7 +520,7 @@ export default class Player extends Entity {
                 offsetY = (handPos.y - 0.5) * spriteHeight * scale;
 
                 // Add small offset to look "held"
-                offsetY += 10;
+                offsetY += CLUB_HAND_OFFSET_Y;
             }
         }
 
@@ -534,18 +549,20 @@ export default class Player extends Entity {
         if (this.attackPhase === 'windup') {
             // Raise club slightly backward
             const windupProgress = this.attackTimer / this.windupDuration;
-            y = -10 * windupProgress;
-            rotation = -0.5 * windupProgress; // -30 degrees in radians
+            y = CLUB_WINDUP_Y_OFFSET * windupProgress;
+            rotation = CLUB_WINDUP_ROTATION * windupProgress;
         } else if (this.attackPhase === 'swing') {
             // Swing down in arc
             const swingProgress = (this.attackTimer - this.windupDuration) / this.swingDuration;
-            y = -10 + (20 * swingProgress); // -10 to +10
-            rotation = -0.5 + (2.1 * swingProgress); // -30° to +90° (2.1 radians)
+            const yRange = CLUB_SWING_Y_END - CLUB_SWING_Y_START;
+            y = CLUB_SWING_Y_START + (yRange * swingProgress);
+            const rotationRange = CLUB_SWING_ROTATION_END - CLUB_SWING_ROTATION_START;
+            rotation = CLUB_SWING_ROTATION_START + (rotationRange * swingProgress);
         } else if (this.attackPhase === 'recovery') {
             // Return to idle
             const recoveryProgress = (this.attackTimer - this.windupDuration - this.swingDuration) / this.recoveryDuration;
-            y = 10 * (1 - recoveryProgress);
-            rotation = 1.6 * (1 - recoveryProgress); // 90° back to 0°
+            y = CLUB_SWING_Y_END * (1 - recoveryProgress);
+            rotation = CLUB_SWING_ROTATION_END * (1 - recoveryProgress);
         }
 
         return { y, rotation };
