@@ -23,6 +23,14 @@
   - `/assets/characters/blue-hero/blue-hero.json`
   - `/assets/characters/yellow-hero/yellow-hero.json`
   - `/assets/characters/green-hero/green-hero.json`
+- All 4 player color fight-stance-idle animations must exist:
+  - `/assets/characters/{color}-hero/animations/fight-stance-idle/{direction}/frame_*.png`
+  - 8 frames per direction (frame_000.png through frame_007.png)
+  - All 8 directions (south, south-east, east, north-east, north, north-west, west, south-west)
+- All 4 player color cross-punch animations must exist:
+  - `/assets/characters/{color}-hero/animations/cross-punch/{direction}/frame_*.png`
+  - 6 frames per direction (frame_000.png through frame_005.png)
+  - All 8 directions (south, south-east, east, north-east, north, north-west, west, south-west)
 - User will add these before starting implementation
 
 ---
@@ -602,6 +610,11 @@ startAttack() {
     // Stop movement during attack
     this.velocityX = 0;
     this.velocityY = 0;
+
+    // Play cross-punch attack animation
+    const direction = this.getCurrentDirection();
+    const crossPunchKey = `player-${this.playerNumber}-cross-punch-${direction}`;
+    this.sprite.play(crossPunchKey);
 }
 
 /**
@@ -625,7 +638,54 @@ updateAttack(delta) {
         this.attackTimer = 0;
         this.attackCooldown = this.attackCooldownTime;
         this.hitEnemiesThisSwing = [];
+
+        // Restore appropriate idle animation (fight stance if weapon drawn, else normal idle)
+        this.updateIdleAnimation();
     }
+}
+
+/**
+ * Updates idle animation based on weapon state
+ */
+updateIdleAnimation() {
+    const direction = this.getCurrentDirection();
+
+    if (this.hasWeaponDrawn) {
+        // Use fight stance idle when weapon is equipped
+        const fightStanceKey = `player-${this.playerNumber}-fight-stance-${direction}`;
+        if (this.sprite.anims.currentAnim?.key !== fightStanceKey) {
+            this.sprite.play(fightStanceKey);
+        }
+    } else {
+        // Use normal breathing idle when no weapon
+        const idleKey = `player-${this.playerNumber}-idle-${direction}`;
+        if (this.sprite.anims.currentAnim?.key !== idleKey) {
+            this.sprite.play(idleKey);
+        }
+    }
+}
+
+/**
+ * Gets current direction string from facing vector
+ * @returns {string} Direction name
+ */
+getCurrentDirection() {
+    // Map facing vector to direction string
+    const angle = Math.atan2(this.facingY, this.facingX);
+    const degrees = angle * (180 / Math.PI);
+
+    // Normalize to 0-360
+    const normalizedDegrees = (degrees + 360) % 360;
+
+    // Map to 8 directions (45 degree segments)
+    if (normalizedDegrees < 22.5 || normalizedDegrees >= 337.5) return 'east';
+    if (normalizedDegrees < 67.5) return 'south-east';
+    if (normalizedDegrees < 112.5) return 'south';
+    if (normalizedDegrees < 157.5) return 'south-west';
+    if (normalizedDegrees < 202.5) return 'west';
+    if (normalizedDegrees < 247.5) return 'north-west';
+    if (normalizedDegrees < 292.5) return 'north';
+    return 'north-east';
 }
 ```
 
@@ -635,7 +695,18 @@ Modify `move()` method in `src/entities/Player.js` (line 93):
 move(dirX, dirY) {
     if (this.isDodging || this.isAttacking) return; // Can't move during dodge or attack
 
-    // ... rest of existing code
+    // ... rest of existing code (no changes to movement logic)
+}
+```
+
+Modify `stop()` method in `src/entities/Player.js` (line 121):
+
+```javascript
+stop() {
+    this.velocityX = 0;
+    this.velocityY = 0;
+    this.isMoving = false;
+    this.updateIdleAnimation(); // Use weapon-aware idle animation
 }
 ```
 
@@ -681,12 +752,17 @@ Expected: PASS (all tests green)
 
 ```bash
 git add src/entities/Player.js tests/Player.test.js
-git commit -m "feat: add player attack state machine
+git commit -m "feat: add player attack state machine and weapon-aware animations
 
 - Attack phases: windup (150ms), swing (300ms), recovery (200ms)
 - 1 second cooldown between attacks
 - Lock movement during attack
 - Track hit enemies to prevent double-hits
+- Play cross-punch animation during attack
+- Use fight-stance-idle when weapon equipped (not attacking)
+- Use breathing-idle when no weapon equipped
+- getCurrentDirection() helper for animation selection
+- updateIdleAnimation() switches based on weapon state
 
 Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
 ```
@@ -728,6 +804,24 @@ preload() {
                 this.load.image(frameKey, framePath);
                 idleFrames.push({ key: frameKey });
             }
+
+            // Load fight stance idle animation frames (8 frames per direction)
+            const fightStanceFrames = [];
+            for (let i = 0; i < 8; i++) {
+                const frameKey = `player-${playerIndex}-fight-stance-${direction}-${i}`;
+                const framePath = `/assets/characters/${color}-hero/animations/fight-stance-idle/${direction}/frame_00${i}.png`;
+                this.load.image(frameKey, framePath);
+                fightStanceFrames.push({ key: frameKey });
+            }
+
+            // Load cross-punch attack animation frames (6 frames per direction)
+            const crossPunchFrames = [];
+            for (let i = 0; i < 6; i++) {
+                const frameKey = `player-${playerIndex}-cross-punch-${direction}-${i}`;
+                const framePath = `/assets/characters/${color}-hero/animations/cross-punch/${direction}/frame_00${i}.png`;
+                this.load.image(frameKey, framePath);
+                crossPunchFrames.push({ key: frameKey });
+            }
         });
 
         // Load skeleton data for weapon attachment
@@ -739,7 +833,39 @@ preload() {
 }
 ```
 
-**Step 2: Pass skeleton data to player**
+**Step 2: Create fight stance and attack animations**
+
+Add to `src/scenes/TestScene.js` createPlayerAnimations() method (after idle animation creation, around line 252):
+
+```javascript
+// Create fight stance idle animation (8 frames, 10 fps)
+const fightStanceKey = `player-${playerIndex}-fight-stance-${direction}`;
+const fightStanceFrames = [];
+for (let i = 0; i < 8; i++) {
+    fightStanceFrames.push({ key: `player-${playerIndex}-fight-stance-${direction}-${i}` });
+}
+this.anims.create({
+    key: fightStanceKey,
+    frames: fightStanceFrames,
+    frameRate: 10,
+    repeat: -1 // Loop forever
+});
+
+// Create cross-punch attack animation (6 frames, 12 fps for snappy attack)
+const crossPunchKey = `player-${playerIndex}-cross-punch-${direction}`;
+const crossPunchFrames = [];
+for (let i = 0; i < 6; i++) {
+    crossPunchFrames.push({ key: `player-${playerIndex}-cross-punch-${direction}-${i}` });
+}
+this.anims.create({
+    key: crossPunchKey,
+    frames: crossPunchFrames,
+    frameRate: 12,
+    repeat: 0 // Play once, don't loop
+});
+```
+
+**Step 3: Pass skeleton data to player**
 
 Modify `src/scenes/TestScene.js` create() method (around line 53):
 
@@ -767,16 +893,17 @@ create() {
 }
 ```
 
-**Step 3: Update Player to use skeleton data**
+**Step 4: Update Player to use skeleton data**
 
-Add to `src/entities/Player.js` (after weaponOffsetY line 38):
+Modify existing weapon sprite properties in `src/entities/Player.js` (line 35-38):
 
 ```javascript
 // Weapon sprite (optional, can be set later)
 this.weaponSprite = null;
 this.weaponOffsetX = 20; // Fallback offset from player center
 this.weaponOffsetY = 10;
-this.skeletonData = null; // Skeleton data for hand positioning
+this.skeletonData = null; // Skeleton data for hand positioning (add this)
+this.hasWeaponDrawn = false; // Track if weapon is equipped (add this)
 ```
 
 Add import at top of `src/entities/Player.js`:
@@ -785,7 +912,7 @@ Add import at top of `src/entities/Player.js`:
 import { getHandPosition } from '../systems/SkeletonDataLoader.js';
 ```
 
-Add method to `src/entities/Player.js` (after setWeaponSprite, around line 346):
+Add and modify methods in `src/entities/Player.js` (around line 346):
 
 ```javascript
 /**
@@ -794,6 +921,22 @@ Add method to `src/entities/Player.js` (after setWeaponSprite, around line 346):
  */
 setSkeletonData(skeletonData) {
     this.skeletonData = skeletonData;
+}
+
+/**
+ * Sets a weapon sprite to be held by the player
+ * REPLACES existing setWeaponSprite method with weapon-aware animation
+ * @param {Phaser.GameObjects.Sprite} weaponSprite
+ */
+setWeaponSprite(weaponSprite) {
+    this.weaponSprite = weaponSprite;
+    this.hasWeaponDrawn = true;
+    this.updateWeaponPosition();
+
+    // Switch to fight stance idle when weapon is equipped
+    if (!this.isMoving && !this.isAttacking) {
+        this.updateIdleAnimation();
+    }
 }
 ```
 
@@ -844,29 +987,6 @@ updateWeaponPosition() {
 }
 
 /**
- * Gets current direction string from facing vector
- * @returns {string} Direction name
- */
-getCurrentDirection() {
-    // Map facing vector to direction string
-    const angle = Math.atan2(this.facingY, this.facingX);
-    const degrees = angle * (180 / Math.PI);
-
-    // Normalize to 0-360
-    const normalizedDegrees = (degrees + 360) % 360;
-
-    // Map to 8 directions (45 degree segments)
-    if (normalizedDegrees < 22.5 || normalizedDegrees >= 337.5) return 'east';
-    if (normalizedDegrees < 67.5) return 'south-east';
-    if (normalizedDegrees < 112.5) return 'south';
-    if (normalizedDegrees < 157.5) return 'south-west';
-    if (normalizedDegrees < 202.5) return 'west';
-    if (normalizedDegrees < 247.5) return 'north-west';
-    if (normalizedDegrees < 292.5) return 'north';
-    return 'north-east';
-}
-
-/**
  * Gets animation offset for attack
  * @returns {Object} {y, rotation}
  */
@@ -896,7 +1016,7 @@ getAttackAnimationOffset() {
 }
 ```
 
-**Step 4: Test manually**
+**Step 5: Test manually**
 
 Run: `npm run dev`
 Expected:
@@ -904,16 +1024,19 @@ Expected:
 - Club position should update based on facing direction
 - No console errors
 
-**Step 5: Commit**
+**Step 6: Commit**
 
 ```bash
 git add src/entities/Player.js src/scenes/TestScene.js
-git commit -m "feat: add skeleton-based weapon positioning
+git commit -m "feat: add skeleton-based weapon positioning and combat animations
 
 - Load skeleton JSON in TestScene
+- Load fight-stance-idle animations (8 frames × 8 directions)
+- Load cross-punch attack animations (6 frames × 8 directions)
 - Calculate hand position from normalized coordinates
 - Map facing direction to visible hand (left/right)
 - Add attack animation offsets (raise, swing, recovery)
+- Update setWeaponSprite to enable fight-stance-idle
 - Fallback to static offset if skeleton unavailable
 
 Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
@@ -1082,6 +1205,11 @@ Run: `npm run dev`
 
 Test checklist:
 - [ ] Club positioned at hand in all 8 directions (walk around)
+- [ ] Player uses breathing-idle animation when weapon NOT equipped
+- [ ] Player switches to fight-stance-idle animation when weapon is equipped (standing still)
+- [ ] Player plays cross-punch animation when attacking
+- [ ] Player maintains facing direction during attack (doesn't snap to other direction)
+- [ ] Player returns to fight-stance-idle after attack completes (not breathing-idle)
 - [ ] Club swings smoothly when pressing Q/B
 - [ ] Club hits dinosaur when in range (within 2.5 units)
 - [ ] Club hits dinosaur when in arc (within 60° cone)
@@ -1111,7 +1239,9 @@ git commit -m "polish: final club attack system adjustments
 
 Manual testing complete. All success criteria met:
 - Club visually attached to hand in 8 directions
-- Smooth swing animation
+- Fight-stance-idle when weapon equipped
+- Cross-punch animation during attacks
+- Smooth swing animation with weapon offsets
 - Accurate hit detection (2.5 units, 60° arc)
 - Single hit per enemy per swing
 - 1 second cooldown working
@@ -1125,6 +1255,10 @@ Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
 ## Success Criteria Checklist
 
 - [ ] Club visually attached to player's hand in all 8 directions
+- [ ] Player uses breathing-idle when no weapon equipped
+- [ ] Player uses fight-stance-idle when weapon equipped (but not attacking)
+- [ ] Player uses cross-punch animation during attack
+- [ ] Player returns to fight-stance-idle after attack (not breathing-idle)
 - [ ] Club rotates and moves smoothly during attack animation
 - [ ] Enemies within 2.5 units and 60° arc take damage during swing phase
 - [ ] Each enemy hit once maximum per swing
@@ -1149,6 +1283,11 @@ Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
 - Normalized skeleton coordinates (0-1) → sprite pixels with scale
 - Right hand for south/east, left hand for north/west (camera visibility)
 - Attack phases: windup (150ms), swing (300ms), recovery (200ms)
+- **Animation states:**
+  - No weapon: breathing-idle (4 frames, 6 fps)
+  - Weapon equipped: fight-stance-idle (8 frames, 10 fps)
+  - Attacking: cross-punch (6 frames, 12 fps, plays once)
+- Player maintains facing direction during attack (no direction changes)
 - Hit detection only active during swing phase
 - Cone check: 60° arc (±30° from facing), 2.5 world units range
 - Button press detection (not hold) for single attack per press
