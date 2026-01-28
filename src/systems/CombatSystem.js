@@ -56,4 +56,50 @@ export default class CombatSystem {
 
         return { hit: false, damage: 0 };
     }
+
+    /**
+     * Check if club attack hits enemy
+     * @param {Player} player - Attacking player
+     * @param {Object} target - Enemy with worldX, worldY, id
+     * @returns {Object} {hit: boolean, damage: number}
+     */
+    checkClubHit(player, target) {
+        // 1. Verify player is in swing phase
+        if (player.attackPhase !== 'swing') {
+            return { hit: false, damage: 0 };
+        }
+
+        // 2. Check if already hit this swing
+        if (player.hitEnemiesThisSwing.includes(target.id)) {
+            return { hit: false, damage: 0 };
+        }
+
+        // 3. Check distance (2.5 world units max)
+        const dx = target.worldX - player.worldX;
+        const dy = target.worldY - player.worldY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance > 2.5) {
+            return { hit: false, damage: 0 };
+        }
+
+        // 4. Check if in attack cone (60° arc, ±30° from facing)
+        const angleToTarget = Math.atan2(dy, dx);
+        const facingAngle = Math.atan2(player.facingY, player.facingX);
+        let angleDiff = Math.abs(angleToTarget - facingAngle);
+
+        // Normalize angle difference to 0-180°
+        if (angleDiff > Math.PI) {
+            angleDiff = 2 * Math.PI - angleDiff;
+        }
+
+        const maxAngleDiff = (60 / 2) * (Math.PI / 180); // 30° in radians
+
+        if (angleDiff > maxAngleDiff) {
+            return { hit: false, damage: 0 };
+        }
+
+        // 5. Hit confirmed
+        return { hit: true, damage: 15 };
+    }
 }
