@@ -12,7 +12,7 @@ import CameraController from '../systems/CameraController.js';
 
 // Animation frame rate constants
 const ANIM_FRAMERATE_FIGHT_STANCE = 10; // fps
-const ANIM_FRAMERATE_CROSS_PUNCH = 12; // fps
+const ANIM_FRAMERATE_CLUB_SWING = 25; // fps (16 frames over ~650ms attack duration)
 
 /**
  * Test scene for Phase 1 development
@@ -57,13 +57,13 @@ export default class TestScene extends Phaser.Scene {
                     fightStanceFrames.push({ key: frameKey });
                 }
 
-                // Load cross-punch attack animation frames (6 frames per direction)
-                const crossPunchFrames = [];
-                for (let i = 0; i < 6; i++) {
-                    const frameKey = `player-${playerIndex}-cross-punch-${direction}-${i}`;
-                    const framePath = `/assets/characters/${color}-hero/animations/cross-punch/${direction}/frame_00${i}.png`;
+                // Load club swing attack animation frames (16 frames per direction)
+                const clubSwingFrames = [];
+                for (let i = 0; i < 16; i++) {
+                    const frameKey = `player-${playerIndex}-club-swing-${direction}-${i}`;
+                    const framePath = `/assets/characters/${color}-hero/animations/custom-swing-a-club/${direction}/frame_0${i < 10 ? '0' + i : i}.png`;
                     this.load.image(frameKey, framePath);
-                    crossPunchFrames.push({ key: frameKey });
+                    clubSwingFrames.push({ key: frameKey });
                 }
             });
         });
@@ -313,16 +313,16 @@ export default class TestScene extends Phaser.Scene {
                     repeat: -1 // Loop forever
                 });
 
-                // Create cross-punch attack animation (6 frames)
-                const crossPunchKey = `player-${playerIndex}-cross-punch-${direction}`;
-                const crossPunchFrames = [];
-                for (let i = 0; i < 6; i++) {
-                    crossPunchFrames.push({ key: `player-${playerIndex}-cross-punch-${direction}-${i}` });
+                // Create club swing attack animation (16 frames)
+                const clubSwingKey = `player-${playerIndex}-club-swing-${direction}`;
+                const clubSwingFrames = [];
+                for (let i = 0; i < 16; i++) {
+                    clubSwingFrames.push({ key: `player-${playerIndex}-club-swing-${direction}-${i}` });
                 }
                 this.anims.create({
-                    key: crossPunchKey,
-                    frames: crossPunchFrames,
-                    frameRate: ANIM_FRAMERATE_CROSS_PUNCH,
+                    key: clubSwingKey,
+                    frames: clubSwingFrames,
+                    frameRate: ANIM_FRAMERATE_CLUB_SWING,
                     repeat: 0 // Play once, don't loop
                 });
             });

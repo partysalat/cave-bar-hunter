@@ -265,10 +265,10 @@ export default class Player extends Entity {
         this.velocityX = 0;
         this.velocityY = 0;
 
-        // Play cross-punch attack animation
+        // Play club swing attack animation
         const direction = this.getCurrentDirection();
-        const crossPunchKey = `player-${this.playerNumber}-cross-punch-${direction}`;
-        this.sprite.play(crossPunchKey);
+        const clubSwingKey = `player-${this.playerNumber}-club-swing-${direction}`;
+        this.sprite.play(clubSwingKey);
     }
 
     /**
