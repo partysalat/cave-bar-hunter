@@ -1,0 +1,67 @@
+{
+  "arena_name": "Bone Graveyard",
+  "arena_id": "arena-5-bone-graveyard",
+  "description": "Desolate dinosaur graveyard with dusty ground, scattered bones, and massive fossil remains",
+  "created": "2026-01-28",
+  "tiles": [
+    {
+      "name": "Dusty Ground",
+      "file": "tiles/dusty-ground.png",
+      "size": "64x64",
+      "tile_id": "f8b2eecd-2a03-4efa-87ed-02ae7ca14732",
+      "description": "dusty dry ground with sand and dirt, barren wasteland",
+      "type": "base_ground"
+    },
+    {
+      "name": "Bone Fragment Ground",
+      "file": "tiles/bone-fragment-ground.png",
+      "size": "64x64",
+      "tile_id": "4419e019-1ed2-4d91-9fd7-336961cd0e6d",
+      "description": "ground covered with bone fragments and fossil pieces scattered",
+      "type": "ground_variant"
+    },
+    {
+      "name": "Cracked Earth",
+      "file": "tiles/cracked-earth.png",
+      "size": "64x64",
+      "tile_id": "a7159c60-0418-4ea7-a4a8-de434af986b5",
+      "description": "cracked dry earth with deep fissures, drought terrain",
+      "type": "ground_variant"
+    }
+  ],
+  "props": [
+    {
+      "name": "Giant Rib Cage",
+      "file": "props/giant-rib-cage.png",
+      "size": "192x192",
+      "object_id": "72da0413-3e87-4c65-97cb-1cbd5deb4b49",
+      "description": "giant dinosaur rib cage skeleton, massive curved bones",
+      "type": "obstacle"
+    },
+    {
+      "name": "Dinosaur Skull",
+      "file": "props/dinosaur-skull.png",
+      "size": "192x192",
+      "object_id": "b36f3cce-9e38-437c-923d-1a4efc689758",
+      "description": "large dinosaur skull fossil with teeth, prehistoric remains",
+      "type": "obstacle"
+    },
+    {
+      "name": "Bone Pile",
+      "file": "props/bone-pile.png",
+      "size": "128x128",
+      "object_id": "c0fdfd8d-6461-430b-9472-e1b42b891d22",
+      "description": "pile of bones and skeletal remains, bone heap",
+      "type": "decoration"
+    }
+  ],
+  "generation_settings": {
+    "tile_shape": "thick tile",
+    "tile_size": 64,
+    "outline": "single color outline",
+    "shading": "basic shading",
+    "detail": "medium detail",
+    "view": "high top-down",
+    "text_guidance_scale": 8
+  }
+}
