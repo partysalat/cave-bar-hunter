@@ -56,12 +56,12 @@ This section documents ALL assets needed and their animation requirements.
    - **Status (Red Hero):** ✅ Complete
 
 4. **Attack/Throw Animation**
-   - **Template:** `throw-object`
+   - **Template:** `custom-throw-a-spear` (custom animation)
    - **Action:** "throwing spear with wind-up motion"
-   - **Duration:** 6-8 frames
+   - **Duration:** 16 frames
    - **Use:** Spear throwing mechanic
    - **Loop:** No
-   - **Status (Red Hero):** ✅ Complete
+   - **Status:** ✅ Complete (All Heroes)
 
 5. **Melee/Club Swing Animation**
    - **Template:** `custom-swing-a-club` (custom animation)
@@ -119,8 +119,9 @@ This section documents ALL assets needed and their animation requirements.
     - **Loop:** Yes (hold pose)
     - **Status (Red Hero):** 🔄 Generating (ETA: 2-4 minutes)
 
-**Weapon-Specific Animations (Red Hero):**
-- `custom-swing-a-club` - Club melee attack (replaces cross-punch)
+**Weapon-Specific Animations (All Heroes):**
+- `custom-swing-a-club` - Club melee attack (replaces cross-punch) - ✅ Complete
+- `custom-throw-a-spear` - Stone spear throw animation - ✅ Complete
 - `custom-throw-a-slingshot` - Sling weapon specific throw
 
 **Additional Bonus Animations (Red Hero):**
@@ -130,7 +131,11 @@ This section documents ALL assets needed and their animation requirements.
 **Total Player Assets:** 4 base characters + 44 animations = 48 generations
 
 **Progress:**
-- **Red Hero:** 11/11 animations complete (✅ 10 complete, 🔄 1 generating)
+- **All Heroes (Red/Blue/Yellow/Green):** Core animations complete
+  - ✅ Walking, Idle, Jump, Dodge, Damage, Downed, Revive animations
+  - ✅ Club swing attack (`custom-swing-a-club`)
+  - ✅ Spear throw attack (`custom-throw-a-spear`)
+  - 🔄 Victory poses (fight-stance-idle) - generating
 
 ---
 
