@@ -43,7 +43,28 @@ export default class TestScene extends Phaser.Scene {
                     this.load.image(frameKey, framePath);
                     idleFrames.push({ key: frameKey });
                 }
+
+                // Load fight stance idle animation frames (8 frames per direction)
+                const fightStanceFrames = [];
+                for (let i = 0; i < 8; i++) {
+                    const frameKey = `player-${playerIndex}-fight-stance-${direction}-${i}`;
+                    const framePath = `/assets/characters/${color}-hero/animations/fight-stance-idle/${direction}/frame_00${i}.png`;
+                    this.load.image(frameKey, framePath);
+                    fightStanceFrames.push({ key: frameKey });
+                }
+
+                // Load cross-punch attack animation frames (6 frames per direction)
+                const crossPunchFrames = [];
+                for (let i = 0; i < 6; i++) {
+                    const frameKey = `player-${playerIndex}-cross-punch-${direction}-${i}`;
+                    const framePath = `/assets/characters/${color}-hero/animations/cross-punch/${direction}/frame_00${i}.png`;
+                    this.load.image(frameKey, framePath);
+                    crossPunchFrames.push({ key: frameKey });
+                }
             });
+
+            // Load skeleton data for weapon attachment
+            this.load.json(`skeleton-${color}`, `/assets/characters/${color}-hero/${color}-hero.json`);
         });
 
         // Load weapon assets
@@ -59,6 +80,10 @@ export default class TestScene extends Phaser.Scene {
 
         // Create test player at arena center
         this.player = new Player(this, 0, 15, 12, 0);
+
+        // Load skeleton data for player
+        const skeletonData = this.cache.json.get('skeleton-red');
+        this.player.setSkeletonData(skeletonData);
 
         // Create and attach bone club to player 1
         const boneClub = this.add.sprite(0, 0, 'bone-club');
@@ -249,6 +274,32 @@ export default class TestScene extends Phaser.Scene {
                     frames: idleFrames,
                     frameRate: 6,
                     repeat: -1 // Loop forever
+                });
+
+                // Create fight stance idle animation (8 frames, 10 fps)
+                const fightStanceKey = `player-${playerIndex}-fight-stance-${direction}`;
+                const fightStanceFrames = [];
+                for (let i = 0; i < 8; i++) {
+                    fightStanceFrames.push({ key: `player-${playerIndex}-fight-stance-${direction}-${i}` });
+                }
+                this.anims.create({
+                    key: fightStanceKey,
+                    frames: fightStanceFrames,
+                    frameRate: 10,
+                    repeat: -1 // Loop forever
+                });
+
+                // Create cross-punch attack animation (6 frames, 12 fps for snappy attack)
+                const crossPunchKey = `player-${playerIndex}-cross-punch-${direction}`;
+                const crossPunchFrames = [];
+                for (let i = 0; i < 6; i++) {
+                    crossPunchFrames.push({ key: `player-${playerIndex}-cross-punch-${direction}-${i}` });
+                }
+                this.anims.create({
+                    key: crossPunchKey,
+                    frames: crossPunchFrames,
+                    frameRate: 12,
+                    repeat: 0 // Play once, don't loop
                 });
             });
         }

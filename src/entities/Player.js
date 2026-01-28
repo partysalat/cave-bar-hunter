@@ -1,5 +1,6 @@
 import Entity from './Entity.js';
 import { updatePlayerAnimation, getPlayerAnimationKey } from '../systems/SpriteDirectionSystem.js';
+import { getHandPosition } from '../systems/SkeletonDataLoader.js';
 
 // Player color mapping from design doc (kept for reference, now using PixelLab sprites)
 const PLAYER_COLORS = [
@@ -455,23 +456,99 @@ export default class Player extends Entity {
     }
 
     /**
+     * Sets skeleton data for hand positioning
+     * @param {Object} skeletonData - Parsed skeleton JSON
+     */
+    setSkeletonData(skeletonData) {
+        this.skeletonData = skeletonData;
+    }
+
+    /**
      * Sets a weapon sprite to be held by the player
+     * REPLACES existing setWeaponSprite method with weapon-aware animation
      * @param {Phaser.GameObjects.Sprite} weaponSprite
      */
     setWeaponSprite(weaponSprite) {
         this.weaponSprite = weaponSprite;
+        this.hasWeaponDrawn = true;
         this.updateWeaponPosition();
+
+        // Switch to fight stance idle when weapon is equipped
+        if (!this.isMoving && !this.isAttacking) {
+            this.updateIdleAnimation();
+        }
     }
 
     /**
      * Updates weapon sprite position relative to player
      */
     updateWeaponPosition() {
-        if (this.weaponSprite) {
-            this.weaponSprite.x = this.sprite.x + this.weaponOffsetX;
-            this.weaponSprite.y = this.sprite.y + this.weaponOffsetY;
-            this.weaponSprite.setDepth(this.sprite.depth - 1); // Behind player
+        if (!this.weaponSprite) return;
+
+        let offsetX = this.weaponOffsetX;
+        let offsetY = this.weaponOffsetY;
+        let rotation = 0;
+
+        // Use skeleton data if available
+        if (this.skeletonData) {
+            const direction = this.getCurrentDirection();
+            const handPos = getHandPosition(this.skeletonData, direction); // Use utility function
+
+            if (handPos) {
+                // Convert normalized coordinates to sprite pixels
+                const spriteWidth = this.sprite.width;
+                const spriteHeight = this.sprite.height;
+                const scale = this.sprite.scale;
+
+                // Calculate offset from sprite center
+                offsetX = (handPos.x - 0.5) * spriteWidth * scale;
+                offsetY = (handPos.y - 0.5) * spriteHeight * scale;
+
+                // Add small offset to look "held"
+                offsetY += 10;
+            }
         }
+
+        // Apply attack animation offsets
+        if (this.isAttacking) {
+            const attackOffset = this.getAttackAnimationOffset();
+            offsetY += attackOffset.y;
+            rotation = attackOffset.rotation;
+        }
+
+        this.weaponSprite.x = this.sprite.x + offsetX;
+        this.weaponSprite.y = this.sprite.y + offsetY;
+        this.weaponSprite.rotation = rotation;
+        this.weaponSprite.setDepth(this.sprite.depth - 1); // Behind player
+    }
+
+    /**
+     * Gets animation offset for attack
+     * @returns {Object} {y, rotation}
+     */
+    getAttackAnimationOffset() {
+        const progress = this.attackTimer / this.attackDuration;
+        let y = 0;
+        let rotation = 0;
+
+        if (this.attackPhase === 'windup') {
+            // Raise club slightly backward
+            const windupProgress = this.attackTimer / this.windupDuration;
+            y = -10 * windupProgress;
+            rotation = -0.5 * windupProgress; // -30 degrees in radians
+        } else if (this.attackPhase === 'swing') {
+            // Swing down in arc
+            const swingProgress = (this.attackTimer - this.windupDuration) / this.swingDuration;
+            y = -10 + (20 * swingProgress); // -10 to +10
+            rotation = -0.5 + (2.1 * swingProgress); // -30° to +90° (2.1 radians)
+        } else if (this.attackPhase === 'recovery') {
+            // Return to idle
+            const recoveryProgress = (this.attackTimer - this.windupDuration - this.swingDuration) / this.recoveryDuration;
+            y = 10 * (1 - recoveryProgress);
+            rotation = 1.6 * (1 - recoveryProgress); // 90° back to 0°
+        }
+
+        return { y, rotation };
     }
 
     /**
