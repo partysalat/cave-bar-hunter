@@ -1,6 +1,5 @@
 import Entity from './Entity.js';
 import { updatePlayerAnimation, getPlayerAnimationKey } from '../systems/SpriteDirectionSystem.js';
-import { getHandPosition } from '../systems/SkeletonDataLoader.js';
 
 // Player color mapping from design doc (kept for reference, now using PixelLab sprites)
 const PLAYER_COLORS = [
@@ -15,15 +14,6 @@ const ATTACK_WINDUP_DURATION = 150;
 const ATTACK_SWING_DURATION = 300;
 const ATTACK_RECOVERY_DURATION = 200;
 const ATTACK_COOLDOWN_TIME = 1000;
-
-// Club attack animation offsets
-const CLUB_WINDUP_Y_OFFSET = -10;
-const CLUB_WINDUP_ROTATION = -0.5; // ~-30 degrees
-const CLUB_SWING_Y_START = -10;
-const CLUB_SWING_Y_END = 10;
-const CLUB_SWING_ROTATION_START = -0.5; // ~-30 degrees
-const CLUB_SWING_ROTATION_END = 1.6; // ~90 degrees
-const CLUB_HAND_OFFSET_Y = 10; // Additional offset to make weapon look "held"
 
 /**
  * Player entity - represents one of 1-4 caveman hunters
@@ -48,12 +38,8 @@ export default class Player extends Entity {
         const initialAnimKey = getPlayerAnimationKey(playerNumber, 'south', false);
         this.sprite.play(initialAnimKey);
 
-        // Weapon sprite (optional, can be set later)
-        this.weaponSprite = null;
-        this.weaponOffsetX = 20; // Offset from player center
-        this.weaponOffsetY = 10;
-        this.skeletonData = null; // Skeleton data for hand positioning
-        this.hasWeaponDrawn = false; // Track if weapon is equipped
+        // Weapon state (weapons are baked into animations)
+        this.hasWeaponDrawn = false; // Track if weapon is equipped (switches between breathing-idle and fight-stance-idle)
 
         // Movement state
         this.isMoving = false;
@@ -471,101 +457,17 @@ export default class Player extends Entity {
     }
 
     /**
-     * Sets skeleton data for hand positioning
-     * @param {Object} skeletonData - Parsed skeleton JSON
+     * Sets whether the player has a weapon equipped
+     * This switches between breathing-idle and fight-stance-idle animations
+     * @param {boolean} equipped - Whether weapon is equipped
      */
-    setSkeletonData(skeletonData) {
-        this.skeletonData = skeletonData;
-    }
+    setWeaponEquipped(equipped) {
+        this.hasWeaponDrawn = equipped;
 
-    /**
-     * Sets a weapon sprite to be held by the player
-     * REPLACES existing setWeaponSprite method with weapon-aware animation
-     * @param {Phaser.GameObjects.Sprite} weaponSprite
-     */
-    setWeaponSprite(weaponSprite) {
-        this.weaponSprite = weaponSprite;
-        this.hasWeaponDrawn = true;
-        this.updateWeaponPosition();
-
-        // Switch to fight stance idle when weapon is equipped
+        // Switch to appropriate idle animation if not moving or attacking
         if (!this.isMoving && !this.isAttacking) {
             this.updateIdleAnimation();
         }
-    }
-
-    /**
-     * Updates weapon sprite position relative to player
-     */
-    updateWeaponPosition() {
-        if (!this.weaponSprite) return;
-
-        let offsetX = this.weaponOffsetX;
-        let offsetY = this.weaponOffsetY;
-        let rotation = 0;
-
-        // Use skeleton data if available
-        if (this.skeletonData) {
-            const direction = this.getCurrentDirection();
-            const handPos = getHandPosition(this.skeletonData, direction); // Use utility function
-
-            if (handPos) {
-                // Convert normalized coordinates to sprite pixels
-                const spriteWidth = this.sprite.width;
-                const spriteHeight = this.sprite.height;
-                const scale = this.sprite.scale;
-
-                // Calculate offset from sprite center
-                offsetX = (handPos.x - 0.5) * spriteWidth * scale;
-                offsetY = (handPos.y - 0.5) * spriteHeight * scale;
-
-                // Add small offset to look "held"
-                offsetY += CLUB_HAND_OFFSET_Y;
-            }
-        }
-
-        // Apply attack animation offsets
-        if (this.isAttacking) {
-            const attackOffset = this.getAttackAnimationOffset();
-            offsetY += attackOffset.y;
-            rotation = attackOffset.rotation;
-        }
-
-        this.weaponSprite.x = this.sprite.x + offsetX;
-        this.weaponSprite.y = this.sprite.y + offsetY;
-        this.weaponSprite.rotation = rotation;
-        this.weaponSprite.setDepth(this.sprite.depth - 1); // Behind player
-    }
-
-    /**
-     * Gets animation offset for attack
-     * @returns {Object} {y, rotation}
-     */
-    getAttackAnimationOffset() {
-        const progress = this.attackTimer / this.attackDuration;
-        let y = 0;
-        let rotation = 0;
-
-        if (this.attackPhase === 'windup') {
-            // Raise club slightly backward
-            const windupProgress = this.attackTimer / this.windupDuration;
-            y = CLUB_WINDUP_Y_OFFSET * windupProgress;
-            rotation = CLUB_WINDUP_ROTATION * windupProgress;
-        } else if (this.attackPhase === 'swing') {
-            // Swing down in arc
-            const swingProgress = (this.attackTimer - this.windupDuration) / this.swingDuration;
-            const yRange = CLUB_SWING_Y_END - CLUB_SWING_Y_START;
-            y = CLUB_SWING_Y_START + (yRange * swingProgress);
-            const rotationRange = CLUB_SWING_ROTATION_END - CLUB_SWING_ROTATION_START;
-            rotation = CLUB_SWING_ROTATION_START + (rotationRange * swingProgress);
-        } else if (this.attackPhase === 'recovery') {
-            // Return to idle
-            const recoveryProgress = (this.attackTimer - this.windupDuration - this.swingDuration) / this.recoveryDuration;
-            y = CLUB_SWING_Y_END * (1 - recoveryProgress);
-            rotation = CLUB_SWING_ROTATION_END * (1 - recoveryProgress);
-        }
-
-        return { y, rotation };
     }
 
     /**
@@ -595,18 +497,5 @@ export default class Player extends Entity {
             this.attackCooldown -= delta;
             if (this.attackCooldown < 0) this.attackCooldown = 0;
         }
-
-        // Update weapon position
-        this.updateWeaponPosition();
-    }
-
-    /**
-     * Override destroy to also destroy weapon sprite
-     */
-    destroy() {
-        if (this.weaponSprite) {
-            this.weaponSprite.destroy();
-        }
-        super.destroy();
     }
 }

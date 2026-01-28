@@ -14,9 +14,6 @@ import CameraController from '../systems/CameraController.js';
 const ANIM_FRAMERATE_FIGHT_STANCE = 10; // fps
 const ANIM_FRAMERATE_CROSS_PUNCH = 12; // fps
 
-// Weapon sprite constants
-const BONE_CLUB_SCALE = 0.5;
-
 /**
  * Test scene for Phase 1 development
  * Renders isometric ground grid and test entities
@@ -69,13 +66,7 @@ export default class TestScene extends Phaser.Scene {
                     crossPunchFrames.push({ key: frameKey });
                 }
             });
-
-            // Load skeleton data for weapon attachment
-            this.load.json(`skeleton-${color}`, `/assets/characters/${color}-hero/${color}-hero.json`);
         });
-
-        // Load weapon assets
-        this.load.image('bone-club', '/assets/weapons/bone-club.png');
     }
 
     create() {
@@ -88,14 +79,8 @@ export default class TestScene extends Phaser.Scene {
         // Create test player at arena center
         this.player = new Player(this, 0, 15, 12, 0);
 
-        // Load skeleton data for player
-        const skeletonData = this.cache.json.get('skeleton-red');
-        this.player.setSkeletonData(skeletonData);
-
-        // Create and attach bone club to player 1
-        const boneClub = this.add.sprite(0, 0, 'bone-club');
-        boneClub.setScale(BONE_CLUB_SCALE);
-        this.player.setWeaponSprite(boneClub);
+        // Equip weapon (weapons are baked into animations)
+        this.player.setWeaponEquipped(true);
 
         // Create test dinosaur
         this.testDino = new Dinosaur(this, 'compy', 20, 15, 0);
