@@ -64,9 +64,9 @@ This section documents ALL assets needed and their animation requirements.
    - **Status (Red Hero):** ✅ Complete
 
 5. **Melee/Club Swing Animation**
-   - **Template:** `cross-punch`
+   - **Template:** `custom-swing-a-club` (custom animation)
    - **Action:** "swinging club in wide arc, melee attack"
-   - **Duration:** 4-6 frames
+   - **Duration:** 6 frames
    - **Use:** Wooden club melee attack
    - **Loop:** No
    - **Status (Red Hero):** ✅ Complete
@@ -119,8 +119,11 @@ This section documents ALL assets needed and their animation requirements.
     - **Loop:** Yes (hold pose)
     - **Status (Red Hero):** 🔄 Generating (ETA: 2-4 minutes)
 
-**Additional Bonus Animations (Red Hero):**
+**Weapon-Specific Animations (Red Hero):**
+- `custom-swing-a-club` - Club melee attack (replaces cross-punch)
 - `custom-throw-a-slingshot` - Sling weapon specific throw
+
+**Additional Bonus Animations (Red Hero):**
 - `drinking` - Flavor/celebration animation
 - `running-jump` - Advanced movement combo
 
@@ -133,34 +136,40 @@ This section documents ALL assets needed and their animation requirements.
 
 ### Weapons (5 types)
 
-**Weapon Sprites (as separate map objects):**
+**Implementation Note:** Weapons are NOT generated as separate sprites. Instead, weapons are integrated directly into character animation sprites. Each character animation includes the appropriate weapon being held/used.
+
+**Weapon Visual Descriptions (for animation generation):**
+
+These descriptions guide how weapons should appear in character animations:
 
 1. **Stone Spear**
-   - Canvas: 96px
-   - Description: "Stone spear weapon with wrapped leather grip, primitive prehistoric spear"
-   - Animations: None (sprite rotation in Phaser)
+   - Visual: "Stone spear weapon with wrapped leather grip, primitive prehistoric spear"
+   - Used in: Throw animation, idle/walking animations (held)
 
 2. **Wooden Club**
-   - Canvas: 96px
-   - Description: "Primitive wooden club with thick rounded knob head, natural wood grain texture, rough bark on handle, simple prehistoric melee weapon"
-   - Animations: None (sprite rotation)
+   - Visual: "Primitive wooden club with thick rounded knob head, natural wood grain texture, rough bark on handle, simple prehistoric melee weapon"
+   - Used in: Club swing animation, idle/walking animations (held)
 
 3. **Sling**
-   - Canvas: 96px
-   - Description: "Leather sling with stone ammunition pouch, prehistoric ranged weapon"
-   - Animations: None
+   - Visual: "Leather sling with stone ammunition pouch, prehistoric ranged weapon"
+   - Used in: Throw animation variant (future), idle animations
 
 4. **Fire Spear**
-   - Canvas: 96px
-   - Description: "Stone spear with flaming tip, burning prehistoric weapon with fire effect"
-   - Animations: Flame effect (optional, 4-frame loop)
+   - Visual: "Stone spear with flaming tip, burning prehistoric weapon with fire effect"
+   - Used in: Throw animation variant (future), special animations
 
 5. **Net Launcher**
-   - Canvas: 96px
-   - Description: "Crossbow-style net launcher weapon, prehistoric support weapon"
-   - Animations: None
+   - Visual: "Crossbow-style net launcher weapon, prehistoric support weapon"
+   - Used in: Throw animation variant (future), support animations
 
-**Total Weapon Assets:** 5 base sprites + 1 flame animation = 6 generations
+**Weapon Animation Variants:**
+- Weapon-specific animations are generated as part of the character animation set
+- Examples: `custom-swing-a-club` for club melee, `custom-throw-a-slingshot` for sling ranged
+- Base animations (throw, idle, walk) use the default stone spear
+- Additional weapon variants are generated as needed per weapon type
+- Each weapon variant is a full character animation (8 directions) integrated with the weapon visual
+
+**Total Weapon Assets:** 0 separate sprites (integrated into character animations)
 
 ---
 
@@ -456,12 +465,14 @@ This section documents ALL assets needed and their animation requirements.
 | Category | Base Sprites | Animations | Total Generations |
 |----------|--------------|------------|-------------------|
 | **Players** | 4 | 44 | 48 |
-| **Weapons** | 5 | 1 | 6 |
+| **Weapons** | 0 | 0 | 0* |
 | **Dinosaurs** | 12 | 72 + ~8 special | 92 |
 | **Bartender** | 1 | 4 | 5 |
 | **Environments** | 43 | 3 | 46 |
 | **UI Elements** | 50-60 | 0 | 50-60 |
-| **TOTAL** | **115-125** | **124** | **247-257** |
+| **TOTAL** | **110-120** | **123** | **241-251** |
+
+\* *Weapons are integrated into character animations, not generated as separate assets*
 
 ---
 
@@ -505,13 +516,14 @@ The plan will be divided into tasks following Phase 2's TDD approach:
 **Task 4:** Generate & Integrate Player Animations
 **Task 5:** Generate & Integrate First Dinosaur (Dilophosaurus)
 **Task 6:** Generate & Integrate Dinosaur Animations
-**Task 7:** Generate & Integrate Weapons
-**Task 8:** Generate & Integrate Cave Bar Environment
-**Task 9:** Generate & Integrate Remaining Dinosaurs (Tiers 1-2)
-**Task 10:** Generate & Integrate Apex Dinosaurs (Tiers 3-5)
-**Task 11:** Generate & Integrate All Arenas
-**Task 12:** Generate & Integrate UI Elements
-**Task 13:** Polish & Optimization
+**Task 7:** Generate & Integrate Cave Bar Environment
+**Task 8:** Generate & Integrate Remaining Dinosaurs (Tiers 1-2)
+**Task 9:** Generate & Integrate Apex Dinosaurs (Tiers 3-5)
+**Task 10:** Generate & Integrate All Arenas
+**Task 11:** Generate & Integrate UI Elements
+**Task 12:** Polish & Optimization
+
+**Note:** Weapons are integrated into character animations and do not require separate generation tasks.
 
 Each task will follow TDD principles:
 1. Write test expectations
