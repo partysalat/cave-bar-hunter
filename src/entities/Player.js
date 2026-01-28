@@ -14,6 +14,7 @@ const ATTACK_WINDUP_DURATION = 150;
 const ATTACK_SWING_DURATION = 300;
 const ATTACK_RECOVERY_DURATION = 200;
 const ATTACK_COOLDOWN_TIME = 1000;
+const ATTACK_MOVEMENT_SPEED_MULTIPLIER = 0.5; // Move at 50% speed while attacking
 
 /**
  * Player entity - represents one of 1-4 caveman hunters
@@ -109,7 +110,7 @@ export default class Player extends Entity {
      * @param {number} dirY - Y direction (-1, 0, 1)
      */
     move(dirX, dirY) {
-        if (this.isDodging || this.isAttacking) return; // Can't move during dodge or attack
+        if (this.isDodging) return; // Can't move during dodge
 
         // Normalize diagonal movement
         if (dirX !== 0 && dirY !== 0) {
@@ -118,8 +119,13 @@ export default class Player extends Entity {
             dirY /= length;
         }
 
-        // Use crawl speed if downed, normal speed otherwise
-        const speed = this.isDowned ? this.crawlSpeed : this.moveSpeed;
+        // Calculate speed based on state
+        let speed = this.moveSpeed;
+        if (this.isDowned) {
+            speed = this.crawlSpeed;
+        } else if (this.isAttacking) {
+            speed = this.moveSpeed * ATTACK_MOVEMENT_SPEED_MULTIPLIER;
+        }
 
         this.velocityX = dirX * speed;
         this.velocityY = dirY * speed;
@@ -260,10 +266,6 @@ export default class Player extends Entity {
         this.attackTimer = 0;
         this.attackPhase = 'windup';
         this.hitEnemiesThisSwing = [];
-
-        // Stop movement during attack
-        this.velocityX = 0;
-        this.velocityY = 0;
 
         // Play club swing attack animation
         const direction = this.getCurrentDirection();

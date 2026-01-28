@@ -238,13 +238,19 @@ describe('Player - Club Attack', () => {
         expect(player.hitEnemiesThisSwing).toEqual([]);
     });
 
-    it('cannot move while attacking', () => {
+    it('moves slower while attacking', () => {
         const player = new Player(mockScene, 0, 10, 10, 0);
 
-        player.startAttack();
-        player.move(1, 0); // Try to move
+        // Move normally first to get baseline speed
+        player.move(1, 0);
+        const normalSpeed = player.velocityX;
 
-        expect(player.velocityX).toBe(0);
-        expect(player.velocityY).toBe(0);
+        // Now attack and move
+        player.startAttack();
+        player.move(1, 0);
+
+        // Speed should be 50% of normal
+        expect(player.velocityX).toBeGreaterThan(0);
+        expect(player.velocityX).toBe(normalSpeed * 0.5);
     });
 });
