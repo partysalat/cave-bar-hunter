@@ -1,0 +1,51 @@
+{
+  "arena_name": "Open Savanna",
+  "arena_id": "arena-6-open-savanna",
+  "description": "Wide open savanna grassland with golden vegetation, watering holes, and acacia trees",
+  "created": "2026-01-28",
+  "tiles": [
+    {
+      "name": "Savanna Grass",
+      "file": "tiles/savanna-grass.png",
+      "size": "64x64",
+      "tile_id": "3e108282-f66e-493a-9252-acc77abe02ec",
+      "description": "golden savanna grass with dry vegetation, african grassland",
+      "type": "base_ground"
+    },
+    {
+      "name": "Watering Hole Edge",
+      "file": "tiles/watering-hole-edge.png",
+      "size": "64x64",
+      "tile_id": "796d9812-6abf-4220-b6ff-fd941a8b34b5",
+      "description": "watering hole edge with water and muddy shore, pond rim",
+      "type": "water"
+    }
+  ],
+  "props": [
+    {
+      "name": "Acacia Tree",
+      "file": "props/acacia-tree.png",
+      "size": "192x192",
+      "object_id": "e54f1449-3838-41e7-bb75-b8d1e432fa94",
+      "description": "tall acacia tree with flat spreading canopy, african savanna tree",
+      "type": "obstacle"
+    },
+    {
+      "name": "Flat Rock",
+      "file": "props/flat-rock.png",
+      "size": "96x96",
+      "object_id": "6818d20c-9d3b-40ea-8f6e-9f7a6b4eb847",
+      "description": "flat rock formation on ground, smooth stone slab",
+      "type": "decoration"
+    }
+  ],
+  "generation_settings": {
+    "tile_shape": "thick tile",
+    "tile_size": 64,
+    "outline": "single color outline",
+    "shading": "basic shading",
+    "detail": "medium detail",
+    "view": "high top-down",
+    "text_guidance_scale": 8
+  }
+}
