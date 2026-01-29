@@ -432,6 +432,79 @@ These descriptions guide how weapons should appear in character animations:
 
 **Total Environment Assets:** 43 tiles/props + 3 hazard animations = 46 generations
 
+**Status:**
+- ✅ Arena 1: Tar Pits (5 assets - 3 tiles, 2 props)
+- ✅ Arena 2: Volcanic Rocks (5 assets - 3 tiles, 2 props)
+- ✅ Arena 3: Dense Jungle (6 assets - 3 tiles, 3 props)
+- ✅ Arena 4: Frozen Tundra (5 assets - 3 tiles, 2 props)
+- ✅ Arena 5: Bone Graveyard (6 assets - 3 tiles, 3 props)
+- ✅ Arena 6: Open Savanna (4 assets - 2 tiles, 2 props)
+- **Total Generated:** 31 base arena assets
+
+---
+
+### Terrain Depth & Elevation Considerations
+
+**Current Limitations:**
+
+The initial arena generation provides minimal tile variety (2-3 ground tiles + 2-3 props per arena). For rich, visually interesting terrain, arenas need expansion:
+
+**Needed for Rich Terrain:**
+- **Ground Variations:** 4-6 texture variants per arena (currently 2-3)
+- **Transition Tiles:** Corner/edge blending tiles for smooth terrain mixing
+- **Prop Variety:** 6-10 decorative objects per arena (currently 2-3)
+- **Size Diversity:** Small (32-64px), medium (96-128px), large (192-256px) props
+
+**Elevation/Height Tiles for Jumping:**
+
+The game uses 3D world coordinates with `worldZ` for elevation (0-10+ units). Players can jump to Z=2.0. Elevated terrain requires visual representation:
+
+**Approach: Visual Elevation Tiles**
+
+Generate tiles that show height differences through artwork while game logic handles actual Z-positioning:
+
+**Low Platform (Z=1.0):**
+- Canvas: 64px thick tile
+- Prompt: `"low platform 1 unit high with visible vertical edge, gentle elevation"`
+- Use: Small elevation changes, steps
+
+**Mid Platform (Z=2.0 - Jump Height):**
+- Canvas: 96px thick tile
+- Prompt: `"platform 2 units tall with flat top and vertical face, jump-height elevation"`
+- Use: Jump destinations, elevated combat zones
+
+**High Platform (Z=3.0+):**
+- Canvas: 128px thick tile
+- Prompt: `"tall cliff platform 3 units high with steep face, elevated surface"`
+- Use: High ground advantage, unreachable areas
+
+**Ramp/Slope Tiles:**
+- Canvas: 64-96px
+- Prompt: `"gentle slope ramp upward, gradual incline"`
+- Use: Visual transition between elevation levels
+
+**Implementation:**
+- Tile artwork shows the vertical faces/slopes visually
+- Game entities use `worldZ` position for actual height logic
+- Collision system checks Z-ranges for platform standing
+- Camera depth sorting handles visual layering automatically
+
+**Proposed Elevation Expansion (per arena):**
+- 2-3 platform tiles at different heights
+- 1-2 ramp/slope transition tiles
+- Adds 3-5 tiles per arena × 6 arenas = 18-30 additional tiles
+
+**Proposed Variety Expansion (per arena):**
+- 2-3 additional ground texture variants
+- 3-4 small decorative props (32-64px)
+- 2-3 medium obstacles (96-128px)
+- 1 additional large landmark (192-256px)
+- Adds ~8-10 assets per arena × 6 arenas = 48-60 additional assets
+
+**Expanded Total:** 31 base + 18-30 elevation + 48-60 variety = **97-121 total environment assets**
+
+This expansion can be done incrementally as needed during gameplay development.
+
 ---
 
 ### UI Elements (Minimal Implementation)
@@ -496,17 +569,29 @@ These descriptions guide how weapons should appear in character animations:
 
 ### Total Asset Count
 
-| Category | Base Sprites | Animations | Total Generations |
-|----------|--------------|------------|-------------------|
-| **Players** | 4 | 44 | 48 |
-| **Weapons** | 0 | 0 | 0* |
-| **Dinosaurs** | 12 | 72 + ~10 special | 94 |
-| **Bartender** | 1 | 4 | 5 |
-| **Environments** | 43 | 3 | 46 |
-| **UI Elements** | 50-60 | 0 | 50-60 |
-| **TOTAL** | **110-120** | **125** | **243-253** |
+| Category | Base Sprites | Animations | Initial Gen | Expanded Target |
+|----------|--------------|------------|-------------|-----------------|
+| **Players** | 4 | 44 | 48 | 48 |
+| **Weapons** | 0 | 0 | 0* | 0* |
+| **Dinosaurs** | 12 | 72 + ~10 special | 94 | 94 |
+| **Bartender** | 1 | 4 | 5 | 5 |
+| **Environments - Base** | 31 tiles/props | 3 hazards | 34 | 34 ✅ |
+| **Environments - Elevation** | 0 | 0 | 0 | 18-30 |
+| **Environments - Variety** | 0 | 0 | 0 | 48-60 |
+| **Cave Bar Hub** | 0 | 0 | 0 | 12 |
+| **UI Elements** | 50-60 | 0 | 50-60 | 50-60 |
+| **TOTAL** | **98-108** | **125** | **231-241** | **309-361** |
 
 \* *Weapons are integrated into character animations, not generated as separate assets*
+
+**Current Progress:**
+- ✅ Players: Complete (4 heroes, all weapon animations)
+- ✅ Environments Base: Complete (31 arena assets across 6 arenas)
+- 🔄 Dinosaurs: Not started
+- 🔄 Bartender: Not started
+- 🔄 Environment Expansion: Not started (elevation tiles, variety props)
+- 🔄 Cave Bar Hub: Not started
+- 🔄 UI Elements: Not started
 
 ---
 
