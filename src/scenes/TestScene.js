@@ -24,48 +24,16 @@ export default class TestScene extends Phaser.Scene {
     }
 
     preload() {
-        // Load player character animations
+        // Load player character sprite sheets
+        // Each sprite sheet contains all animations for one character color
         const playerColors = ['red', 'blue', 'yellow', 'green'];
-        const directions = ['south', 'south-east', 'east', 'north-east', 'north', 'north-west', 'west', 'south-west'];
 
-        playerColors.forEach((color, playerIndex) => {
-            directions.forEach(direction => {
-                // Load running animation frames (8 frames per direction)
-                const runningFrames = [];
-                for (let i = 0; i < 8; i++) {
-                    const frameKey = `player-${playerIndex}-run-${direction}-${i}`;
-                    const framePath = `/assets/characters/${color}-hero/animations/running-8-frames/${direction}/frame_00${i}.png`;
-                    this.load.image(frameKey, framePath);
-                    runningFrames.push({ key: frameKey });
-                }
-
-                // Load breathing idle animation frames (4 frames per direction)
-                const idleFrames = [];
-                for (let i = 0; i < 4; i++) {
-                    const frameKey = `player-${playerIndex}-idle-${direction}-${i}`;
-                    const framePath = `/assets/characters/${color}-hero/animations/breathing-idle/${direction}/frame_00${i}.png`;
-                    this.load.image(frameKey, framePath);
-                    idleFrames.push({ key: frameKey });
-                }
-
-                // Load fight stance idle animation frames (8 frames per direction)
-                const fightStanceFrames = [];
-                for (let i = 0; i < 8; i++) {
-                    const frameKey = `player-${playerIndex}-fight-stance-${direction}-${i}`;
-                    const framePath = `/assets/characters/${color}-hero/animations/fight-stance-idle/${direction}/frame_00${i}.png`;
-                    this.load.image(frameKey, framePath);
-                    fightStanceFrames.push({ key: frameKey });
-                }
-
-                // Load club swing attack animation frames (16 frames per direction)
-                const clubSwingFrames = [];
-                for (let i = 0; i < 16; i++) {
-                    const frameKey = `player-${playerIndex}-club-swing-${direction}-${i}`;
-                    const framePath = `/assets/characters/${color}-hero/animations/custom-swing-a-club/${direction}/frame_0${i < 10 ? '0' + i : i}.png`;
-                    this.load.image(frameKey, framePath);
-                    clubSwingFrames.push({ key: frameKey });
-                }
-            });
+        playerColors.forEach((color) => {
+            this.load.atlas(
+                `${color}-hero`,
+                `/assets/generated/spritesheets/${color}-hero.png`,
+                `/assets/generated/spritesheets/${color}-hero.json`
+            );
         });
     }
 
@@ -271,57 +239,56 @@ export default class TestScene extends Phaser.Scene {
      */
     createPlayerAnimations() {
         const directions = ['south', 'south-east', 'east', 'north-east', 'north', 'north-west', 'west', 'south-west'];
+        const playerColors = ['red', 'blue', 'yellow', 'green'];
 
         for (let playerIndex = 0; playerIndex < 4; playerIndex++) {
+            const atlasKey = `${playerColors[playerIndex]}-hero`;
+
             directions.forEach(direction => {
                 // Create running animation (8 frames, 12 fps)
-                const runKey = `player-${playerIndex}-run-${direction}`;
-                const runFrames = [];
-                for (let i = 0; i < 8; i++) {
-                    runFrames.push({ key: `player-${playerIndex}-run-${direction}-${i}` });
-                }
                 this.anims.create({
-                    key: runKey,
-                    frames: runFrames,
+                    key: `player-${playerIndex}-run-${direction}`,
+                    frames: this.anims.generateFrameNames(atlasKey, {
+                        prefix: `player-${playerIndex}-run-${direction}-`,
+                        start: 0,
+                        end: 7
+                    }),
                     frameRate: 12,
                     repeat: -1 // Loop forever
                 });
 
                 // Create idle animation (4 frames, 6 fps for slower breathing)
-                const idleKey = `player-${playerIndex}-idle-${direction}`;
-                const idleFrames = [];
-                for (let i = 0; i < 4; i++) {
-                    idleFrames.push({ key: `player-${playerIndex}-idle-${direction}-${i}` });
-                }
                 this.anims.create({
-                    key: idleKey,
-                    frames: idleFrames,
+                    key: `player-${playerIndex}-idle-${direction}`,
+                    frames: this.anims.generateFrameNames(atlasKey, {
+                        prefix: `player-${playerIndex}-idle-${direction}-`,
+                        start: 0,
+                        end: 3
+                    }),
                     frameRate: 6,
                     repeat: -1 // Loop forever
                 });
 
                 // Create fight stance idle animation (8 frames)
-                const fightStanceKey = `player-${playerIndex}-fight-stance-${direction}`;
-                const fightStanceFrames = [];
-                for (let i = 0; i < 8; i++) {
-                    fightStanceFrames.push({ key: `player-${playerIndex}-fight-stance-${direction}-${i}` });
-                }
                 this.anims.create({
-                    key: fightStanceKey,
-                    frames: fightStanceFrames,
+                    key: `player-${playerIndex}-fight-stance-${direction}`,
+                    frames: this.anims.generateFrameNames(atlasKey, {
+                        prefix: `player-${playerIndex}-fight-stance-${direction}-`,
+                        start: 0,
+                        end: 7
+                    }),
                     frameRate: ANIM_FRAMERATE_FIGHT_STANCE,
                     repeat: -1 // Loop forever
                 });
 
                 // Create club swing attack animation (16 frames)
-                const clubSwingKey = `player-${playerIndex}-club-swing-${direction}`;
-                const clubSwingFrames = [];
-                for (let i = 0; i < 16; i++) {
-                    clubSwingFrames.push({ key: `player-${playerIndex}-club-swing-${direction}-${i}` });
-                }
                 this.anims.create({
-                    key: clubSwingKey,
-                    frames: clubSwingFrames,
+                    key: `player-${playerIndex}-club-swing-${direction}`,
+                    frames: this.anims.generateFrameNames(atlasKey, {
+                        prefix: `player-${playerIndex}-club-swing-${direction}-`,
+                        start: 0,
+                        end: 15
+                    }),
                     frameRate: ANIM_FRAMERATE_CLUB_SWING,
                     repeat: 0 // Play once, don't loop
                 });

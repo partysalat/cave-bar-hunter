@@ -3,3 +3,6 @@ dist/
 .DS_Store
 *.log
 .idea/
+
+# Generated sprite sheets (run npm run build:spritesheets to regenerate)
+assets/generated/

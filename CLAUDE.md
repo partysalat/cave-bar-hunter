@@ -20,6 +20,9 @@ npm run dev              # Start dev server (default: http://localhost:5173)
 npm test                 # Run tests in watch mode
 npm run test:ui          # Run tests with Vitest UI
 
+# Asset Generation
+npm run build:spritesheets  # Generate optimized sprite sheets from character frames
+
 # Production
 npm run build            # Build for production
 npm run preview          # Preview production build
@@ -28,6 +31,38 @@ npm run preview          # Preview production build
 npm test -- CoordinateSystem.test.js    # Run specific test file
 npm test -- -t "test name pattern"      # Run tests matching pattern
 ```
+
+### Sprite Sheet Build System
+
+The game uses optimized sprite sheets instead of loading individual frames:
+
+**Location:** `scripts/build-spritesheets.js`
+
+**What it does:**
+- Scans `assets/characters/{color}-hero/animations/` directories
+- Packs all animation frames into a single PNG per character
+- Generates Phaser 3 compatible JSON atlases
+- Outputs to `assets/generated/spritesheets/`
+
+**When to run:**
+- After adding new animations to character folders
+- After modifying existing animation frames
+- When setting up the project for the first time
+
+**Output:**
+- `assets/generated/spritesheets/{color}-hero.png` - Packed sprite sheet image
+- `assets/generated/spritesheets/{color}-hero.json` - Frame atlas metadata
+
+**Benefits:**
+- Reduces ~4000+ individual PNG loads down to 8 files (4 PNGs + 4 JSONs)
+- Better GPU memory usage and texture management
+- Faster initial load times
+- Automatic frame naming that matches game code expectations
+
+**Frame Naming Convention:**
+`player-{playerIndex}-{animKey}-{direction}-{frameNum}`
+
+Example: `player-0-run-south-3` = Red hero, running animation, facing south, frame 3
 
 ## Core Architecture
 
