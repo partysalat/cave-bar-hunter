@@ -225,7 +225,7 @@ These descriptions guide how weapons should appear in character animations:
 
 9. **Tyrannosaurus Rex**
    - Canvas: 512px (apex)
-   - Description: "T-Rex with massive head and tiny arms, dark green and brown coloring, towering apex predator, intimidating presence, stylized chibi"
+   - Description: "T-Rex with massive head and tiny arms, dark green and brown coloring, towering apex predator, intimidating presence, frightening dangerous boss, terrifying theropod"
 
 10. **Giganotosaurus**
     - Canvas: 512px (apex)
@@ -323,7 +323,8 @@ These descriptions guide how weapons should appear in character animations:
 
 **Base Sprite:**
 - Canvas: 128px
-- Description: "Burly Neanderthal bartender with thick beard, muscular build, brown fur outfit, cave bar server, friendly expression"
+- Body Proportions: Chibi (stocky/muscular, wider build than players)
+- Description: "Burly Neanderthal bartender with thick wild beard, muscular chibi build, stocky and wide, brown leather apron over fur tunic, dinosaur skull necklace trophy, bone beads, friendly welcoming smile, cave bar server with weathered hands"
 
 **Required Animations (4 animations):**
 
@@ -396,12 +397,25 @@ These descriptions guide how weapons should appear in character animations:
 - Acacia Tree Prop (192px)
 - Flat Rock Prop (96px)
 
-**Cave Bar Hub (12 assets)**
+**Cave Bar Hub (17 assets)**
+
+**Floor Tiles (4 tiles):**
 - Cave Stone Floor Tile (64px)
 - Polished Cave Floor Tile (64px)
 - Cave Wall Base Tile (64px)
 - Decorative Floor Tile (64px)
-- Stone Bar Counter Prop (256px)
+
+**Bar Counter Tileset (4 block tiles):**
+- Bar Counter Left End (64px block tile)
+- Bar Counter Middle Platform (64px block tile, repeatable)
+- Bar Counter Right End (64px block tile)
+- Bar Counter Corner (64px block tile, L-shaped)
+
+**Wall Tiles (2 tiles):**
+- Cave Wall Vertical Section (64px block tile, shows vertical rock face)
+- Cave Wall Corner Section (64px block tile, for room corners)
+
+**Props (7 props):**
 - Wooden Bar Stool Prop (96px)
 - Weapon Rack Prop (192px)
 - Cave Painting Panel Prop (128px)
@@ -430,7 +444,7 @@ These descriptions guide how weapons should appear in character animations:
    - Frames: 4 frame loop
    - Loop: Yes
 
-**Total Environment Assets:** 43 tiles/props + 3 hazard animations = 46 generations
+**Total Environment Assets:** 48 tiles/props + 3 hazard animations = 51 generations
 
 **Status:**
 - ✅ Arena 1: Tar Pits (5 assets - 3 tiles, 2 props)
@@ -439,7 +453,8 @@ These descriptions guide how weapons should appear in character animations:
 - ✅ Arena 4: Frozen Tundra (5 assets - 3 tiles, 2 props)
 - ✅ Arena 5: Bone Graveyard (6 assets - 3 tiles, 3 props)
 - ✅ Arena 6: Open Savanna (4 assets - 2 tiles, 2 props)
-- **Total Generated:** 31 base arena assets
+- ✅ Cave Bar Hub: Complete (17 assets - 10 tiles, 7 props)
+- **Total Generated:** 48 environment assets (31 arena + 17 cave bar)
 
 ---
 

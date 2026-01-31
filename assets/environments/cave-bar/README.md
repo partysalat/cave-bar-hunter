@@ -2,14 +2,38 @@
 
 Generated: 2026-01-30
 
-## Floor Tiles (4 assets)
+## Floor Tiles (3 assets)
 
 Located in `tiles/`
 
 1. **cave-stone-floor.png** (64×64px) - Rough ancient rock surface for main floor areas
 2. **polished-cave-floor.png** (64×64px) - Smooth worn stone for high-traffic areas
-3. **cave-wall-base.png** (64×64px) - Dark stone wall surface
-4. **decorative-floor.png** (64×64px) - Floor with primitive cave paintings and ancient symbols
+3. **decorative-floor.png** (64×64px) - Floor with primitive cave paintings and ancient symbols
+
+## Bar Counter Tileset (4 block tiles)
+
+Located in `tiles/`
+
+Platform-style elevated tiles for building the bar counter. Use block shape for visible height:
+
+1. **bar-counter-left-end.png** (64×64px block) - Left end cap of bar
+2. **bar-counter-middle-platform.png** (64×64px block) - Repeatable middle section
+3. **bar-counter-right-end.png** (64×64px block) - Right end cap of bar
+4. **bar-counter-corner.png** (64×64px block) - L-shaped corner for angled bars
+
+**Usage:** Build bars of any length: `[Left] + [Middle] + [Middle] + ... + [Right]`
+
+## Wall Tiles (3 assets)
+
+Located in `tiles/`
+
+Block-shaped tiles for defining room boundaries:
+
+1. **cave-wall-base.png** (64×64px) - Base wall tile (legacy)
+2. **cave-wall-vertical.png** (64×64px block) - Vertical wall section with visible height
+3. **cave-wall-corner.png** (64×64px block) - L-shaped corner where walls meet
+
+**Usage:** Place around perimeter to create room boundaries
 
 ## Props (8 assets)
 
