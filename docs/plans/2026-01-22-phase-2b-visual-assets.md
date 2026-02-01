@@ -29,49 +29,21 @@ This section documents ALL assets needed and their animation requirements.
 - Yellow Hero Champion
 - Green Hero Champion
 
-**Required Animations per Character (11 animations × 4 colors = 44 total):**
+**Animation Structure:**
 
-1. **Walking Animation**
-   - **Template:** `running-8-frames`
-   - **Action:** "walking cautiously with weapon ready"
-   - **Duration:** 8 frames
-   - **Use:** Primary movement animation
-   - **Loop:** Yes
-   - **Status (Red Hero):** ✅ Complete
+Each character requires two categories of animations:
+1. **Weapon-Agnostic Animations** - Same regardless of equipped weapon
+2. **Weapon-Specific Animation Sets** - Full locomotion + attack for each weapon type
 
-2. **Idle/Breathing Animation**
-   - **Template:** `breathing-idle`
-   - **Action:** "standing alert with weapon, scanning for danger"
-   - **Duration:** 6-8 frames
-   - **Use:** Default state when stationary
-   - **Loop:** Yes
-   - **Status (Red Hero):** ✅ Complete
+**Note:** These animations are for **combat during hunts** (fast-paced, running movement). Walking animations for the cave bar hub (slower exploration) can be added later if needed.
 
-3. **Jump Animation**
-   - **Template:** `jumping-1`
-   - **Action:** "jumping upward with weapon held"
-   - **Duration:** 6-8 frames (covers 0.8s jump cycle)
-   - **Use:** Vertical movement (Z=0 to Z=2.0), avoiding attacks, reaching platforms, jumping over hazards
-   - **Loop:** No
-   - **Status (Red Hero):** ✅ Complete
+---
 
-4. **Attack/Throw Animation**
-   - **Template:** `custom-throw-a-spear` (custom animation)
-   - **Action:** "throwing spear with wind-up motion"
-   - **Duration:** 16 frames
-   - **Use:** Spear throwing mechanic
-   - **Loop:** No
-   - **Status:** ✅ Complete (All Heroes)
+### Weapon-Agnostic Animations (6 animations × 4 colors = 24 total)
 
-5. **Melee/Club Swing Animation**
-   - **Template:** `custom-swing-a-club` (custom animation)
-   - **Action:** "swinging club in wide arc, melee attack"
-   - **Duration:** 6 frames
-   - **Use:** Wooden club melee attack
-   - **Loop:** No
-   - **Status (Red Hero):** ✅ Complete
+These animations don't change based on equipped weapon:
 
-6. **Dodge Roll Animation**
+1. **Dodge Roll Animation**
    - **Template:** Custom `dodge-roll`
    - **Action:** "quick evasive roll"
    - **Duration:** 4-6 frames
@@ -79,7 +51,7 @@ This section documents ALL assets needed and their animation requirements.
    - **Loop:** No
    - **Status (Red Hero):** ✅ Complete
 
-7. **Taking Damage Animation**
+2. **Taking Damage Animation**
    - **Template:** `taking-punch`
    - **Action:** "recoiling from hit, brief stagger"
    - **Duration:** 3-4 frames
@@ -87,7 +59,7 @@ This section documents ALL assets needed and their animation requirements.
    - **Loop:** No
    - **Status (Red Hero):** ✅ Complete
 
-8. **Downed State Animation**
+3. **Downed State Animation**
    - **Template:** `falling-back-death`
    - **Action:** "falling down injured, crawling on ground"
    - **Duration:** 8 frames (fall + crawl cycle)
@@ -95,7 +67,7 @@ This section documents ALL assets needed and their animation requirements.
    - **Loop:** Yes (crawling portion)
    - **Status (Red Hero):** ✅ Complete
 
-9. **Reviving Teammate Animation** (Performing Revive)
+4. **Reviving Teammate Animation** (Performing Revive)
    - **Template:** `picking-up`
    - **Action:** "kneeling down helping fallen teammate, pulling them up"
    - **Duration:** 6-8 frames
@@ -103,40 +75,215 @@ This section documents ALL assets needed and their animation requirements.
    - **Loop:** Yes (held during revive duration)
    - **Status (Red Hero):** ✅ Complete
 
-10. **Being Revived Animation**
-    - **Template:** `getting-up`
-    - **Action:** "standing up after being helped by teammate"
-    - **Duration:** 6 frames
-    - **Use:** When teammate completes 2-second revive action
-    - **Loop:** No
-    - **Status (Red Hero):** ✅ Complete
+5. **Being Revived Animation**
+   - **Template:** `getting-up`
+   - **Action:** "standing up after being helped by teammate"
+   - **Duration:** 6 frames
+   - **Use:** When teammate completes 2-second revive action
+   - **Loop:** No
+   - **Status (Red Hero):** ✅ Complete
 
-11. **Victory Pose Animation**
-    - **Template:** `fight-stance-idle-8-frames`
-    - **Action:** "celebrating victory - unique per color: fist pump (red), spear raise (blue), cheer (yellow), triumphant stance (green)"
-    - **Duration:** 8 frames
-    - **Use:** Hunt victory screen, synchronized celebration
-    - **Loop:** Yes (hold pose)
-    - **Status (Red Hero):** 🔄 Generating (ETA: 2-4 minutes)
+6. **Victory Pose Animation**
+   - **Template:** `fight-stance-idle-8-frames`
+   - **Action:** "celebrating victory - unique per color: fist pump (red), spear raise (blue), cheer (yellow), triumphant stance (green)"
+   - **Duration:** 8 frames
+   - **Use:** Hunt victory screen, synchronized celebration
+   - **Loop:** Yes (hold pose)
+   - **Status (Red Hero):** 🔄 Generating (ETA: 2-4 minutes)
 
-**Weapon-Specific Animations (All Heroes):**
-- `custom-swing-a-club` - Club melee attack (replaces cross-punch) - ✅ Complete
-- `custom-throw-a-spear` - Stone spear throw animation - ✅ Complete
-- `custom-throw-a-slingshot` - Sling weapon specific throw - ✅ Complete
+---
 
-**Additional Bonus Animations (Red Hero):**
-- `drinking` - Flavor/celebration animation
-- `running-jump` - Advanced movement combo
+### Weapon-Specific Animation Sets
 
-**Total Player Assets:** 4 base characters + 44 animations = 48 generations
+Each weapon requires a complete locomotion + attack set (4 animations per weapon: idle/run/jump/attack):
 
-**Progress:**
-- **All Heroes (Red/Blue/Yellow/Green):** Core animations complete
-  - ✅ Walking, Idle, Jump, Dodge, Damage, Downed, Revive animations
-  - ✅ Club swing attack (`custom-swing-a-club`)
-  - ✅ Spear throw attack (`custom-throw-a-spear`)
-  - ✅ Slingshot throw attack (`custom-throw-a-slingshot`)
-  - 🔄 Victory poses (fight-stance-idle) - generating
+**Priority Weapons: Club, Spear, Slingshot** (3 weapons × 4 animations × 4 colors = 48 animations)
+
+---
+
+#### 1. Stone Spear Set (Default Weapon)
+
+**Spear Idle Animation**
+- **Template:** `breathing-idle`
+- **Action:** "standing alert holding stone spear vertically, scanning for danger"
+- **Weapon Visual:** Stone spear weapon with wrapped leather grip, primitive prehistoric spear
+- **Duration:** 6-8 frames
+- **Loop:** Yes
+- **Status (Red Hero):** ✅ Complete
+
+**Spear Run Animation**
+- **Template:** `running-8-frames`
+- **Action:** "running with stone spear held ready to throw, fast combat movement"
+- **Weapon Visual:** Stone spear weapon with wrapped leather grip, primitive prehistoric spear
+- **Duration:** 8 frames
+- **Loop:** Yes
+- **Status (Red Hero):** ✅ Complete
+
+**Spear Jump Animation**
+- **Template:** `jumping-1`
+- **Action:** "jumping upward while holding stone spear"
+- **Weapon Visual:** Stone spear weapon with wrapped leather grip, primitive prehistoric spear
+- **Duration:** 6-8 frames
+- **Loop:** No
+- **Status (Red Hero):** ✅ Complete
+
+**Spear Throw Attack Animation**
+- **Template:** `custom-throw-a-spear`
+- **Action:** "throwing stone spear with wind-up motion, ranged attack"
+- **Weapon Visual:** Stone spear weapon with wrapped leather grip, primitive prehistoric spear
+- **Duration:** 16 frames
+- **Loop:** No
+- **Status:** ✅ Complete (All Heroes)
+
+---
+
+#### 2. Wooden Club Set (Melee Weapon)
+
+**Club Idle Animation**
+- **Template:** `breathing-idle`
+- **Action:** "standing alert holding wooden club over shoulder, ready stance"
+- **Weapon Visual:** Primitive wooden club with thick rounded knob head, natural wood grain texture, rough bark on handle
+- **Duration:** 6-8 frames
+- **Loop:** Yes
+- **Status (Red Hero):** 🔲 Not Started
+
+**Club Run Animation**
+- **Template:** `running-8-frames`
+- **Action:** "running with wooden club held over shoulder, aggressive charge"
+- **Weapon Visual:** Primitive wooden club with thick rounded knob head, natural wood grain texture, rough bark on handle
+- **Duration:** 8 frames
+- **Loop:** Yes
+- **Status (Red Hero):** 🔲 Not Started
+
+**Club Jump Animation**
+- **Template:** `jumping-1`
+- **Action:** "jumping upward while gripping wooden club"
+- **Weapon Visual:** Primitive wooden club with thick rounded knob head, natural wood grain texture, rough bark on handle
+- **Duration:** 6-8 frames
+- **Loop:** No
+- **Status (Red Hero):** 🔲 Not Started
+
+**Club Swing Attack Animation**
+- **Template:** `custom-swing-a-club`
+- **Action:** "swinging wooden club in wide arc, powerful melee strike"
+- **Weapon Visual:** Primitive wooden club with thick rounded knob head, natural wood grain texture, rough bark on handle
+- **Duration:** 6 frames
+- **Loop:** No
+- **Status (Red Hero):** ✅ Complete
+
+---
+
+#### 3. Sling Set (Ranged Weapon)
+
+**Sling Idle Animation**
+- **Template:** `breathing-idle`
+- **Action:** "standing alert holding leather sling, stone loaded in pouch"
+- **Weapon Visual:** Leather sling with stone ammunition pouch, prehistoric ranged weapon
+- **Duration:** 6-8 frames
+- **Loop:** Yes
+- **Status (Red Hero):** 🔲 Not Started
+
+**Sling Run Animation**
+- **Template:** `running-8-frames`
+- **Action:** "running with sling held ready, stone loaded, fast combat movement"
+- **Weapon Visual:** Leather sling with stone ammunition pouch, prehistoric ranged weapon
+- **Duration:** 8 frames
+- **Loop:** Yes
+- **Status (Red Hero):** 🔲 Not Started
+
+**Sling Jump Animation**
+- **Template:** `jumping-1`
+- **Action:** "jumping upward while holding leather sling"
+- **Weapon Visual:** Leather sling with stone ammunition pouch, prehistoric ranged weapon
+- **Duration:** 6-8 frames
+- **Loop:** No
+- **Status (Red Hero):** 🔲 Not Started
+
+**Sling Throw Attack Animation**
+- **Template:** `custom-throw-a-slingshot`
+- **Action:** "spinning sling overhead and releasing stone projectile"
+- **Weapon Visual:** Leather sling with stone ammunition pouch, prehistoric ranged weapon
+- **Duration:** 8-10 frames
+- **Loop:** No
+- **Status:** ✅ Complete (All Heroes)
+
+---
+
+#### 4. Fire Spear Set (Future - Tier 2 Upgrade)
+
+**Status:** 🔲 Deprioritized - Generate after core weapons complete
+
+- Fire Spear Idle (with flaming tip visual)
+- Fire Spear Run (with flaming tip visual)
+- Fire Spear Jump (with flaming tip visual)
+- Fire Spear Throw Attack (with fire trail effect)
+
+---
+
+#### 5. Net Launcher Set (Future - Support Weapon)
+
+**Status:** 🔲 Deprioritized - Generate after core weapons complete
+
+- Net Launcher Idle (crossbow-style weapon)
+- Net Launcher Run (crossbow-style weapon)
+- Net Launcher Jump (crossbow-style weapon)
+- Net Launcher Throw Attack (launches net projectile)
+
+---
+
+### Animation Summary
+
+**Weapon-Agnostic Animations:** 6 animations × 4 colors = **24 animations**
+
+**Priority Weapon Sets (Spear/Club/Sling):**
+- 3 weapons × 4 animations each × 4 colors = **48 animations**
+
+**Future Weapon Sets (Fire Spear/Net Launcher):**
+- 2 weapons × 4 animations each × 4 colors = **32 animations** (deprioritized)
+
+**Total Player Animations:** 24 + 48 + 32 = **104 animations**
+**Current Priority Total:** 24 + 48 = **72 animations** (focus on club/spear/sling)
+
+**Total Player Assets:** 4 base characters + 72 priority animations = **76 generations**
+
+---
+
+### Current Progress
+
+**Weapon-Agnostic Animations (Red Hero):**
+- ✅ Dodge Roll
+- ✅ Taking Damage
+- ✅ Downed State
+- ✅ Reviving Teammate
+- ✅ Being Revived
+- 🔄 Victory Pose (generating)
+
+**Stone Spear Set (Red Hero):**
+- ✅ Spear Idle
+- ✅ Spear Run
+- ✅ Spear Jump
+- ✅ Spear Throw Attack
+
+**Wooden Club Set (Red Hero):**
+- 🔲 Club Idle (need to generate)
+- 🔲 Club Run (need to generate)
+- 🔲 Club Jump (need to generate)
+- ✅ Club Swing Attack
+
+**Sling Set (Red Hero):**
+- 🔲 Sling Idle (need to generate)
+- 🔲 Sling Run (need to generate)
+- 🔲 Sling Jump (need to generate)
+- ✅ Sling Throw Attack
+
+**Status by Color:**
+- **Red Hero:** 6/6 agnostic ✅, 4/4 spear ✅, 1/4 club, 1/4 sling
+- **Blue/Yellow/Green Heroes:** 2/6 agnostic (spear throw, sling throw only)
+
+**Next Priority:**
+1. Generate Club idle/run/jump for Red Hero (3 animations)
+2. Generate Sling idle/run/jump for Red Hero (3 animations)
+3. Replicate all weapon sets to Blue/Yellow/Green Heroes (54 animations)
 
 ---
 
@@ -586,9 +733,9 @@ This expansion can be done incrementally as needed during gameplay development.
 
 ### Total Asset Count
 
-| Category | Base Sprites | Animations | Initial Gen | Expanded Target |
-|----------|--------------|------------|-------------|-----------------|
-| **Players** | 4 | 44 | 48 | 48 |
+| Category | Base Sprites | Animations | Priority Gen | Full Target |
+|----------|--------------|------------|--------------|-------------|
+| **Players** | 4 | 72 (3 weapons) | 76 | 108 (5 weapons) |
 | **Weapons** | 0 | 0 | 0* | 0* |
 | **Dinosaurs** | 12 | 72 + ~10 special | 94 | 94 |
 | **Bartender** | 1 | 4 | 5 | 5 |
@@ -597,18 +744,20 @@ This expansion can be done incrementally as needed during gameplay development.
 | **Environments - Variety** | 0 | 0 | 0 | 48-60 |
 | **Cave Bar Hub** | 0 | 0 | 0 | 12 |
 | **UI Elements** | 50-60 | 0 | 50-60 | 50-60 |
-| **TOTAL** | **98-108** | **125** | **231-241** | **309-361** |
+| **TOTAL** | **98-108** | **153 priority** | **259-269** | **369-421** |
 
 \* *Weapons are integrated into character animations, not generated as separate assets*
 
 **Current Progress:**
-- ✅ Players: Complete (4 heroes, all weapon animations)
+- 🔄 Players: Partial (Red Hero spear set complete, club/sling attacks only, other colors incomplete)
+  - Need: Club/Sling locomotion sets (idle/run/jump) for all 4 colors
+  - Deprioritized: Fire Spear and Net Launcher weapon sets (32 animations)
 - ✅ Environments Base: Complete (31 arena assets across 6 arenas)
-- 🔄 Dinosaurs: Not started
-- 🔄 Bartender: Not started
+- ✅ Cave Bar Hub: Complete (19 assets)
+- 🔄 Dinosaurs: Not started (94 animations)
+- 🔄 Bartender: Not started (5 animations)
 - 🔄 Environment Expansion: Not started (elevation tiles, variety props)
-- 🔄 Cave Bar Hub: Not started
-- 🔄 UI Elements: Not started
+- 🔄 UI Elements: Not started (50-60 icons/panels)
 
 ---
 
