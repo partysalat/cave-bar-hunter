@@ -45,7 +45,7 @@ These animations don't change based on equipped weapon:
 
 1. **Dodge Roll Animation**
    - **Template:** Custom `dodge-roll`
-   - **Action:** "quick evasive roll"
+   - **Action:** "prehistoric warrior executing emergency evasive maneuver: dropping into rapid forward roll with body tucking tight, arms protecting head, tumbling across ground with momentum, springing back up to feet in ready stance, instinctive survival reflex dodge"
    - **Duration:** 4-6 frames
    - **Use:** Invincibility frame dodge (0.5s duration)
    - **Loop:** No
@@ -53,7 +53,7 @@ These animations don't change based on equipped weapon:
 
 2. **Taking Damage Animation**
    - **Template:** `taking-punch`
-   - **Action:** "recoiling from hit, brief stagger"
+   - **Action:** "caveman warrior recoiling from impact: head and torso snapping backward, arms reflexively raising to guard, staggering back half a step with one foot sliding, face grimacing in pain, brief loss of balance but staying upright, wounded but not defeated"
    - **Duration:** 3-4 frames
    - **Use:** When player takes damage (not downed yet)
    - **Loop:** No
@@ -61,7 +61,7 @@ These animations don't change based on equipped weapon:
 
 3. **Downed State Animation**
    - **Template:** `falling-back-death`
-   - **Action:** "falling down injured, crawling on ground"
+   - **Action:** "injured warrior collapsing: falling backward with arms flailing, hitting ground hard on back, then desperately crawling forward on elbows dragging legs, reaching out with one hand for help, struggling to move while severely wounded, vulnerable prone position"
    - **Duration:** 8 frames (fall + crawl cycle)
    - **Use:** When player health reaches 0, crawling while downed
    - **Loop:** Yes (crawling portion)
@@ -69,7 +69,7 @@ These animations don't change based on equipped weapon:
 
 4. **Reviving Teammate Animation** (Performing Revive)
    - **Template:** `picking-up`
-   - **Action:** "kneeling down helping fallen teammate, pulling them up"
+   - **Action:** "heroic caveman kneeling beside fallen comrade: dropping to one knee, reaching down with both hands to grasp teammate under arms, pulling upward with straining effort, supporting teammate's weight, helping them stand, cooperative rescue motion showing teamwork and determination"
    - **Duration:** 6-8 frames
    - **Use:** When holding X button to revive downed teammate (2-second action)
    - **Loop:** Yes (held during revive duration)
@@ -77,7 +77,7 @@ These animations don't change based on equipped weapon:
 
 5. **Being Revived Animation**
    - **Template:** `getting-up`
-   - **Action:** "standing up after being helped by teammate"
+   - **Action:** "wounded warrior being helped to feet: starting from prone position, being lifted by teammate's support, pushing up with one hand on ground, rising unsteadily with teammate's assistance, wobbling slightly but regaining stance, grateful recovery with renewed determination"
    - **Duration:** 6 frames
    - **Use:** When teammate completes 2-second revive action
    - **Loop:** No
@@ -85,7 +85,7 @@ These animations don't change based on equipped weapon:
 
 6. **Victory Pose Animation**
    - **Template:** `fight-stance-idle-8-frames`
-   - **Action:** "celebrating victory - unique per color: fist pump (red), spear raise (blue), cheer (yellow), triumphant stance (green)"
+   - **Action:** "triumphant prehistoric champion celebrating: RED - raising both fists overhead pumping twice then holding, BLUE - thrusting spear skyward with dominant hand and roaring, YELLOW - jumping and cheering with arms spread wide, GREEN - standing tall with arms crossed nodding confidently, victorious warrior exultation"
    - **Duration:** 8 frames
    - **Use:** Hunt victory screen, synchronized celebration
    - **Loop:** Yes (hold pose)
@@ -105,7 +105,7 @@ Each weapon requires a complete locomotion + attack set (4 animations per weapon
 
 **Spear Idle Animation**
 - **Template:** `breathing-idle`
-- **Action:** "standing alert holding stone spear vertically, scanning for danger"
+- **Action:** "muscular prehistoric caveman hunter standing in ready stance, holding stone spear vertically at shoulder height with right hand gripping shaft mid-way, left hand resting near hip, weight balanced on both feet, chest rising and falling with steady breathing, eyes alert and scanning, confident warrior posture"
 - **Weapon Visual:** Stone spear weapon with wrapped leather grip, primitive prehistoric spear
 - **Duration:** 6-8 frames
 - **Loop:** Yes
@@ -113,7 +113,7 @@ Each weapon requires a complete locomotion + attack set (4 animations per weapon
 
 **Spear Run Animation**
 - **Template:** `running-8-frames`
-- **Action:** "running with stone spear held ready to throw, fast combat movement"
+- **Action:** "prehistoric hunter running at full sprint, stone spear held horizontally at chest level with throwing hand back near head and front hand extended forward for balance, athletic running gait with knees pumping high, leaning slightly forward, aggressive pursuit run like chasing prey"
 - **Weapon Visual:** Stone spear weapon with wrapped leather grip, primitive prehistoric spear
 - **Duration:** 8 frames
 - **Loop:** Yes
@@ -121,7 +121,7 @@ Each weapon requires a complete locomotion + attack set (4 animations per weapon
 
 **Spear Jump Animation**
 - **Template:** `jumping-1`
-- **Action:** "jumping upward while holding stone spear"
+- **Action:** "caveman warrior leaping upward with explosive leg drive, stone spear held vertically close to body with both hands gripping shaft, knees tucking up during apex of jump, determined athletic jumping motion like clearing an obstacle or dodging danger"
 - **Weapon Visual:** Stone spear weapon with wrapped leather grip, primitive prehistoric spear
 - **Duration:** 6-8 frames
 - **Loop:** No
@@ -129,7 +129,7 @@ Each weapon requires a complete locomotion + attack set (4 animations per weapon
 
 **Spear Throw Attack Animation**
 - **Template:** `custom-throw-a-spear`
-- **Action:** "throwing stone spear with wind-up motion, ranged attack"
+- **Action:** "prehistoric hunter executing throwing motion: wind-up with spear pulled back behind head, torso rotating, weight shifting to back foot, then explosive forward thrust with full body extension, spear launching from hand with follow-through, powerful javelin throw technique"
 - **Weapon Visual:** Stone spear weapon with wrapped leather grip, primitive prehistoric spear
 - **Duration:** 16 frames
 - **Loop:** No
@@ -141,7 +141,7 @@ Each weapon requires a complete locomotion + attack set (4 animations per weapon
 
 **Club Idle Animation**
 - **Template:** `breathing-idle`
-- **Action:** "standing alert holding wooden club over shoulder, ready stance"
+- **Action:** "burly prehistoric warrior in aggressive melee stance, wooden club resting on right shoulder with handle gripped in hand, heavy club head visible behind shoulder, left hand clenched in fist at side, wide stable footing, chest puffed out, intimidating posture like ready to charge into close combat, weight shifting slightly with breathing"
 - **Weapon Visual:** Primitive wooden club with thick rounded knob head, natural wood grain texture, rough bark on handle
 - **Duration:** 6-8 frames
 - **Loop:** Yes
@@ -149,7 +149,7 @@ Each weapon requires a complete locomotion + attack set (4 animations per weapon
 
 **Club Run Animation**
 - **Template:** `running-8-frames`
-- **Action:** "running with wooden club held over shoulder, aggressive charge"
+- **Action:** "muscular caveman charging forward at full speed, wooden club hoisted over right shoulder with one-handed grip, free arm pumping for momentum, aggressive bull-rush sprint with heavy footfalls, body leaning forward like a linebacker, fierce melee charge ready to close distance and bash"
 - **Weapon Visual:** Primitive wooden club with thick rounded knob head, natural wood grain texture, rough bark on handle
 - **Duration:** 8 frames
 - **Loop:** Yes
@@ -157,7 +157,7 @@ Each weapon requires a complete locomotion + attack set (4 animations per weapon
 
 **Club Jump Animation**
 - **Template:** `jumping-1`
-- **Action:** "jumping upward while gripping wooden club"
+- **Action:** "powerful warrior launching upward with strong leg drive, wooden club gripped firmly in both hands and held diagonally across body, club head pointing up and to the side, knees tucking during jump, explosive athletic leap with weapon secure"
 - **Weapon Visual:** Primitive wooden club with thick rounded knob head, natural wood grain texture, rough bark on handle
 - **Duration:** 6-8 frames
 - **Loop:** No
@@ -165,7 +165,7 @@ Each weapon requires a complete locomotion + attack set (4 animations per weapon
 
 **Club Swing Attack Animation**
 - **Template:** `custom-swing-a-club`
-- **Action:** "swinging wooden club in wide arc, powerful melee strike"
+- **Action:** "caveman warrior executing powerful horizontal club swing: winding up with club pulled back high, torso twisting, then explosive forward arc with full body rotation, club head sweeping in wide horizontal strike at chest height, brutal melee bash with follow-through"
 - **Weapon Visual:** Primitive wooden club with thick rounded knob head, natural wood grain texture, rough bark on handle
 - **Duration:** 6 frames
 - **Loop:** No
@@ -177,7 +177,7 @@ Each weapon requires a complete locomotion + attack set (4 animations per weapon
 
 **Sling Idle Animation**
 - **Template:** `breathing-idle`
-- **Action:** "standing alert holding leather sling, stone loaded in pouch"
+- **Action:** "nimble prehistoric hunter in alert skirmisher stance, leather sling held in right hand with stone loaded in pouch dangling at waist level, left hand near ammunition pouch on belt, weight on balls of feet ready to move, shoulders relaxed but ready, skilled ranged combatant posture, eyes tracking targets"
 - **Weapon Visual:** Leather sling with stone ammunition pouch, prehistoric ranged weapon
 - **Duration:** 6-8 frames
 - **Loop:** Yes
@@ -185,7 +185,7 @@ Each weapon requires a complete locomotion + attack set (4 animations per weapon
 
 **Sling Run Animation**
 - **Template:** `running-8-frames`
-- **Action:** "running with sling held ready, stone loaded, fast combat movement"
+- **Action:** "agile hunter sprinting with quick light footwork, leather sling gripped in right hand with loaded stone, left arm pumping for speed, athletic runner's form with smooth efficient stride, sling swaying with movement, mobile skirmisher ready to kite and strike from range"
 - **Weapon Visual:** Leather sling with stone ammunition pouch, prehistoric ranged weapon
 - **Duration:** 8 frames
 - **Loop:** Yes
@@ -193,7 +193,7 @@ Each weapon requires a complete locomotion + attack set (4 animations per weapon
 
 **Sling Jump Animation**
 - **Template:** `jumping-1`
-- **Action:** "jumping upward while holding leather sling"
+- **Action:** "lithe warrior springing upward with nimble athletic form, leather sling clutched in right hand with stone secure in pouch, left arm extended for balance, body compact during jump, graceful evasive leap like dodging while maintaining weapon ready"
 - **Weapon Visual:** Leather sling with stone ammunition pouch, prehistoric ranged weapon
 - **Duration:** 6-8 frames
 - **Loop:** No
@@ -201,7 +201,7 @@ Each weapon requires a complete locomotion + attack set (4 animations per weapon
 
 **Sling Throw Attack Animation**
 - **Template:** `custom-throw-a-slingshot`
-- **Action:** "spinning sling overhead and releasing stone projectile"
+- **Action:** "skilled slinger executing overhead whip throw: spinning leather sling in tight circle above head building momentum, body pivoting at waist, then snapping release with precise timing as sling whips forward, stone projectile launching at high speed, expert ranged weapon technique"
 - **Weapon Visual:** Leather sling with stone ammunition pouch, prehistoric ranged weapon
 - **Duration:** 8-10 frames
 - **Loop:** No
