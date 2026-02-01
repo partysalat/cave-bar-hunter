@@ -397,7 +397,7 @@ These descriptions guide how weapons should appear in character animations:
 - Acacia Tree Prop (192px)
 - Flat Rock Prop (96px)
 
-**Cave Bar Hub (17 assets)**
+**Cave Bar Hub (19 assets)**
 
 **Floor Tiles (4 tiles):**
 - Cave Stone Floor Tile (64px)
@@ -415,7 +415,7 @@ These descriptions guide how weapons should appear in character animations:
 - Cave Wall Vertical Section (64px block tile, shows vertical rock face)
 - Cave Wall Corner Section (64px block tile, for room corners)
 
-**Props (7 props):**
+**Props (9 props):**
 - Wooden Bar Stool Prop (96px)
 - Weapon Rack Prop (192px)
 - Cave Painting Panel Prop (128px)
@@ -423,6 +423,8 @@ These descriptions guide how weapons should appear in character animations:
 - Torch Sconce Prop (96px)
 - Bone Mug Prop (64px)
 - Scoreboard Stone Prop (192px)
+- Cave Wall Barrier Prop (192×192px) - Vertical wall section
+- Cave Wall Corner Prop (128×128px) - L-shaped corner wall
 
 **Environmental Hazard Animations (3 animations):**
 
@@ -444,7 +446,7 @@ These descriptions guide how weapons should appear in character animations:
    - Frames: 4 frame loop
    - Loop: Yes
 
-**Total Environment Assets:** 48 tiles/props + 3 hazard animations = 51 generations
+**Total Environment Assets:** 50 tiles/props + 3 hazard animations = 53 generations
 
 **Status:**
 - ✅ Arena 1: Tar Pits (5 assets - 3 tiles, 2 props)
@@ -453,8 +455,8 @@ These descriptions guide how weapons should appear in character animations:
 - ✅ Arena 4: Frozen Tundra (5 assets - 3 tiles, 2 props)
 - ✅ Arena 5: Bone Graveyard (6 assets - 3 tiles, 3 props)
 - ✅ Arena 6: Open Savanna (4 assets - 2 tiles, 2 props)
-- ✅ Cave Bar Hub: Complete (17 assets - 10 tiles, 7 props)
-- **Total Generated:** 48 environment assets (31 arena + 17 cave bar)
+- ✅ Cave Bar Hub: Complete (19 assets - 10 tiles, 9 props)
+- **Total Generated:** 50 environment assets (31 arena + 19 cave bar)
 
 ---
 
