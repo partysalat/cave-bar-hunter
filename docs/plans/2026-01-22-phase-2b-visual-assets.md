@@ -544,7 +544,7 @@ These descriptions guide how weapons should appear in character animations:
 - Acacia Tree Prop (192px)
 - Flat Rock Prop (96px)
 
-**Cave Bar Hub (19 assets)**
+**Cave Bar Hub (20 assets)**
 
 **Floor Tiles (4 tiles):**
 - Cave Stone Floor Tile (64px)
@@ -562,7 +562,7 @@ These descriptions guide how weapons should appear in character animations:
 - Cave Wall Vertical Section (64px block tile, shows vertical rock face)
 - Cave Wall Corner Section (64px block tile, for room corners)
 
-**Props (9 props):**
+**Props (10 props):**
 - Wooden Bar Stool Prop (96px)
 - Weapon Rack Prop (192px)
 - Cave Painting Panel Prop (128px)
@@ -570,8 +570,21 @@ These descriptions guide how weapons should appear in character animations:
 - Torch Sconce Prop (96px)
 - Bone Mug Prop (64px)
 - Scoreboard Stone Prop (192px)
-- Cave Wall Barrier Prop (192×192px) - Vertical wall section
-- Cave Wall Corner Prop (128×128px) - L-shaped corner wall
+
+**Cave Wall Props (Natural Rock Formation):**
+- **Cave Wall Barrier** (192×192px)
+  - Description: "rough natural cave stone wall barrier, vertical section of jagged irregular rock face, uneven bumpy surface with cracks and crevices, dark gray and brown cave stone texture, organic rock formation carved from living stone, primitive prehistoric cave interior wall, weathered ancient rock"
+  - Status: ✅ Regenerated (2026-02-01) - Natural cave rock instead of constructed blocks
+
+- **Cave Wall Straight** (128×192px)
+  - Description: "straight vertical section of natural cave stone wall, tall rough rock face running straight up, jagged irregular surface with uneven bumps and cracks, dark gray and brown weathered cave stone, organic rock formation, primitive prehistoric cave interior wall segment, ancient weathered rock texture"
+  - Status: ✅ Regenerated (2026-02-01) - Usable wall prop instead of background scene
+
+- **Cave Wall Corner** (128×128px)
+  - Description: "natural cave stone corner where two rock walls meet, L-shaped jagged cave rock formation, rough uneven surface with irregular edges, dark gray and brown weathered stone, organic cave interior corner, cracks and texture showing ancient rock, primitive cave wall junction"
+  - Status: ✅ Regenerated (2026-02-01) - Natural cave rock instead of constructed blocks
+
+**Note:** Cave wall props were initially generated as artificial stone blocks (like masonry) and have been regenerated with natural cave rock formations. Old versions preserved as `-old.png` files.
 
 **Environmental Hazard Animations (3 animations):**
 
@@ -593,7 +606,7 @@ These descriptions guide how weapons should appear in character animations:
    - Frames: 4 frame loop
    - Loop: Yes
 
-**Total Environment Assets:** 50 tiles/props + 3 hazard animations = 53 generations
+**Total Environment Assets:** 51 tiles/props + 3 hazard animations = 54 generations
 
 **Status:**
 - ✅ Arena 1: Tar Pits (5 assets - 3 tiles, 2 props)
@@ -602,8 +615,9 @@ These descriptions guide how weapons should appear in character animations:
 - ✅ Arena 4: Frozen Tundra (5 assets - 3 tiles, 2 props)
 - ✅ Arena 5: Bone Graveyard (6 assets - 3 tiles, 3 props)
 - ✅ Arena 6: Open Savanna (4 assets - 2 tiles, 2 props)
-- ✅ Cave Bar Hub: Complete (19 assets - 10 tiles, 9 props)
-- **Total Generated:** 50 environment assets (31 arena + 19 cave bar)
+- ✅ Cave Bar Hub: Complete (20 assets - 10 tiles, 10 props)
+  - Note: Cave wall props regenerated (2026-02-01) with natural cave rock appearance
+- **Total Generated:** 51 environment assets (31 arena + 20 cave bar)
 
 ---
 
@@ -742,9 +756,9 @@ This expansion can be done incrementally as needed during gameplay development.
 | **Environments - Base** | 31 tiles/props | 3 hazards | 34 | 34 ✅ |
 | **Environments - Elevation** | 0 | 0 | 0 | 18-30 |
 | **Environments - Variety** | 0 | 0 | 0 | 48-60 |
-| **Cave Bar Hub** | 0 | 0 | 0 | 12 |
+| **Cave Bar Hub** | 20 tiles/props | 0 | 20 | 20 ✅ |
 | **UI Elements** | 50-60 | 0 | 50-60 | 50-60 |
-| **TOTAL** | **98-108** | **153 priority** | **259-269** | **369-421** |
+| **TOTAL** | **118-128** | **153 priority** | **279-289** | **389-441** |
 
 \* *Weapons are integrated into character animations, not generated as separate assets*
 
@@ -753,7 +767,7 @@ This expansion can be done incrementally as needed during gameplay development.
   - Need: Club/Sling locomotion sets (idle/run/jump) for all 4 colors
   - Deprioritized: Fire Spear and Net Launcher weapon sets (32 animations)
 - ✅ Environments Base: Complete (31 arena assets across 6 arenas)
-- ✅ Cave Bar Hub: Complete (19 assets)
+- ✅ Cave Bar Hub: Complete (20 assets - regenerated cave wall props with natural rock)
 - 🔄 Dinosaurs: Not started (94 animations)
 - 🔄 Bartender: Not started (5 animations)
 - 🔄 Environment Expansion: Not started (elevation tiles, variety props)

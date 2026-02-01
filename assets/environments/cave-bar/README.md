@@ -35,18 +35,21 @@ Block-shaped tiles for defining room boundaries:
 
 **Usage:** Place around perimeter to create room boundaries
 
-## Props (8 assets)
+## Props (9 assets)
 
 Located in `props/`
 
-1. **bar-counter.png** (256×256px) - Stone bar counter, main serving area
-2. **bar-stool.png** (96×96px) - Wooden bar stool for seating
-3. **weapon-rack.png** (128×192px) - Wall-mounted rack displaying spears
-4. **cave-painting.png** (128×128px) - Decorative cave art panel
-5. **trophy-skull.png** (128×128px) - Mounted dinosaur skull trophy
-6. **torch-sconce.png** (64×96px) - Wall torch in stone holder with flame
-7. **bone-mug.png** (64×64px) - Drinking vessel made from hollowed bone
-8. **scoreboard.png** (192×192px) - Stone tablet for displaying scores
+1. **bar-stool.png** (96×96px) - Wooden bar stool for seating
+2. **weapon-rack.png** (128×192px) - Wall-mounted rack displaying spears
+3. **cave-painting.png** (128×128px) - Decorative cave art panel
+4. **trophy-skull.png** (128×128px) - Mounted dinosaur skull trophy
+5. **torch-sconce.png** (64×96px) - Wall torch in stone holder with flame
+6. **bone-mug.png** (64×64px) - Drinking vessel made from hollowed bone
+7. **scoreboard.png** (192×192px) - Stone tablet for displaying scores
+8. **cave-wall-barrier.png** (192×192px) - Vertical stone wall section with rock blocks
+9. **cave-wall-corner.png** (128×128px) - L-shaped corner where two walls meet
+
+**Note:** Wall barriers are placed as props around room perimeter to define the cave bar space.
 
 ## Bartender Character
 
