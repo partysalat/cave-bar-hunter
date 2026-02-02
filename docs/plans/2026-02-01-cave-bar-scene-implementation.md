@@ -47,6 +47,34 @@ Build the cave bar hub scene where players purchase upgrades, weapons, and cockt
 
 **All required assets are ready!**
 
+## Development Workflow
+
+**Standard Development Loop:**
+1. Write/modify code for task
+2. Run unit tests: `npm test`
+3. Start dev server: `npm run dev`
+4. Use Playwright MCP for visual verification:
+   - Navigate to `http://localhost:5173`
+   - Take snapshots/screenshots to verify changes
+   - Check console for errors
+   - Monitor network requests for asset loading
+5. Iterate based on feedback
+6. Mark task complete when all criteria met
+
+**Playwright MCP Benefits:**
+- Real-time visual feedback during development
+- Quick verification without manual browser navigation
+- Automated screenshot capture for documentation
+- Console monitoring catches JavaScript errors early
+- Network inspection helps debug asset loading issues
+
+**Key Playwright Commands:**
+- `browser_navigate("http://localhost:5173")` - Open dev server
+- `browser_snapshot()` - Get detailed page structure (preferred)
+- `browser_take_screenshot()` - Visual documentation
+- `browser_console_messages()` - Check for errors/warnings
+- `browser_network_requests()` - Monitor asset loading
+
 ## Implementation Tasks
 
 ### Task 0: ✅ COMPLETE - Bartender Character Assets
@@ -133,6 +161,10 @@ Examples:
 - Wall props create enclosed room feeling
 - Camera shows entire room at once
 - Depth sorting works (floor < props < walls)
+- **Browser Testing:** Use Playwright MCP to verify visual layout
+  - `browser_snapshot` to inspect scene structure
+  - `browser_console_messages` to check for loading errors
+  - `browser_take_screenshot` to document initial layout
 
 **Files Created:**
 - `src/scenes/CaveBarScene.js`
@@ -192,6 +224,10 @@ Examples:
 - Bartender plays idle animation loop
 - Bar stools positioned for player access
 - Depth sorting correct (counter platform, bartender, stools)
+- **Browser Testing:** Verify bartender animations
+  - `browser_snapshot` to check bar layout
+  - `browser_take_screenshot` to capture animation frames
+  - `browser_evaluate` to inspect animation state if needed
 
 **Files Created/Modified:**
 - `src/entities/Bartender.js`
@@ -622,6 +658,10 @@ Examples:
 - Room has warm, inviting atmosphere
 - Not too dark, all elements visible
 - Performance remains at 60 FPS
+- **Browser Testing:** Perfect for visual polish verification
+  - `browser_take_screenshot()` to capture lighting effects
+  - Compare before/after screenshots
+  - Verify atmosphere and visibility
 
 **Files Modified:**
 - `src/scenes/CaveBarScene.js` (lighting)
@@ -670,6 +710,11 @@ Examples:
 - Menus are clear and readable
 - Performance is smooth (60 FPS)
 - No console errors
+- **Browser Testing:** Critical for final polish
+  - `browser_console_messages()` to catch any remaining errors
+  - `browser_network_requests()` to verify all assets load correctly
+  - `browser_take_screenshot()` for before/after bug fix documentation
+  - Visual regression testing via screenshots
 
 ---
 
@@ -686,6 +731,31 @@ Examples:
 - Interaction system (proximity, prompts, menus)
 - Data persistence across scene transitions
 - Timer and exit flow
+
+**Browser Testing with Playwright MCP:**
+- Visual verification of scene layout and rendering
+- Real-time inspection during development
+- Interactive testing of UI elements and animations
+- Performance monitoring (60 FPS checks)
+- Console error detection
+- Network request monitoring for asset loading
+
+**Browser Testing Workflow:**
+1. Start dev server: `npm run dev`
+2. Use Playwright MCP tools to navigate to `http://localhost:5173`
+3. Take snapshots to verify layout and visual elements
+4. Inspect console messages for errors/warnings
+5. Monitor network requests for asset loading issues
+6. Take screenshots for documentation/debugging
+7. Test interactions (if supported by future test harness)
+
+**Playwright MCP Tools Available:**
+- `browser_navigate` - Navigate to dev server
+- `browser_snapshot` - Capture accessibility snapshot (better than screenshot)
+- `browser_take_screenshot` - Visual documentation
+- `browser_console_messages` - Check for errors/warnings
+- `browser_network_requests` - Monitor asset loading
+- `browser_evaluate` - Execute JavaScript for debugging
 
 **Manual Playtest Checklist:**
 - [ ] 4 players can enter cave bar
@@ -783,6 +853,7 @@ Examples:
 - Use existing Entity framework for consistent depth sorting
 - Implement interaction queue if multiple players approach same station
 - Design menus for D-pad navigation from the start
+- **Playwright MCP for visual testing** - Reduces risk of visual bugs by enabling real-time browser inspection during development
 
 ---
 
@@ -797,4 +868,29 @@ Examples:
 
 ---
 
+## Browser Testing Notes
+
+**Playwright MCP Integration:**
+The plan now includes browser testing capabilities via Playwright MCP. This enables real-time visual verification during development without manual browser navigation.
+
+**When to Use Browser Testing:**
+- After completing visual tasks (Task 1, 2, 11)
+- During animation development (Task 2 - bartender animations)
+- For UI polish and bug fixes (Task 12)
+- When debugging asset loading issues
+- For final visual regression testing
+
+**Playwright Limitations:**
+- Requires dev server running (`npm run dev`)
+- Limited to visual inspection and debugging
+- Interactive gameplay testing still requires manual playtesting
+- Cannot replace unit/integration tests for logic verification
+
+**Best Practice:**
+Use Playwright MCP as a complement to unit tests and manual playtesting, not a replacement. It excels at catching visual bugs early but doesn't verify gameplay logic.
+
+---
+
 **Plan Complete - Ready for Implementation**
+
+**Updated:** 2026-02-02 - Added Playwright MCP browser testing integration
