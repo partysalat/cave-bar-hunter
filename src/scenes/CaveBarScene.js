@@ -123,15 +123,19 @@ export default class CaveBarScene extends Phaser.Scene {
         const roomWidth = 20;
         const roomHeight = 15;
 
-        // Tile size in world units (each tile = 1 world unit)
-        // Note: Cave bar tiles are 64px, which maps to 1 world unit at our scale
-        const tileSize = 1;
+        // Tile size in world units (each tile = 0.64 world units)
+        // Note: Cave bar tiles are 64px, which maps to 0.64 world units at our scale
+        const tileSize = 0.64;
+
+        // Calculate number of tiles needed to fill the room
+        const tilesWide = Math.ceil(roomWidth / tileSize);
+        const tilesHigh = Math.ceil(roomHeight / tileSize);
 
         // Create floor tile sprites
-        for (let x = 0; x < roomWidth; x++) {
-            for (let y = 0; y < roomHeight; y++) {
-                const worldX = x;
-                const worldY = y;
+        for (let x = 0; x < tilesWide; x++) {
+            for (let y = 0; y < tilesHigh; y++) {
+                const worldX = x * tileSize;
+                const worldY = y * tileSize;
                 const worldZ = 0; // Floor at ground level
 
                 const screenPos = worldToScreen(worldX, worldY, worldZ);
@@ -141,7 +145,8 @@ export default class CaveBarScene extends Phaser.Scene {
                 let tileKey = 'cave-stone-floor'; // Default
 
                 // Add polished floor near bar area (center-right of room)
-                if (x >= 10 && x <= 15 && y >= 5 && y <= 10) {
+                // Adjust coordinates to work with world units instead of tile indices
+                if (worldX >= 10 && worldX <= 15 && worldY >= 5 && worldY <= 10) {
                     tileKey = 'polished-cave-floor';
                 }
 
@@ -155,7 +160,7 @@ export default class CaveBarScene extends Phaser.Scene {
             }
         }
 
-        console.log(`✅ Floor built (${roomWidth}×${roomHeight} tiles)`);
+        console.log(`✅ Floor built (${tilesWide}×${tilesHigh} = ${tilesWide * tilesHigh} tiles at ${tileSize} unit spacing)`);
     }
 
     /**
