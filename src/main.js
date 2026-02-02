@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import TestScene from './scenes/TestScene.js';
+import CaveBarScene from './scenes/CaveBarScene.js';
 import { SCREEN_WIDTH, SCREEN_HEIGHT } from './systems/CoordinateSystem.js';
 
 const config = {
@@ -17,7 +18,9 @@ const config = {
         mode: Phaser.Scale.ENVELOP,
         autoCenter: Phaser.Scale.CENTER_BOTH
     },
-    scene: [TestScene]
+    // Active scene: CaveBarScene for cave bar development
+    // Switch back to TestScene for combat testing
+    scene: [CaveBarScene, TestScene]
 };
 
 const game = new Phaser.Game(config);
