@@ -477,22 +477,23 @@ These descriptions guide how weapons should appear in character animations:
 
 1. **Idle Animation**
    - **Template:** `breathing-idle`
-   - **Action:** "cleaning bone mug with rag, idle bartender"
+   - **Action:** "burly bartender standing in relaxed stance, holding bone mug in left hand at waist level, right hand making circular wiping motion cleaning inside of mug with rag, shoulders gently rising and falling with breathing, friendly idle posture, steady rhythm of cleaning work"
    - **Loop:** Yes
 
 2. **Serving Animation**
    - **Template:** `throw-object` (adapted)
-   - **Action:** "sliding drink across bar counter"
+   - **Action:** "bartender executing underhand sliding motion: holding bone mug filled with drink in right hand at chest level, stepping forward with left foot, torso rotating and arm extending forward in smooth arc, releasing mug with gentle push like sliding object across surface, follow-through with arm, friendly serving gesture"
    - **Loop:** No
+   - **Note:** Animation shows only the bartender's body and the mug, no bar counter or table should appear
 
 3. **Celebrating Animation**
    - **Template:** `fight-stance-idle-8-frames`
-   - **Action:** "celebrating and pumping fist excitedly"
+   - **Action:** "enthusiastic bartender celebrating: pumping right fist upward twice overhead with powerful thrusts, left hand on hip, broad smile and head tilting back, chest puffed out with pride, victorious stance, holding final pose with fist raised, jovial triumphant energy"
    - **Loop:** Yes
 
 4. **Disapproving Animation**
    - **Template:** `breathing-idle` (variant)
-   - **Action:** "shaking head disapprovingly, arms crossed"
+   - **Action:** "stern bartender expressing disapproval: arms crossed firmly over chest, head shaking slowly side to side three times, furrowed brow with frown, body language showing stern judgment, w9eight shifting slightly with each head shake, authoritative disapproving stance"
    - **Loop:** Yes
 
 **Total Bartender Assets:** 1 base character + 4 animations = 5 generations
