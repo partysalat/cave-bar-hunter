@@ -117,110 +117,175 @@ export default class CaveBarScene extends Phaser.Scene {
      * Cave bar dimensions: ~20×15 world units (smaller than hunt arenas)
      */
     buildFloor() {
-        console.log('🏗️  Building cave bar floor...');
+        console.log('🏗️  Building organic cave floor...');
 
-        // Floor dimensions in world units
-        const roomWidth = 20;
-        const roomHeight = 15;
-
-        // Tile size in world units (each tile = 0.64 world units)
-        // Note: Cave bar tiles are 64px, which maps to 0.64 world units at our scale
+        const centerX = 10;
+        const centerY = 7.5;
+        const radiusX = 10; // Match wall ellipse
+        const radiusY = 7.5; // Match wall ellipse
         const tileSize = 0.64;
 
-        // Calculate number of tiles needed to fill the room
-        const tilesWide = Math.ceil(roomWidth / tileSize);
-        const tilesHigh = Math.ceil(roomHeight / tileSize);
+        // Calculate tile grid bounds
+        const minX = Math.floor((centerX - radiusX) / tileSize);
+        const maxX = Math.ceil((centerX + radiusX) / tileSize);
+        const minY = Math.floor((centerY - radiusY) / tileSize);
+        const maxY = Math.ceil((centerY + radiusY) / tileSize);
 
-        // Create floor tile sprites
-        for (let x = 0; x < tilesWide; x++) {
-            for (let y = 0; y < tilesHigh; y++) {
+        let floorTileCount = 0;
+
+        // Create floor tiles only inside the organic cave shape
+        for (let x = minX; x <= maxX; x++) {
+            for (let y = minY; y <= maxY; y++) {
                 const worldX = x * tileSize;
                 const worldY = y * tileSize;
-                const worldZ = 0; // Floor at ground level
 
+                // Check if this tile is inside the organic cave boundary
+                if (!this.isInsideCave(worldX, worldY, centerX, centerY, radiusX, radiusY)) {
+                    continue; // Skip tiles outside the cave
+                }
+
+                const worldZ = 0; // Floor at ground level
                 const screenPos = worldToScreen(worldX, worldY, worldZ);
                 const depth = calculateDepth(worldY, worldZ);
 
-                // Vary floor tiles for visual interest
-                let tileKey = 'cave-stone-floor'; // Default
+                // Use darker floor tiles for cave atmosphere
+                let tileKey = 'cave-wall-base'; // Darker default floor (same as walls)
 
-                // Add polished floor near bar area (center-right of room)
-                // Adjust coordinates to work with world units instead of tile indices
+                // Add lighter polished floor near bar area (center-right of room)
                 if (worldX >= 10 && worldX <= 15 && worldY >= 5 && worldY <= 10) {
-                    tileKey = 'polished-cave-floor';
+                    tileKey = 'cave-stone-floor'; // Lighter tan for bar area contrast
                 }
 
-                // Add decorative floor tiles randomly (5% chance)
+                // Add occasional darker accent tiles (5% chance)
                 if (Math.random() < 0.05) {
-                    tileKey = 'decorative-floor';
+                    tileKey = 'polished-cave-floor'; // Dark purple accent
                 }
 
                 const tile = this.add.sprite(screenPos.x, screenPos.y, tileKey);
                 tile.setDepth(depth);
+                floorTileCount++;
             }
         }
 
-        console.log(`✅ Floor built (${tilesWide}×${tilesHigh} = ${tilesWide * tilesHigh} tiles at ${tileSize} unit spacing)`);
+        console.log(`✅ Organic floor built (${floorTileCount} tiles inside cave boundary)`);
     }
 
     /**
-     * Build walls around room perimeter using props
+     * Check if a point is inside the organic cave boundary
+     * Uses same elliptical shape with variations as the walls
+     */
+    isInsideCave(x, y, centerX, centerY, radiusX, radiusY) {
+        // Calculate angle from center to point
+        const dx = x - centerX;
+        const dy = y - centerY;
+        const angle = Math.atan2(dy, dx);
+
+        // Apply same organic variations as wall generation
+        const variation1 = Math.sin(angle * 3) * 0.8;
+        const variation2 = Math.sin(angle * 5 + 1.5) * 0.5;
+        const variation3 = Math.sin(angle * 2 + 3) * 1.2;
+        const radiusVariation = variation1 + variation2 + variation3;
+
+        // Calculate effective radius at this angle for ellipse
+        const effectiveRadiusX = radiusX + radiusVariation;
+        const effectiveRadiusY = radiusY + radiusVariation;
+
+        // Distance from center
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        // Expected radius at this angle (ellipse formula)
+        const expectedRadius = Math.sqrt(
+            (effectiveRadiusX * effectiveRadiusX * effectiveRadiusY * effectiveRadiusY) /
+            (effectiveRadiusY * effectiveRadiusY * Math.cos(angle) * Math.cos(angle) +
+             effectiveRadiusX * effectiveRadiusX * Math.sin(angle) * Math.sin(angle))
+        );
+
+        // Point is inside if its distance is less than the expected radius
+        // Add small margin to ensure floor extends slightly under walls
+        return distance <= expectedRadius * 0.95;
+    }
+
+    /**
+     * Build walls using elevated floor tiles (high worldZ)
+     * Creates an organic, rounded cave perimeter
      */
     buildWalls() {
-        console.log('🏗️  Building cave walls...');
+        console.log('🏗️  Building organic cave walls...');
 
-        const roomWidth = 20;
-        const roomHeight = 15;
+        const centerX = 10;
+        const centerY = 7.5;
+        const radiusX = 10; // Horizontal radius
+        const radiusY = 7.5; // Vertical radius (creates ellipse)
+        const tileSize = 0.64;
+        const wallLayers = 6;
+        const layerSpacing = 0.15;
 
-        // Place wall barriers around perimeter
-        // Left wall (west side)
-        for (let y = 0; y < roomHeight; y += 3) {
-            const screenPos = worldToScreen(-0.5, y, 0);
-            const depth = calculateDepth(y, 0);
-            const wall = this.add.sprite(screenPos.x, screenPos.y, 'cave-wall-straight');
-            wall.setDepth(depth + 100); // Higher depth to appear behind props
+        let wallTileCount = 0;
+
+        // Generate wall positions along an elliptical perimeter with organic variations
+        const wallPoints = this.generateCavePerimeter(centerX, centerY, radiusX, radiusY, tileSize);
+
+        // Create tightly stacked wall layers
+        for (let layer = 0; layer < wallLayers; layer++) {
+            const layerZ = layer * layerSpacing;
+
+            wallPoints.forEach(point => {
+                const screenPos = worldToScreen(point.x, point.y, layerZ);
+                const depth = calculateDepth(point.y, layerZ);
+                const wall = this.add.sprite(screenPos.x, screenPos.y, 'cave-wall-base');
+                wall.setDepth(depth);
+                wallTileCount++;
+            });
         }
 
-        // Right wall (east side)
-        for (let y = 0; y < roomHeight; y += 3) {
-            const screenPos = worldToScreen(roomWidth + 0.5, y, 0);
-            const depth = calculateDepth(y, 0);
-            const wall = this.add.sprite(screenPos.x, screenPos.y, 'cave-wall-straight');
-            wall.setDepth(depth + 100);
+        console.log(`✅ Organic cave walls built (${wallTileCount} tiles in ${wallLayers} layers)`);
+    }
+
+    /**
+     * Generate organic cave perimeter points
+     * Creates an elliptical shape with natural variations
+     */
+    generateCavePerimeter(centerX, centerY, radiusX, radiusY, tileSize) {
+        const points = [];
+        const angleStep = Math.PI / 24; // Sample points around the ellipse
+
+        for (let angle = 0; angle < Math.PI * 2; angle += angleStep) {
+            // Base ellipse position
+            let x = centerX + Math.cos(angle) * radiusX;
+            let y = centerY + Math.sin(angle) * radiusY;
+
+            // Add organic variations using sine waves at different frequencies
+            const variation1 = Math.sin(angle * 3) * 0.8; // Small bumps
+            const variation2 = Math.sin(angle * 5 + 1.5) * 0.5; // Smaller details
+            const variation3 = Math.sin(angle * 2 + 3) * 1.2; // Larger curves
+
+            // Apply variations to radius
+            const radiusVariation = variation1 + variation2 + variation3;
+            x = centerX + Math.cos(angle) * (radiusX + radiusVariation);
+            y = centerY + Math.sin(angle) * (radiusY + radiusVariation);
+
+            // Fill in between sampled points with tiles
+            const lastPoint = points[points.length - 1];
+            if (lastPoint) {
+                const dx = x - lastPoint.x;
+                const dy = y - lastPoint.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                const steps = Math.ceil(distance / tileSize);
+
+                // Add intermediate points
+                for (let step = 1; step < steps; step++) {
+                    const t = step / steps;
+                    points.push({
+                        x: lastPoint.x + dx * t,
+                        y: lastPoint.y + dy * t
+                    });
+                }
+            }
+
+            points.push({ x, y });
         }
 
-        // Top wall (north side)
-        for (let x = 0; x < roomWidth; x += 3) {
-            const screenPos = worldToScreen(x, -0.5, 0);
-            const depth = calculateDepth(-0.5, 0);
-            const wall = this.add.sprite(screenPos.x, screenPos.y, 'cave-wall-barrier');
-            wall.setDepth(depth + 100);
-        }
-
-        // Bottom wall (south side, behind players)
-        for (let x = 0; x < roomWidth; x += 3) {
-            const screenPos = worldToScreen(x, roomHeight + 0.5, 0);
-            const depth = calculateDepth(roomHeight + 0.5, 0);
-            const wall = this.add.sprite(screenPos.x, screenPos.y, 'cave-wall-barrier');
-            wall.setDepth(depth + 100);
-        }
-
-        // Add corners for visual interest
-        const corners = [
-            { x: -0.5, y: -0.5 }, // Top-left
-            { x: roomWidth + 0.5, y: -0.5 }, // Top-right
-            { x: -0.5, y: roomHeight + 0.5 }, // Bottom-left
-            { x: roomWidth + 0.5, y: roomHeight + 0.5 } // Bottom-right
-        ];
-
-        corners.forEach(corner => {
-            const screenPos = worldToScreen(corner.x, corner.y, 0);
-            const depth = calculateDepth(corner.y, 0);
-            const wall = this.add.sprite(screenPos.x, screenPos.y, 'cave-wall-corner-prop');
-            wall.setDepth(depth + 100);
-        });
-
-        console.log('✅ Cave walls built');
+        return points;
     }
 
     /**
