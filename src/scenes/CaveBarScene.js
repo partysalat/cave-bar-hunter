@@ -1,5 +1,12 @@
 import Phaser from 'phaser';
-import { worldToScreen, calculateDepth } from '../systems/CoordinateSystem.js';
+import { worldToScreen, calculateDepth, screenToWorldDirection } from '../systems/CoordinateSystem.js';
+import Bartender from '../entities/Bartender.js';
+import Player from '../entities/Player.js';
+import InputManager from '../systems/InputManager.js';
+import WeaponShopMenu from '../ui/WeaponShopMenu.js';
+import AbilityPaintingUI from '../ui/AbilityPaintingUI.js';
+import CocktailMenu from '../ui/CocktailMenu.js';
+import { passiveAbilities } from '../data/passiveAbilities.js';
 
 /**
  * Cave Bar Scene
@@ -20,6 +27,16 @@ export default class CaveBarScene extends Phaser.Scene {
     }
 
     preload() {
+        // Load player sprite sheets
+        const playerColors = ['red', 'blue', 'yellow', 'green'];
+        playerColors.forEach((color, index) => {
+            this.load.atlas(
+                `player-${index}`,
+                `/assets/generated/spritesheets/${color}-hero.png`,
+                `/assets/generated/spritesheets/${color}-hero.json`
+            );
+        });
+
         // Load bartender sprite sheet
         this.load.atlas(
             'bartender',
@@ -59,27 +76,365 @@ export default class CaveBarScene extends Phaser.Scene {
     create() {
         console.log('🍺 Cave Bar Scene created');
 
-        // Create bartender animations
+        // Initialize systems
+        this.inputManager = new InputManager(this);
+        this.inputManager.setupKeyboard(); // Enable WASD for player 0 (testing)
+
+        // Create animations
+        this.createPlayerAnimations();
         this.createBartenderAnimations();
 
         // Build the cave bar environment
         this.buildFloor();
         this.buildWalls();
+        this.buildBarCounter();
+        this.addBartender();
+        this.addBarStools();
+        this.addBarProps();
+        this.addWeaponRack();
+        this.addCavePaintings();
+
+        // Spawn players
+        this.spawnPlayers();
+
+        // Create weapon shop menus (one per player)
+        this.weaponShopMenus = this.players.map(player => new WeaponShopMenu(this, player));
+
+        // Create ability painting UI instances (one per player per painting)
+        this.abilityPaintingUIs = this.players.map(player =>
+            this.cavePaintings.map(painting => new AbilityPaintingUI(this, painting, player))
+        );
+
+        // Create cocktail menus (one per player)
+        this.cocktailMenus = this.players.map(player => new CocktailMenu(this, player, this.bartender));
+
+        // Initialize player buffs arrays
+        this.players.forEach(player => {
+            if (!player.passiveAbilities) {
+                player.passiveAbilities = [];
+            }
+            if (!player.cocktailBuffs) {
+                player.cocktailBuffs = [];
+            }
+        });
+
+        // Setup bartender interaction zone
+        this.bartenderZone = {
+            worldX: this.bartender.worldX,
+            worldY: this.bartender.worldY + 1.5, // In front of bar
+            worldZ: this.bartender.worldZ,
+            interactionRadius: 2.5
+        };
 
         // Setup camera (fixed, centered on room)
         this.setupCamera();
 
         // Add atmospheric lighting (subtle tint)
         this.addLighting();
+
+        // Define collision boundaries
+        this.setupCollisionZones();
+
+        // Setup countdown timer
+        this.setupTimer();
     }
 
     update(time, delta) {
-        // Phase 1: Just render the environment
-        // Later phases will add:
-        // - Player movement
-        // - Bartender interactions
-        // - Shop menus
-        // - Timer countdown
+        // Update players with movement and collision
+        if (this.players) {
+            this.players.forEach((player, index) => {
+                // Skip movement if player has any menu open
+                if ((this.weaponShopMenus && this.weaponShopMenus[index].isOpen) ||
+                    (this.cocktailMenus && this.cocktailMenus[index].isOpen)) {
+                    player.isMoving = false;
+                    player.update(delta);
+                    return;
+                }
+
+                // Get input for this player (with keyboard fallback for player 0)
+                const input = this.inputManager.getPlayerInputWithKeyboard(index);
+
+                if (input) {
+                    // Convert D-pad to screen-space direction
+                    const screenDirection = this.inputManager.getDPadDirection(input.dpad);
+
+                    if (screenDirection.x !== 0 || screenDirection.y !== 0) {
+                        // Convert screen-space input to world-space direction (critical for isometric)
+                        const worldDirection = screenToWorldDirection(screenDirection.x, screenDirection.y);
+
+                        // Calculate desired new position
+                        const moveSpeed = player.moveSpeed;
+                        const deltaSeconds = delta / 1000;
+                        const newX = player.worldX + worldDirection.x * moveSpeed * deltaSeconds;
+                        const newY = player.worldY + worldDirection.y * moveSpeed * deltaSeconds;
+
+                        // Check if new position is valid (collision detection)
+                        if (this.isValidPosition(newX, newY, player.worldZ)) {
+                            player.worldX = newX;
+                            player.worldY = newY;
+                            player.facingX = worldDirection.x;
+                            player.facingY = worldDirection.y;
+                            player.isMoving = true;
+                        } else {
+                            player.isMoving = false;
+                        }
+                    } else {
+                        player.isMoving = false;
+                    }
+                }
+
+                // Update player entity
+                player.update(delta);
+            });
+        }
+
+        // Update bartender
+        if (this.bartender) {
+            this.bartender.update(time, delta);
+        }
+
+        // Check weapon rack proximity and handle menu interactions
+        if (this.weaponRack && this.players) {
+            let anyPlayerNearRack = false;
+
+            this.players.forEach((player, index) => {
+                const input = this.inputManager.getPlayerInputWithKeyboard(index);
+                if (!input) return;
+
+                const distance = this.getDistance2D(
+                    player.worldX, player.worldY,
+                    this.weaponRack.worldX, this.weaponRack.worldY
+                );
+
+                const isNearRack = distance <= this.weaponRack.interactionRadius;
+                player.nearWeaponRack = isNearRack;
+
+                if (isNearRack) {
+                    anyPlayerNearRack = true;
+                }
+
+                // If weapon shop menu is open for this player, handle menu input
+                if (this.weaponShopMenus[index].isOpen) {
+                    this.weaponShopMenus[index].update(input);
+                    return; // Skip movement when menu is open
+                }
+
+                // Open weapon shop when X is pressed near rack
+                if (isNearRack && input.buttons.x && !player.lastX) {
+                    this.weaponShopMenus[index].open();
+                    console.log(`Player ${index} opened weapon shop`);
+                }
+
+                // Track X button state for edge detection
+                player.lastX = input.buttons.x;
+            });
+
+            // Show/hide weapon rack prompt
+            if (this.weaponRackPrompt) {
+                this.weaponRackPrompt.setVisible(anyPlayerNearRack);
+            }
+        }
+
+        // Check cave painting proximity and handle ability purchases
+        if (this.cavePaintings && this.players && this.abilityPaintingUIs) {
+            this.players.forEach((player, playerIndex) => {
+                const input = this.inputManager.getPlayerInputWithKeyboard(playerIndex);
+                if (!input) return;
+
+                // Check proximity to each painting
+                this.cavePaintings.forEach((painting, paintingIndex) => {
+                    const distance = this.getDistance2D(
+                        player.worldX, player.worldY,
+                        painting.worldX, painting.worldY
+                    );
+
+                    const isNear = distance <= painting.interactionRadius;
+                    const paintingUI = this.abilityPaintingUIs[playerIndex][paintingIndex];
+
+                    // Show/hide UI based on proximity
+                    if (isNear && !this.weaponShopMenus[playerIndex].isOpen) {
+                        if (!paintingUI.isVisible) {
+                            paintingUI.show();
+                            paintingUI.updatePaintingState();
+                        }
+
+                        // Purchase ability on X press
+                        if (input.buttons.x && !player.lastPaintingX) {
+                            paintingUI.tryPurchase();
+                        }
+                    } else {
+                        if (paintingUI.isVisible) {
+                            paintingUI.hide();
+                        }
+                    }
+                });
+
+                // Track X button for paintings
+                player.lastPaintingX = input.buttons.x;
+            });
+        }
+
+        // Check bartender proximity and handle cocktail menu
+        if (this.bartenderZone && this.players && this.cocktailMenus) {
+            let anyPlayerNearBartender = false;
+
+            this.players.forEach((player, index) => {
+                const input = this.inputManager.getPlayerInputWithKeyboard(index);
+                if (!input) return;
+
+                const distance = this.getDistance2D(
+                    player.worldX, player.worldY,
+                    this.bartenderZone.worldX, this.bartenderZone.worldY
+                );
+
+                const isNearBartender = distance <= this.bartenderZone.interactionRadius;
+                player.nearBartender = isNearBartender;
+
+                if (isNearBartender) {
+                    anyPlayerNearBartender = true;
+                }
+
+                // If cocktail menu is open, handle menu input
+                if (this.cocktailMenus[index].isOpen) {
+                    this.cocktailMenus[index].update(input);
+                    return; // Skip other interactions
+                }
+
+                // Open cocktail menu when X is pressed near bartender
+                if (isNearBartender && input.buttons.x && !player.lastBartenderX) {
+                    this.cocktailMenus[index].open();
+                    console.log(`Player ${index} opened cocktail menu`);
+                }
+
+                // Track X button for bartender
+                player.lastBartenderX = input.buttons.x;
+            });
+
+            // Show/hide bartender prompt
+            if (this.bartenderPrompt) {
+                this.bartenderPrompt.setVisible(anyPlayerNearBartender);
+            }
+        }
+
+        // Update countdown timer
+        if (this.timerActive && this.timeRemaining > 0) {
+            this.timeRemaining -= delta / 1000; // Convert ms to seconds
+
+            // Update timer display
+            if (this.timerText) {
+                this.timerText.setText(this.formatTime(Math.max(0, this.timeRemaining)));
+
+                // Change color based on time remaining
+                if (this.timeRemaining <= 5) {
+                    this.timerText.setColor('#ff0000'); // Red for last 5 seconds
+                } else if (this.timeRemaining <= 10) {
+                    this.timerText.setColor('#ff9900'); // Orange for last 10 seconds
+                }
+            }
+
+            // Play warning beeps at specific times
+            if (Math.ceil(this.timeRemaining) === 10 && !this.beep10) {
+                console.log('⏰ 10 seconds remaining!');
+                this.beep10 = true;
+            }
+            if (Math.ceil(this.timeRemaining) === 5 && !this.beep5) {
+                console.log('⏰ 5 seconds remaining! GET READY!');
+                this.beep5 = true;
+            }
+
+            // Trigger exit when timer reaches 0
+            if (this.timeRemaining <= 0 && !this.exiting) {
+                this.exiting = true;
+                this.triggerExit();
+            }
+        }
+    }
+
+    /**
+     * Trigger exit transition
+     */
+    triggerExit() {
+        console.log('🚪 Time\'s up! Exiting cave bar...');
+
+        this.timerActive = false;
+
+        // Show exit message
+        const camera = this.cameras.main;
+        const exitText = this.add.text(
+            camera.width / 2,
+            camera.height / 2,
+            'TIME\'S UP!\nGET READY FOR THE HUNT!',
+            {
+                fontSize: '48px',
+                fontFamily: 'Arial',
+                color: '#ff9900',
+                fontStyle: 'bold',
+                align: 'center',
+                stroke: '#000000',
+                strokeThickness: 8
+            }
+        );
+        exitText.setOrigin(0.5);
+        exitText.setScrollFactor(0);
+        exitText.setDepth(150000);
+
+        // Fade out after 2 seconds and reload scene (temporary)
+        this.time.delayedCall(2000, () => {
+            this.cameras.main.fadeOut(1000, 0, 0, 0);
+            this.cameras.main.once('camerafadeoutcomplete', () => {
+                console.log('🔄 Restarting cave bar scene...');
+                this.scene.restart();
+            });
+        });
+    }
+
+    /**
+     * Calculate 2D distance between two points (ignoring Z)
+     */
+    getDistance2D(x1, y1, x2, y2) {
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    /**
+     * Creates player animations for all 4 players
+     */
+    createPlayerAnimations() {
+        const directions = ['south', 'south-east', 'east', 'north-east', 'north', 'north-west', 'west', 'south-west'];
+        const playerColors = ['red', 'blue', 'yellow', 'green'];
+
+        for (let playerIndex = 0; playerIndex < 4; playerIndex++) {
+            const atlasKey = `player-${playerIndex}`;
+
+            directions.forEach(direction => {
+                // Create running animation (8 frames, 12 fps)
+                this.anims.create({
+                    key: `player-${playerIndex}-run-${direction}`,
+                    frames: this.anims.generateFrameNames(atlasKey, {
+                        prefix: `player-${playerIndex}-run-${direction}-`,
+                        start: 0,
+                        end: 7
+                    }),
+                    frameRate: 12,
+                    repeat: -1
+                });
+
+                // Create idle animation (4 frames, 6 fps)
+                this.anims.create({
+                    key: `player-${playerIndex}-idle-${direction}`,
+                    frames: this.anims.generateFrameNames(atlasKey, {
+                        prefix: `player-${playerIndex}-idle-${direction}-`,
+                        start: 0,
+                        end: 3
+                    }),
+                    frameRate: 6,
+                    repeat: -1
+                });
+            });
+        }
+
+        console.log('✅ Player animations created');
     }
 
     /**
@@ -289,6 +644,324 @@ export default class CaveBarScene extends Phaser.Scene {
     }
 
     /**
+     * Build the bar counter structure
+     * Positioned in the center-right area of the cave
+     */
+    buildBarCounter() {
+        console.log('🏗️  Building bar counter...');
+
+        // Bar counter position (center-right of cave as per design)
+        const barStartX = 11;
+        const barY = 7.5;
+        const barZ = 0.3; // Slightly elevated platform
+
+        // Build horizontal bar (left to right)
+        const barLength = 5; // Number of middle sections
+
+        // Left end cap
+        const leftEndPos = worldToScreen(barStartX, barY, barZ);
+        const leftEnd = this.add.sprite(leftEndPos.x, leftEndPos.y, 'bar-counter-left-end');
+        leftEnd.setDepth(calculateDepth(barY, barZ));
+
+        // Middle platform sections
+        for (let i = 0; i < barLength; i++) {
+            const worldX = barStartX + (i + 1) * 0.64;
+            const screenPos = worldToScreen(worldX, barY, barZ);
+            const middle = this.add.sprite(screenPos.x, screenPos.y, 'bar-counter-middle-platform');
+            middle.setDepth(calculateDepth(barY, barZ));
+        }
+
+        // Right end cap
+        const rightEndX = barStartX + (barLength + 1) * 0.64;
+        const rightEndPos = worldToScreen(rightEndX, barY, barZ);
+        const rightEnd = this.add.sprite(rightEndPos.x, rightEndPos.y, 'bar-counter-right-end');
+        rightEnd.setDepth(calculateDepth(barY, barZ));
+
+        console.log('✅ Bar counter built');
+    }
+
+    /**
+     * Add the bartender NPC behind the bar counter
+     */
+    addBartender() {
+        console.log('🏗️  Adding bartender NPC...');
+
+        // Position bartender behind the bar (slightly back for depth)
+        const bartenderX = 13.5; // Center of the bar counter
+        const bartenderY = 7.0; // Behind the counter
+        const bartenderZ = 0.4; // Slightly elevated (standing on platform)
+
+        this.bartender = new Bartender(this, bartenderX, bartenderY, bartenderZ);
+
+        // Create interaction prompt (will be positioned later)
+        const screenPos = worldToScreen(bartenderX, bartenderY + 1.5, bartenderZ);
+        const promptY = screenPos.y + 40; // Below bartender
+        this.bartenderPrompt = this.add.text(
+            screenPos.x,
+            promptY,
+            'Press X to Order Drink',
+            {
+                fontSize: '16px',
+                fontFamily: 'Arial',
+                color: '#ffffff',
+                backgroundColor: '#000000',
+                padding: { x: 10, y: 5 }
+            }
+        );
+        this.bartenderPrompt.setOrigin(0.5);
+        this.bartenderPrompt.setDepth(calculateDepth(bartenderY, bartenderZ) + 1);
+        this.bartenderPrompt.setVisible(false);
+
+        console.log('✅ Bartender added at bar counter');
+    }
+
+    /**
+     * Add bar stools for players to sit at
+     */
+    addBarStools() {
+        console.log('🏗️  Adding bar stools...');
+
+        const stoolY = 8.5; // In front of the bar counter
+        const stoolZ = 0.2; // Slightly elevated
+        const stoolSpacing = 1.2; // Space between stools
+
+        // 4 stools positioned in front of the bar
+        const stoolPositions = [
+            { x: 11.5, label: 'red' },
+            { x: 12.7, label: 'blue' },
+            { x: 13.9, label: 'yellow' },
+            { x: 15.1, label: 'green' }
+        ];
+
+        this.barStools = [];
+
+        stoolPositions.forEach(pos => {
+            const screenPos = worldToScreen(pos.x, stoolY, stoolZ);
+            const depth = calculateDepth(stoolY, stoolZ);
+            const stool = this.add.sprite(screenPos.x, screenPos.y, 'bar-stool');
+            stool.setDepth(depth);
+
+            // Store stool data for later interaction system
+            this.barStools.push({
+                sprite: stool,
+                worldX: pos.x,
+                worldY: stoolY,
+                worldZ: stoolZ,
+                playerColor: pos.label
+            });
+        });
+
+        console.log(`✅ Added ${stoolPositions.length} bar stools`);
+    }
+
+    /**
+     * Add decorative props to the bar area
+     */
+    addBarProps() {
+        console.log('🏗️  Adding bar props...');
+
+        const barY = 7.5;
+        const barZ = 0.6; // On top of counter
+
+        // Add bone mugs on the counter
+        const mugPositions = [
+            { x: 12, y: barY },
+            { x: 13.5, y: barY },
+            { x: 15, y: barY }
+        ];
+
+        mugPositions.forEach(pos => {
+            const screenPos = worldToScreen(pos.x, pos.y, barZ);
+            const depth = calculateDepth(pos.y, barZ);
+            const mug = this.add.sprite(screenPos.x, screenPos.y, 'bone-mug');
+            mug.setDepth(depth);
+        });
+
+        console.log('✅ Bar props added');
+    }
+
+    /**
+     * Add weapon rack station on left wall
+     */
+    addWeaponRack() {
+        console.log('🏗️  Adding weapon rack station...');
+
+        // Position on left wall (per design)
+        const rackX = 3;
+        const rackY = 7;
+        const rackZ = 0.2;
+
+        const screenPos = worldToScreen(rackX, rackY, rackZ);
+        const depth = calculateDepth(rackY, rackZ);
+
+        this.weaponRack = {
+            sprite: this.add.sprite(screenPos.x, screenPos.y, 'weapon-rack'),
+            worldX: rackX,
+            worldY: rackY,
+            worldZ: rackZ,
+            interactionRadius: 2.0 // Distance for interaction prompt
+        };
+
+        this.weaponRack.sprite.setDepth(depth);
+
+        // Create interaction prompt (hidden by default)
+        const promptY = screenPos.y - 60; // Above the weapon rack
+        this.weaponRackPrompt = this.add.text(
+            screenPos.x,
+            promptY,
+            'Press X to View Weapons',
+            {
+                fontSize: '16px',
+                fontFamily: 'Arial',
+                color: '#ffffff',
+                backgroundColor: '#000000',
+                padding: { x: 10, y: 5 }
+            }
+        );
+        this.weaponRackPrompt.setOrigin(0.5);
+        this.weaponRackPrompt.setDepth(depth + 1);
+        this.weaponRackPrompt.setVisible(false);
+
+        console.log('✅ Weapon rack added on left wall');
+    }
+
+    /**
+     * Add cave paintings for passive abilities
+     * Distributed around the cave walls
+     */
+    addCavePaintings() {
+        console.log('🏗️  Adding cave paintings...');
+
+        // Painting positions around the cave (5 paintings for 5 abilities)
+        const paintingPositions = [
+            { x: 5, y: 3, z: 0.3 },    // North-west wall
+            { x: 15, y: 3, z: 0.3 },   // North-east wall
+            { x: 17, y: 8, z: 0.3 },   // East wall
+            { x: 6, y: 12, z: 0.3 },   // South-west wall
+            { x: 14, y: 12, z: 0.3 }   // South-east wall
+        ];
+
+        this.cavePaintings = [];
+
+        passiveAbilities.forEach((ability, index) => {
+            const pos = paintingPositions[index];
+            const screenPos = worldToScreen(pos.x, pos.y, pos.z);
+            const depth = calculateDepth(pos.y, pos.z);
+
+            const painting = {
+                sprite: this.add.sprite(screenPos.x, screenPos.y, 'cave-painting'),
+                worldX: pos.x,
+                worldY: pos.y,
+                worldZ: pos.z,
+                ability: ability,
+                interactionRadius: 2.0
+            };
+
+            painting.sprite.setDepth(depth);
+            painting.sprite.setTint(0x666666); // Start dimmed
+
+            this.cavePaintings.push(painting);
+        });
+
+        console.log(`✅ Added ${this.cavePaintings.length} cave paintings`);
+    }
+
+    /**
+     * Spawn players at cave entrance
+     */
+    spawnPlayers() {
+        console.log('🏗️  Spawning players...');
+
+        // Cave entrance position (bottom-center of the cave)
+        const entranceX = 10;
+        const entranceY = 13;
+        const entranceZ = 1; // Slightly above floor for proper depth sorting
+
+        // Spacing between players at entrance
+        const playerSpacing = 1.5;
+
+        this.players = [];
+
+        // Create 4 players at entrance
+        for (let i = 0; i < 4; i++) {
+            // Stagger positions left to right at entrance
+            const offsetX = (i - 1.5) * playerSpacing; // Centers around entrance
+            const player = new Player(
+                this,
+                i,
+                entranceX + offsetX,
+                entranceY,
+                entranceZ
+            );
+
+            // Set slower movement speed for cave bar (exploration pace)
+            player.moveSpeed = 5; // Slower than hunt scene (8)
+
+            // TEMPORARY: Give testing credits so shops can be tested
+            player.score = 500; // Enough to test all items
+
+            this.players.push(player);
+        }
+
+        console.log(`✅ Spawned ${this.players.length} players at entrance`);
+    }
+
+    /**
+     * Setup collision zones for walls and props
+     */
+    setupCollisionZones() {
+        console.log('🏗️  Setting up collision zones...');
+
+        // Cave boundary collision (uses same organic cave shape)
+        const centerX = 10;
+        const centerY = 7.5;
+        const radiusX = 10;
+        const radiusY = 7.5;
+
+        this.caveBoundary = {
+            centerX,
+            centerY,
+            radiusX,
+            radiusY,
+            type: 'organic-ellipse'
+        };
+
+        // Bar counter collision (box zone)
+        this.barCounterZone = {
+            minX: 11,
+            maxX: 15,
+            minY: 7.0,
+            maxY: 8.0,
+            minZ: 0,
+            maxZ: 1.0,
+            type: 'box'
+        };
+
+        // TODO: Add more collision zones for other props as needed
+
+        console.log('✅ Collision zones configured');
+    }
+
+    /**
+     * Check if a position is valid (inside cave, not colliding with props)
+     */
+    isValidPosition(worldX, worldY, worldZ) {
+        // Check cave boundary
+        if (!this.isInsideCave(worldX, worldY, this.caveBoundary.centerX, this.caveBoundary.centerY, this.caveBoundary.radiusX, this.caveBoundary.radiusY)) {
+            return false;
+        }
+
+        // Check bar counter collision
+        if (worldX >= this.barCounterZone.minX && worldX <= this.barCounterZone.maxX &&
+            worldY >= this.barCounterZone.minY && worldY <= this.barCounterZone.maxY &&
+            worldZ >= this.barCounterZone.minZ && worldZ <= this.barCounterZone.maxZ) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Setup camera (fixed position, centered on room)
      */
     setupCamera() {
@@ -304,6 +977,65 @@ export default class CaveBarScene extends Phaser.Scene {
         // camera.setZoom(1.1);
 
         console.log('📷 Camera setup complete');
+    }
+
+    /**
+     * Setup countdown timer
+     */
+    setupTimer() {
+        console.log('🏗️  Setting up countdown timer...');
+
+        const camera = this.cameras.main;
+
+        // Timer duration in seconds
+        this.timerDuration = 30;
+        this.timeRemaining = this.timerDuration;
+        this.timerActive = true;
+
+        // Timer display (top center of screen)
+        this.timerText = this.add.text(
+            camera.width / 2,
+            50,
+            this.formatTime(this.timeRemaining),
+            {
+                fontSize: '48px',
+                fontFamily: 'Arial',
+                color: '#ffffff',
+                fontStyle: 'bold',
+                stroke: '#000000',
+                strokeThickness: 6
+            }
+        );
+        this.timerText.setOrigin(0.5);
+        this.timerText.setScrollFactor(0); // Fixed to camera
+        this.timerText.setDepth(50000); // High depth but below menus
+
+        // Timer label
+        this.timerLabel = this.add.text(
+            camera.width / 2,
+            100,
+            'TIME UNTIL NEXT HUNT',
+            {
+                fontSize: '16px',
+                fontFamily: 'Arial',
+                color: '#999999',
+                fontStyle: 'bold'
+            }
+        );
+        this.timerLabel.setOrigin(0.5);
+        this.timerLabel.setScrollFactor(0);
+        this.timerLabel.setDepth(50000);
+
+        console.log('✅ Timer setup complete');
+    }
+
+    /**
+     * Format time in MM:SS format
+     */
+    formatTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
     }
 
     /**

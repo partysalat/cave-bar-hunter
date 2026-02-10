@@ -83,7 +83,7 @@ Before generating the full sprite catalog, we'll create a validation set to ensu
 - **Shading:** Basic shading
 - **Detail:** Medium detail
 - **AI Freedom:** 750
-- **Description:** "Heroic prehistoric barbarian champion in red fur cape and tribal war paint, thick wild brown beard, fierce confident grin, muscular chibi build, bone necklace trophy, red face paint stripes, legendary hunter, bold heroic stance"
+- **Description:** "Heroic prehistoric champion in red fur cape and tribal war paint, thick wild brown beard, fierce confident grin, muscular chibi build, bone necklace trophy, red face paint stripes, legendary hunter, bold heroic stance"
 - **Generation Time:** 3-5 minutes
 
 #### 2. Dilophosaurus Enemy
