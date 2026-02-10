@@ -291,7 +291,10 @@ export default class WeaponShopMenu {
         this.player.score -= weapon.price;
         this.player.weapon = weapon.id;
 
-        console.log(`Purchased ${weapon.name} for ${weapon.price} points`);
+        console.log(`✅ Purchased ${weapon.name} for ${weapon.price} points`);
+
+        // TODO: Play purchase sound effect here
+        // this.scene.sound.play('purchase-sound');
 
         // Update UI
         this.pointsText.setText(`Your Points: ${this.player.score}`);

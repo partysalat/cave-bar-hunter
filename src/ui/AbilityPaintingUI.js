@@ -175,7 +175,10 @@ export default class AbilityPaintingUI {
         // Apply ability effect
         applyAbilityEffect(this.player, this.ability);
 
-        console.log(`Player ${this.player.playerNumber} purchased ${this.ability.name}`);
+        console.log(`✨ Player ${this.player.playerNumber} purchased ${this.ability.name}`);
+
+        // TODO: Play ability unlock sound
+        // this.scene.sound.play('ability-unlock');
 
         // Update UI
         this.hide();

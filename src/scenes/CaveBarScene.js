@@ -6,6 +6,8 @@ import InputManager from '../systems/InputManager.js';
 import WeaponShopMenu from '../ui/WeaponShopMenu.js';
 import AbilityPaintingUI from '../ui/AbilityPaintingUI.js';
 import CocktailMenu from '../ui/CocktailMenu.js';
+import ScoreboardDisplay from '../ui/ScoreboardDisplay.js';
+import TrophyWallDisplay from '../ui/TrophyWallDisplay.js';
 import { passiveAbilities } from '../data/passiveAbilities.js';
 
 /**
@@ -75,6 +77,14 @@ export default class CaveBarScene extends Phaser.Scene {
 
     create() {
         console.log('🍺 Cave Bar Scene created');
+        console.log('==========================================');
+        console.log('Welcome to the Cave Bar!');
+        console.log('📍 Move with WASD');
+        console.log('🔫 Visit weapon rack (left wall)');
+        console.log('🎨 Check cave paintings (around walls)');
+        console.log('🍺 Order drinks from bartender (bar counter)');
+        console.log('⏱️  You have 30 seconds before the hunt!');
+        console.log('==========================================');
 
         // Initialize systems
         this.inputManager = new InputManager(this);
@@ -93,9 +103,14 @@ export default class CaveBarScene extends Phaser.Scene {
         this.addBarProps();
         this.addWeaponRack();
         this.addCavePaintings();
+        this.addTorches();
 
-        // Spawn players
+        // Spawn players (must come before scoreboard since it needs player data)
         this.spawnPlayers();
+
+        // Add scoreboard and trophy wall after players exist
+        this.addScoreboard();
+        this.addTrophyWall();
 
         // Create weapon shop menus (one per player)
         this.weaponShopMenus = this.players.map(player => new WeaponShopMenu(this, player));
@@ -221,6 +236,10 @@ export default class CaveBarScene extends Phaser.Scene {
 
                 // Open weapon shop when X is pressed near rack
                 if (isNearRack && input.buttons.x && !player.lastX) {
+                    // Close other menus first
+                    if (this.cocktailMenus[index].isOpen) {
+                        this.cocktailMenus[index].close();
+                    }
                     this.weaponShopMenus[index].open();
                     console.log(`Player ${index} opened weapon shop`);
                 }
@@ -302,6 +321,10 @@ export default class CaveBarScene extends Phaser.Scene {
 
                 // Open cocktail menu when X is pressed near bartender
                 if (isNearBartender && input.buttons.x && !player.lastBartenderX) {
+                    // Close other menus first
+                    if (this.weaponShopMenus[index].isOpen) {
+                        this.weaponShopMenus[index].close();
+                    }
                     this.cocktailMenus[index].open();
                     console.log(`Player ${index} opened cocktail menu`);
                 }
@@ -336,10 +359,43 @@ export default class CaveBarScene extends Phaser.Scene {
             if (Math.ceil(this.timeRemaining) === 10 && !this.beep10) {
                 console.log('⏰ 10 seconds remaining!');
                 this.beep10 = true;
+                // TODO: Play warning beep sound
+                // this.sound.play('timer-beep');
             }
             if (Math.ceil(this.timeRemaining) === 5 && !this.beep5) {
                 console.log('⏰ 5 seconds remaining! GET READY!');
                 this.beep5 = true;
+
+                // Show "GET READY!" warning overlay
+                const camera = this.cameras.main;
+                const warning = this.add.text(
+                    camera.width / 2,
+                    camera.height / 2 - 100,
+                    'GET READY!',
+                    {
+                        fontSize: '64px',
+                        fontFamily: 'Arial',
+                        color: '#ff0000',
+                        fontStyle: 'bold',
+                        stroke: '#000000',
+                        strokeThickness: 8
+                    }
+                );
+                warning.setOrigin(0.5);
+                warning.setScrollFactor(0);
+                warning.setDepth(90000);
+
+                // Pulse animation
+                this.tweens.add({
+                    targets: warning,
+                    scale: 1.2,
+                    alpha: 0,
+                    duration: 1000,
+                    ease: 'Power2'
+                });
+
+                // TODO: Play urgent warning sound
+                // this.sound.play('warning-urgent');
             }
 
             // Trigger exit when timer reaches 0
@@ -867,6 +923,129 @@ export default class CaveBarScene extends Phaser.Scene {
     }
 
     /**
+     * Add torch sconces for atmospheric lighting
+     */
+    addTorches() {
+        console.log('🏗️  Adding torches...');
+
+        // Torch positions around the cave perimeter
+        const torchPositions = [
+            { x: 4, y: 4, z: 0.5 },     // North-west
+            { x: 10, y: 2, z: 0.5 },    // North center
+            { x: 16, y: 4, z: 0.5 },    // North-east
+            { x: 18, y: 8, z: 0.5 },    // East
+            { x: 16, y: 12, z: 0.5 },   // South-east
+            { x: 10, y: 14, z: 0.5 },   // South center
+            { x: 4, y: 12, z: 0.5 },    // South-west
+            { x: 2, y: 8, z: 0.5 }      // West
+        ];
+
+        this.torches = [];
+
+        torchPositions.forEach(pos => {
+            const screenPos = worldToScreen(pos.x, pos.y, pos.z);
+            const depth = calculateDepth(pos.y, pos.z);
+
+            // Torch sconce sprite
+            const torch = this.add.sprite(screenPos.x, screenPos.y, 'torch-sconce');
+            torch.setDepth(depth);
+
+            // Add flickering flame effect (simple scale animation)
+            this.tweens.add({
+                targets: torch,
+                scaleX: 1.05,
+                scaleY: 0.95,
+                duration: 300 + Math.random() * 200, // Random duration for natural flicker
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut'
+            });
+
+            // Add orange glow effect
+            torch.setTint(0xffaa44);
+
+            // Add point light effect (subtle circular glow)
+            const glowRadius = 60;
+            const glow = this.add.circle(screenPos.x, screenPos.y, glowRadius, 0xff8822, 0.15);
+            glow.setDepth(depth - 1); // Behind torch
+
+            // Animate glow pulsing
+            this.tweens.add({
+                targets: glow,
+                alpha: 0.25,
+                scale: 1.1,
+                duration: 1000 + Math.random() * 500,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut'
+            });
+
+            this.torches.push({
+                sprite: torch,
+                glow: glow,
+                worldX: pos.x,
+                worldY: pos.y,
+                worldZ: pos.z
+            });
+        });
+
+        console.log(`✅ Added ${this.torches.length} torches`);
+    }
+
+    /**
+     * Add scoreboard display on wall
+     */
+    addScoreboard() {
+        console.log('🏗️  Adding scoreboard...');
+
+        // Position scoreboard on north wall (top center, visible to all)
+        const scoreboardX = 10;
+        const scoreboardY = 2;
+        const scoreboardZ = 0.3;
+
+        const screenPos = worldToScreen(scoreboardX, scoreboardY, scoreboardZ);
+        const depth = calculateDepth(scoreboardY, scoreboardZ);
+
+        // Scoreboard prop/background
+        const scoreboardProp = this.add.sprite(screenPos.x, screenPos.y, 'scoreboard');
+        scoreboardProp.setDepth(depth);
+
+        // Create scoreboard UI display
+        this.scoreboardDisplay = new ScoreboardDisplay(
+            this,
+            screenPos.x,
+            screenPos.y,
+            this.players,
+            1 // Starting at hunt 1
+        );
+
+        console.log('✅ Scoreboard added');
+    }
+
+    /**
+     * Add trophy wall display
+     */
+    addTrophyWall() {
+        console.log('🏗️  Adding trophy wall...');
+
+        const camera = this.cameras.main;
+
+        // Position in camera space (right side of screen)
+        const screenX = camera.width - 170; // Right edge with padding
+        const screenY = camera.height / 2 - 50; // Vertically centered
+
+        // Trophy wall display (no defeated dinosaurs yet in testing)
+        this.trophyWallDisplay = new TrophyWallDisplay(
+            this,
+            screenX,
+            screenY,
+            [] // Empty for now, will be populated from session state
+        );
+
+        console.log('✅ Trophy wall added');
+    }
+
+    /**
      * Spawn players at cave entrance
      */
     spawnPlayers() {
@@ -1042,18 +1221,31 @@ export default class CaveBarScene extends Phaser.Scene {
      * Add atmospheric lighting
      */
     addLighting() {
-        // Add warm orange/yellow color overlay for cave atmosphere
-        // This creates a cozy, torch-lit ambiance
+        const camera = this.cameras.main;
+
+        // Warm ambient overlay for torch-lit cave atmosphere
+        // Using a subtle additive blend for warm glow without darkening
         const overlay = this.add.rectangle(
-            0, 0,
-            this.cameras.main.width * 2,
-            this.cameras.main.height * 2,
+            camera.width / 2,
+            camera.height / 2,
+            camera.width,
+            camera.height,
             0xff9944, // Warm orange
-            0.08 // Very subtle (8% opacity)
+            0.08 // Very subtle
         );
-        overlay.setOrigin(0, 0);
         overlay.setScrollFactor(0); // Fixed to camera
-        overlay.setDepth(10000); // On top of everything
+        overlay.setDepth(45000); // High enough to be above all game elements
+        overlay.setBlendMode(Phaser.BlendModes.ADD); // Additive for warm glow
+
+        // Subtle pulsing ambient light
+        this.tweens.add({
+            targets: overlay,
+            alpha: 0.12,
+            duration: 3000,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+        });
 
         console.log('💡 Atmospheric lighting added');
     }

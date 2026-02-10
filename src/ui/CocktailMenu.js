@@ -308,7 +308,11 @@ export default class CocktailMenu {
             this.bartender.serveDrink();
         }
 
-        console.log(`Purchased ${cocktail.name} for ${cocktail.price} points`);
+        console.log(`🍺 Purchased ${cocktail.name} for ${cocktail.price} points`);
+
+        // TODO: Play drink purchase sound and bartender grunt
+        // this.scene.sound.play('bartender-grunt');
+        // this.scene.sound.play('pour-drink');
 
         // Close menu if at limit now
         if (hasReachedCocktailLimit(this.player)) {
