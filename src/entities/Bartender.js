@@ -39,12 +39,13 @@ export default class Bartender extends Entity {
     playAnimation(animationKey, direction = this.currentDirection) {
         const animKey = `bartender-${animationKey}-${direction}`;
 
-        if (this.sprite.anims && this.sprite.anims.exists(animKey)) {
+        // Check if animation exists in scene's global AnimationManager
+        if (this.scene.anims.exists(animKey)) {
             this.currentAnimation = animationKey;
             this.currentDirection = direction;
             this.sprite.play(animKey);
         } else {
-            console.warn(`Animation ${animKey} not found for bartender`);
+            console.warn(`⚠️  Animation ${animKey} not found for bartender`);
         }
     }
 

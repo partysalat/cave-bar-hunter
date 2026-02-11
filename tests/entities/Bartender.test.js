@@ -31,7 +31,8 @@ describe('Bartender', () => {
                 })
             },
             anims: {
-                create: vi.fn()
+                create: vi.fn(),
+                exists: vi.fn(() => true) // Mock animation existence check
             }
         };
 

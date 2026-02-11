@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { worldToScreen, calculateDepth, screenToWorldDirection } from '../systems/CoordinateSystem.js';
+import { updatePlayerAnimation } from '../systems/SpriteDirectionSystem.js';
 import Bartender from '../entities/Bartender.js';
 import Player from '../entities/Player.js';
 import InputManager from '../systems/InputManager.js';
@@ -196,6 +197,9 @@ export default class CaveBarScene extends Phaser.Scene {
                     } else {
                         player.isMoving = false;
                     }
+
+                    // Update player animation based on movement state
+                    updatePlayerAnimation(player.sprite, player.playerNumber, player.facingX, player.facingY, player.isMoving);
                 }
 
                 // Update player entity
@@ -560,7 +564,7 @@ export default class CaveBarScene extends Phaser.Scene {
                 const depth = calculateDepth(worldY, worldZ);
 
                 // Use darker floor tiles for cave atmosphere
-                let tileKey = 'cave-wall-base'; // Darker default floor (same as walls)
+                let tileKey = 'cave-stone-floor'; // Default cave floor with rough stone texture
 
                 // Add lighter polished floor near bar area (center-right of room)
                 if (worldX >= 10 && worldX <= 15 && worldY >= 5 && worldY <= 10) {
