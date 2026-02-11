@@ -134,12 +134,12 @@ export default class CaveBarScene extends Phaser.Scene {
             }
         });
 
-        // Setup bartender interaction zone
+        // Setup bartender interaction zone (larger for U-shaped bar)
         this.bartenderZone = {
             worldX: this.bartender.worldX,
-            worldY: this.bartender.worldY + 1.5, // In front of bar
+            worldY: this.bartender.worldY,
             worldZ: this.bartender.worldZ,
-            interactionRadius: 2.5
+            interactionRadius: 3.5 // Larger radius for U-shape
         };
 
         // Setup camera (fixed, centered on room)
@@ -704,58 +704,73 @@ export default class CaveBarScene extends Phaser.Scene {
     }
 
     /**
-     * Build the bar counter structure
+     * Build the bar counter structure in U-shape
      * Positioned in the center-right area of the cave
      */
     buildBarCounter() {
-        console.log('🏗️  Building bar counter...');
+        console.log('🏗️  Building U-shaped bar counter...');
 
-        // Bar counter position (center-right of cave as per design)
-        const barStartX = 11;
-        const barY = 7.5;
         const barZ = 0.3; // Slightly elevated platform
+        const tileSize = 0.64;
 
-        // Build horizontal bar (left to right)
-        const barLength = 5; // Number of middle sections
+        // U-shape configuration
+        const centerX = 13.5;
+        const centerY = 7.5;
+        const uWidth = 5; // Width in tiles
+        const uHeight = 3; // Height of arms in tiles
 
-        // Left end cap
-        const leftEndPos = worldToScreen(barStartX, barY, barZ);
-        const leftEnd = this.add.sprite(leftEndPos.x, leftEndPos.y, 'bar-counter-left-end');
-        leftEnd.setDepth(calculateDepth(barY, barZ));
+        // Calculate U corners
+        const leftX = centerX - (uWidth / 2) * tileSize;
+        const rightX = centerX + (uWidth / 2) * tileSize - tileSize;
+        const topY = centerY;
+        const bottomY = centerY + uHeight * tileSize;
 
-        // Middle platform sections
-        for (let i = 0; i < barLength; i++) {
-            const worldX = barStartX + (i + 1) * 0.64;
-            const screenPos = worldToScreen(worldX, barY, barZ);
-            const middle = this.add.sprite(screenPos.x, screenPos.y, 'bar-counter-middle-platform');
-            middle.setDepth(calculateDepth(barY, barZ));
+        // Left vertical arm (top to bottom)
+        for (let i = 0; i < uHeight; i++) {
+            const worldX = leftX;
+            const worldY = topY + i * tileSize;
+            const screenPos = worldToScreen(worldX, worldY, barZ);
+            const tile = this.add.sprite(screenPos.x, screenPos.y, 'bar-counter-middle-platform');
+            tile.setDepth(calculateDepth(worldY, barZ));
         }
 
-        // Right end cap
-        const rightEndX = barStartX + (barLength + 1) * 0.64;
-        const rightEndPos = worldToScreen(rightEndX, barY, barZ);
-        const rightEnd = this.add.sprite(rightEndPos.x, rightEndPos.y, 'bar-counter-right-end');
-        rightEnd.setDepth(calculateDepth(barY, barZ));
+        // Bottom horizontal section (left to right, including corners)
+        for (let i = 0; i < uWidth; i++) {
+            const worldX = leftX + i * tileSize;
+            const worldY = bottomY;
+            const screenPos = worldToScreen(worldX, worldY, barZ);
+            const tile = this.add.sprite(screenPos.x, screenPos.y, 'bar-counter-middle-platform');
+            tile.setDepth(calculateDepth(worldY, barZ));
+        }
 
-        console.log('✅ Bar counter built');
+        // Right vertical arm (top to bottom)
+        for (let i = 0; i < uHeight; i++) {
+            const worldX = rightX;
+            const worldY = topY + i * tileSize;
+            const screenPos = worldToScreen(worldX, worldY, barZ);
+            const tile = this.add.sprite(screenPos.x, screenPos.y, 'bar-counter-middle-platform');
+            tile.setDepth(calculateDepth(worldY, barZ));
+        }
+
+        console.log('✅ U-shaped bar counter built');
     }
 
     /**
-     * Add the bartender NPC behind the bar counter
+     * Add the bartender NPC inside the U-shaped bar
      */
     addBartender() {
         console.log('🏗️  Adding bartender NPC...');
 
-        // Position bartender behind the bar (slightly back for depth)
-        const bartenderX = 13.5; // Center of the bar counter
-        const bartenderY = 7.0; // Behind the counter
+        // Position bartender inside the U-shape
+        const bartenderX = 13.5; // Center of the U
+        const bartenderY = 7.5; // Inside the U
         const bartenderZ = 0.4; // Slightly elevated (standing on platform)
 
         this.bartender = new Bartender(this, bartenderX, bartenderY, bartenderZ);
 
-        // Create interaction prompt (will be positioned later)
-        const screenPos = worldToScreen(bartenderX, bartenderY + 1.5, bartenderZ);
-        const promptY = screenPos.y + 40; // Below bartender
+        // Create interaction prompt (positioned at bottom of U)
+        const screenPos = worldToScreen(bartenderX, bartenderY + 3.0, bartenderZ);
+        const promptY = screenPos.y + 20;
         this.bartenderPrompt = this.add.text(
             screenPos.x,
             promptY,
@@ -776,28 +791,36 @@ export default class CaveBarScene extends Phaser.Scene {
     }
 
     /**
-     * Add bar stools for players to sit at
+     * Add bar stools around the U-shaped bar
      */
     addBarStools() {
         console.log('🏗️  Adding bar stools...');
 
-        const stoolY = 8.5; // In front of the bar counter
         const stoolZ = 0.2; // Slightly elevated
-        const stoolSpacing = 1.2; // Space between stools
+        const tileSize = 0.64;
+        const centerX = 13.5;
+        const centerY = 7.5;
+        const uWidth = 5;
+        const uHeight = 3;
 
-        // 4 stools positioned in front of the bar
+        const leftX = centerX - (uWidth / 2) * tileSize;
+        const rightX = centerX + (uWidth / 2) * tileSize - tileSize;
+        const bottomY = centerY + uHeight * tileSize;
+
+        // 4 stools positioned in front of the U (outside, facing inward)
+        const stoolOffset = 0.8; // Distance from counter
         const stoolPositions = [
-            { x: 11.5, label: 'red' },
-            { x: 12.7, label: 'blue' },
-            { x: 13.9, label: 'yellow' },
-            { x: 15.1, label: 'green' }
+            { x: leftX, y: bottomY + stoolOffset, label: 'red' },           // Bottom left
+            { x: centerX - 0.5, y: bottomY + stoolOffset, label: 'blue' },  // Bottom center-left
+            { x: centerX + 0.5, y: bottomY + stoolOffset, label: 'yellow' },// Bottom center-right
+            { x: rightX, y: bottomY + stoolOffset, label: 'green' }         // Bottom right
         ];
 
         this.barStools = [];
 
         stoolPositions.forEach(pos => {
-            const screenPos = worldToScreen(pos.x, stoolY, stoolZ);
-            const depth = calculateDepth(stoolY, stoolZ);
+            const screenPos = worldToScreen(pos.x, pos.y, stoolZ);
+            const depth = calculateDepth(pos.y, stoolZ);
             const stool = this.add.sprite(screenPos.x, screenPos.y, 'bar-stool');
             stool.setDepth(depth);
 
@@ -805,7 +828,7 @@ export default class CaveBarScene extends Phaser.Scene {
             this.barStools.push({
                 sprite: stool,
                 worldX: pos.x,
-                worldY: stoolY,
+                worldY: pos.y,
                 worldZ: stoolZ,
                 playerColor: pos.label
             });
@@ -820,14 +843,24 @@ export default class CaveBarScene extends Phaser.Scene {
     addBarProps() {
         console.log('🏗️  Adding bar props...');
 
-        const barY = 7.5;
         const barZ = 0.6; // On top of counter
+        const tileSize = 0.64;
+        const centerX = 13.5;
+        const centerY = 7.5;
+        const uWidth = 5;
+        const uHeight = 3;
 
-        // Add bone mugs on the counter
+        const leftX = centerX - (uWidth / 2) * tileSize;
+        const rightX = centerX + (uWidth / 2) * tileSize - tileSize;
+        const bottomY = centerY + uHeight * tileSize;
+
+        // Add bone mugs on the U-shaped counter
         const mugPositions = [
-            { x: 12, y: barY },
-            { x: 13.5, y: barY },
-            { x: 15, y: barY }
+            { x: leftX, y: bottomY },              // Bottom left corner
+            { x: centerX, y: bottomY },            // Bottom center
+            { x: rightX, y: bottomY },             // Bottom right corner
+            { x: leftX, y: centerY + tileSize },   // Left arm middle
+            { x: rightX, y: centerY + tileSize }   // Right arm middle
         ];
 
         mugPositions.forEach(pos => {
@@ -1109,12 +1142,12 @@ export default class CaveBarScene extends Phaser.Scene {
             type: 'organic-ellipse'
         };
 
-        // Bar counter collision (box zone)
+        // Bar counter collision (U-shaped zone - simplified as larger box)
         this.barCounterZone = {
-            minX: 11,
-            maxX: 15,
-            minY: 7.0,
-            maxY: 8.0,
+            minX: 11.5,
+            maxX: 15.5,
+            minY: 6.0,
+            maxY: 10.5,
             minZ: 0,
             maxZ: 1.0,
             type: 'box'
