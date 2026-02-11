@@ -96,8 +96,10 @@ export default class CaveBarScene extends Phaser.Scene {
         this.createBartenderAnimations();
 
         // Build the cave bar environment
+        this.addBackground();
         this.buildFloor();
-        this.buildWalls();
+        // Walls removed for open cave design
+        // this.buildWalls();
         this.buildBarCounter();
         this.addBartender();
         this.addBarStools();
@@ -528,6 +530,22 @@ export default class CaveBarScene extends Phaser.Scene {
     }
 
     /**
+     * Add black background
+     */
+    addBackground() {
+        const camera = this.cameras.main;
+        const bg = this.add.rectangle(
+            camera.width / 2,
+            camera.height / 2,
+            camera.width * 2,
+            camera.height * 2,
+            0x000000 // Black
+        );
+        bg.setScrollFactor(0);
+        bg.setDepth(-10000); // Behind everything
+    }
+
+    /**
      * Build floor layout using tiles
      * Cave bar dimensions: ~20×15 world units (smaller than hunt arenas)
      */
@@ -659,12 +677,21 @@ export default class CaveBarScene extends Phaser.Scene {
     /**
      * Generate organic cave perimeter points
      * Creates an elliptical shape with natural variations
+     * Skips the bottom section to create an entrance opening
      */
     generateCavePerimeter(centerX, centerY, radiusX, radiusY, tileSize) {
         const points = [];
         const angleStep = Math.PI / 24; // Sample points around the ellipse
 
+        // Define entrance opening angle range (bottom section)
+        const entranceAngleStart = Math.PI * 0.6;  // ~108 degrees (bottom-left)
+        const entranceAngleEnd = Math.PI * 1.4;    // ~252 degrees (bottom-right)
+
         for (let angle = 0; angle < Math.PI * 2; angle += angleStep) {
+            // Skip the bottom section (entrance opening)
+            if (angle >= entranceAngleStart && angle <= entranceAngleEnd) {
+                continue;
+            }
             // Base ellipse position
             let x = centerX + Math.cos(angle) * radiusX;
             let y = centerY + Math.sin(angle) * radiusY;
@@ -1159,10 +1186,10 @@ export default class CaveBarScene extends Phaser.Scene {
     }
 
     /**
-     * Check if a position is valid (inside cave, not colliding with props)
+     * Check if a position is valid (inside floor area, not colliding with props)
      */
     isValidPosition(worldX, worldY, worldZ) {
-        // Check cave boundary
+        // Check if on floor (inside cave floor boundary)
         if (!this.isInsideCave(worldX, worldY, this.caveBoundary.centerX, this.caveBoundary.centerY, this.caveBoundary.radiusX, this.caveBoundary.radiusY)) {
             return false;
         }
