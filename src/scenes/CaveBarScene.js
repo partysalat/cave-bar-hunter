@@ -70,7 +70,14 @@ export default class CaveBarScene extends Phaser.Scene {
         this.load.image('cave-wall-corner-prop', '/assets/environments/cave-bar/props/cave-wall-corner.png');
         this.load.image('bar-stool', '/assets/environments/cave-bar/props/bar-stool.png');
         this.load.image('bone-mug', '/assets/environments/cave-bar/props/bone-mug.png');
-        this.load.image('cave-painting', '/assets/environments/cave-bar/props/cave-painting.png');
+
+        // Load unique cave paintings for each passive ability
+        this.load.image('cave-painting-thick-hide', '/assets/environments/cave-bar/props/cave-painting-thick-hide.png');
+        this.load.image('cave-painting-swift-feet', '/assets/environments/cave-bar/props/cave-painting-swift-feet.png');
+        this.load.image('cave-painting-hunters-eye', '/assets/environments/cave-bar/props/cave-painting-hunters-eye.png');
+        this.load.image('cave-painting-pack-leader', '/assets/environments/cave-bar/props/cave-painting-pack-leader.png');
+        this.load.image('cave-painting-scavenger', '/assets/environments/cave-bar/props/cave-painting-scavenger.png');
+
         this.load.image('scoreboard', '/assets/environments/cave-bar/props/scoreboard.png');
         this.load.image('torch-sconce', '/assets/environments/cave-bar/props/torch-sconce.png');
         this.load.image('trophy-skull', '/assets/environments/cave-bar/props/trophy-skull.png');
@@ -964,9 +971,19 @@ export default class CaveBarScene extends Phaser.Scene {
     /**
      * Add cave paintings for passive abilities
      * Distributed around the cave walls
+     * Each ability now has its own unique painting prop
      */
     addCavePaintings() {
         console.log('🏗️  Adding cave paintings...');
+
+        // Map ability IDs to their specific painting images
+        const abilityPaintingMap = {
+            'thick-hide': 'cave-painting-thick-hide',
+            'swift-feet': 'cave-painting-swift-feet',
+            'hunters-eye': 'cave-painting-hunters-eye',
+            'pack-leader': 'cave-painting-pack-leader',
+            'scavenger': 'cave-painting-scavenger'
+        };
 
         // Painting positions around the cave (5 paintings for 5 abilities)
         const paintingPositions = [
@@ -984,8 +1001,11 @@ export default class CaveBarScene extends Phaser.Scene {
             const screenPos = worldToScreen(pos.x, pos.y, pos.z);
             const depth = calculateDepth(pos.y, pos.z);
 
+            // Get the specific painting image for this ability
+            const paintingImage = abilityPaintingMap[ability.id];
+
             const painting = {
-                sprite: this.add.sprite(screenPos.x, screenPos.y, 'cave-painting'),
+                sprite: this.add.sprite(screenPos.x, screenPos.y, paintingImage),
                 worldX: pos.x,
                 worldY: pos.y,
                 worldZ: pos.z,
@@ -999,7 +1019,7 @@ export default class CaveBarScene extends Phaser.Scene {
             this.cavePaintings.push(painting);
         });
 
-        console.log(`✅ Added ${this.cavePaintings.length} cave paintings`);
+        console.log(`✅ Added ${this.cavePaintings.length} cave paintings with unique artwork`);
     }
 
     /**
