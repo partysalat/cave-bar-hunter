@@ -109,6 +109,26 @@ export default class Dinosaur extends Entity {
     }
 
     /**
+     * Initializes AI system for this dinosaur
+     * @param {Array<Dinosaur>} allDinosaurs - All dinosaurs in scene (for pack coordination)
+     * @param {Array<Player>} players - All players in scene
+     */
+    initializeAI(allDinosaurs, players) {
+        if (this.ai) {
+            console.warn(`Dinosaur ${this.id} already has AI initialized`);
+            return;
+        }
+
+        // For compy type, set up AI slot (will be CompyAI later)
+        if (this.type === 'compy') {
+            this.ai = null; // Placeholder - will be CompyAI instance in Task 5
+            console.log('Compy AI slot created');
+        }
+
+        // Other dinosaur types can be added here later
+    }
+
+    /**
      * Update AI behavior and weak points
      * @param {number} delta
      */
@@ -120,7 +140,9 @@ export default class Dinosaur extends Entity {
             wp.updatePosition(this.worldX, this.worldY, this.worldZ);
         }
 
-        // Phase 2: No AI yet, just exists
-        // Later: state machine, attacks, etc.
+        // Update AI if present and dinosaur is alive
+        if (this.ai && !this.isDead) {
+            this.ai.update(delta);
+        }
     }
 }
