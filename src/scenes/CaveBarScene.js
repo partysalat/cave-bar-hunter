@@ -10,6 +10,7 @@ import CocktailMenu from '../ui/CocktailMenu.js';
 import ScoreboardDisplay from '../ui/ScoreboardDisplay.js';
 import TrophyWallDisplay from '../ui/TrophyWallDisplay.js';
 import { passiveAbilities } from '../data/passiveAbilities.js';
+import { gameSession } from '../systems/SessionManager.js';
 
 /**
  * Cave Bar Scene
@@ -111,9 +112,21 @@ export default class CaveBarScene extends Phaser.Scene {
         // Spawn players (must come before scoreboard since it needs player data)
         this.spawnPlayers();
 
+        // Load player state from session
+        gameSession.loadPlayerState(this.players);
+
         // Add scoreboard and trophy wall after players exist
         this.addScoreboard();
         this.addTrophyWall();
+
+        // Update UI displays with session data
+        if (this.scoreboardDisplay) {
+            this.scoreboardDisplay.setHunt(gameSession.getCurrentHunt());
+        }
+        if (this.trophyWallDisplay) {
+            this.trophyWallDisplay.defeatedDinosaurs = gameSession.getDefeatedDinosaurs();
+            this.trophyWallDisplay.refresh();
+        }
 
         // Create weapon shop menus (one per player)
         this.weaponShopMenus = this.players.map(player => new WeaponShopMenu(this, player));
@@ -413,12 +426,15 @@ export default class CaveBarScene extends Phaser.Scene {
     }
 
     /**
-     * Trigger exit transition
+     * Trigger exit transition to hunt scene
      */
     triggerExit() {
         console.log('🚪 Time\'s up! Exiting cave bar...');
 
         this.timerActive = false;
+
+        // Save player state to session
+        gameSession.savePlayerState(this.players);
 
         // Show exit message
         const camera = this.cameras.main;
@@ -440,12 +456,12 @@ export default class CaveBarScene extends Phaser.Scene {
         exitText.setScrollFactor(0);
         exitText.setDepth(150000);
 
-        // Fade out after 2 seconds and reload scene (temporary)
+        // Fade out after 2 seconds and transition to hunt scene
         this.time.delayedCall(2000, () => {
             this.cameras.main.fadeOut(1000, 0, 0, 0);
             this.cameras.main.once('camerafadeoutcomplete', () => {
-                console.log('🔄 Restarting cave bar scene...');
-                this.scene.restart();
+                console.log('🎯 Transitioning to hunt scene...');
+                this.scene.start('TestScene');
             });
         });
     }

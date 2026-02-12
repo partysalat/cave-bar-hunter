@@ -9,6 +9,7 @@ import { worldToScreen, screenToWorldDirection } from '../systems/CoordinateSyst
 import InputManager from '../systems/InputManager.js';
 import { sphereVsSphere } from '../systems/PhysicsManager.js';
 import CameraController from '../systems/CameraController.js';
+import { gameSession } from '../systems/SessionManager.js';
 
 // Animation frame rate constants
 const ANIM_FRAMERATE_FIGHT_STANCE = 10; // fps
@@ -71,6 +72,9 @@ export default class TestScene extends Phaser.Scene {
 
         // Track projectiles
         this.projectiles = [];
+
+        // Track hunt completion
+        this.huntComplete = false;
 
         // Create HUD
         this.hud = new HUD(this);
@@ -166,10 +170,10 @@ export default class TestScene extends Phaser.Scene {
                             console.log(`Body hit! Damage: ${result.damage} | Score: ${this.scoreManager.getScore(0)}`);
 
                             // Check if dinosaur died
-                            if (this.testDino.health <= 0 && !this.testDino.isDead) {
-                                this.testDino.isDead = true;
+                            if (this.testDino.isDead && !this.huntComplete) {
+                                this.huntComplete = true;
                                 console.log('DINOSAUR DEFEATED!');
-                                // Phase 3 will add death animations, scoring bonuses, etc.
+                                this.handleHuntVictory();
                             }
                         }
                     }
@@ -196,9 +200,10 @@ export default class TestScene extends Phaser.Scene {
                         // TODO: Replace with proper debug UI or remove before production
                         console.log(`Club hit! Damage: ${clubHit.damage} | Score: ${this.scoreManager.getScore(0)}`);
 
-                        if (this.testDino.health <= 0 && !this.testDino.isDead) {
-                            this.testDino.isDead = true;
+                        if (this.testDino.isDead && !this.huntComplete) {
+                            this.huntComplete = true;
                             console.log('DINOSAUR DEFEATED!');
+                            this.handleHuntVictory();
                         }
                     }
                 }
@@ -318,5 +323,64 @@ export default class TestScene extends Phaser.Scene {
         }
 
         graphics.setDepth(-1000);
+    }
+
+    /**
+     * Handle hunt victory and transition to cave bar
+     */
+    handleHuntVictory() {
+        console.log('🎉 Hunt Complete!');
+
+        // Update session with hunt completion
+        gameSession.completeHunt(this.testDino.type);
+
+        // Save player score
+        this.player.score = this.scoreManager.getScore(0);
+        gameSession.savePlayerState([this.player]);
+
+        // Show victory message
+        const camera = this.cameras.main;
+        const victoryText = this.add.text(
+            camera.width / 2,
+            camera.height / 2,
+            'HUNT COMPLETE!',
+            {
+                fontSize: '64px',
+                fontFamily: 'Arial',
+                color: '#4ade80',
+                fontStyle: 'bold',
+                stroke: '#000000',
+                strokeThickness: 8
+            }
+        );
+        victoryText.setOrigin(0.5);
+        victoryText.setScrollFactor(0);
+        victoryText.setDepth(100000);
+
+        // Show score
+        const scoreText = this.add.text(
+            camera.width / 2,
+            camera.height / 2 + 80,
+            `Your Score: ${this.player.score}`,
+            {
+                fontSize: '32px',
+                fontFamily: 'Arial',
+                color: '#ffffff',
+                fontStyle: 'bold'
+            }
+        );
+        scoreText.setOrigin(0.5);
+        scoreText.setScrollFactor(0);
+        scoreText.setDepth(100000);
+
+        // Transition to cave bar after 3 seconds
+        this.time.delayedCall(3000, () => {
+            this.cameras.main.fadeOut(1000, 0, 0, 0);
+            this.cameras.main.once('camerafadeoutcomplete', () => {
+                console.log('🍺 Returning to cave bar...');
+                gameSession.nextHunt();
+                this.scene.start('CaveBarScene');
+            });
+        });
     }
 }
