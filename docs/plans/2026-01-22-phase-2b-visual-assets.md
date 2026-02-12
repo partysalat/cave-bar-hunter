@@ -578,28 +578,28 @@ Each painting represents a purchasable passive ability in the cave bar shop. The
 1. **Thick Hide Painting** (Defense upgrade)
    - **Size:** 64px
    - **Tile Shape:** Thin tile
-   - **Description:** "cave wall painting of a sturdy shield, flat primitive art on stone wall"
+   - **Description:** "isometric cave wall painting of a sturdy shield, flat primitive art on stone wall"
    - **Ability:** +1 max health, extra protection
    - **Status:** ✅ Generated (2026-02-12)
 
 2. **Swift Feet Painting** (Mobility upgrade)
    - **Size:** 64px
    - **Tile Shape:** Thin tile
-   - **Description:** "cave wall painting of running footprints, flat primitive art on stone wall"
+   - **Description:** "isometric cave wall painting of running footprints, flat primitive art on stone wall"
    - **Ability:** Dodge cooldown reduction (3s → 2s)
    - **Status:** ✅ Generated (2026-02-12)
 
 3. **Hunter's Eye Painting** (Accuracy upgrade)
    - **Size:** 64px
    - **Tile Shape:** Thin tile
-   - **Description:** "cave wall painting of a large watching eye, flat primitive art on stone wall"
+   - **Description:** "isometric cave wall painting of a large watching eye, flat primitive art on stone wall"
    - **Ability:** Weak point hitboxes +30% larger
    - **Status:** ✅ Generated (2026-02-12)
 
 4. **Pack Leader Painting** (Support upgrade)
    - **Size:** 64px
    - **Tile Shape:** Thin tile
-   - **Description:** "cave wall painting of hunters working together, flat primitive art on stone wall"
+   - **Description:** "isometric cave wall painting of hunters working together, flat primitive art on stone wall"
    - **Ability:** Revive speed +50%, bonus damage after revive
    - **Status:** ✅ Generated (2026-02-12)
 

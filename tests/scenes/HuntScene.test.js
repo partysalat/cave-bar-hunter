@@ -91,4 +91,29 @@ describe('HuntScene', () => {
         // Phaser scenes typically have a key in their config
         expect(scene.sys?.settings?.key || 'HuntScene').toBe('HuntScene');
     });
+
+    describe('jungle floor', () => {
+        it('buildJungleFloor() calls this.add.graphics', () => {
+            scene.create();
+
+            // Spy on add.graphics
+            const graphicsSpy = vi.spyOn(scene.add, 'graphics');
+
+            scene.buildJungleFloor();
+
+            // Should have been called multiple times (once per tile)
+            expect(graphicsSpy).toHaveBeenCalled();
+            expect(graphicsSpy.mock.calls.length).toBeGreaterThan(100);
+        });
+
+        it('sets arena bounds (arenaMinX=0, arenaMaxX=30, arenaMinY=0, arenaMaxY=25)', () => {
+            scene.create();
+            scene.buildJungleFloor();
+
+            expect(scene.arenaMinX).toBe(0);
+            expect(scene.arenaMaxX).toBe(30);
+            expect(scene.arenaMinY).toBe(0);
+            expect(scene.arenaMaxY).toBe(25);
+        });
+    });
 });

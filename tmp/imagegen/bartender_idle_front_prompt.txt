@@ -1,0 +1,12 @@
+Use case: stylized-concept
+Asset type: game sprite sheet (bartender idle, front-facing only)
+Primary request: front-facing idle sprite sheet of a burly Neanderthal bartender cleaning a bone mug
+Scene/background: transparent background
+Subject: burly Neanderthal bartender, chibi proportions (stocky, muscular, wider than players), friendly smile
+Style/medium: stylized cartoon isometric pixel art
+Composition/framing: 4x4 grid sprite sheet, 16 frames, single front-facing direction only
+Lighting/mood: warm torch-lit cave ambience, friendly and welcoming
+Color palette: earth tones (browns, grays, warm oranges), high saturation
+Materials/textures: brown leather apron over fur tunic, bone beads, dinosaur skull necklace, weathered hands, bone mug, cloth rag
+Constraints: single-color black outline; basic 2-3 tone shading; medium detail; high top-down isometric view (60–75°); no bar counter or table; no extra characters; no text; no watermark
+Avoid: realistic rendering, low detail, muted/desaturated colors, different viewing angles

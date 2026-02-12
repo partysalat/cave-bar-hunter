@@ -13,6 +13,7 @@ export function createMockScene() {
             graphics: () => ({
                 fillStyle: () => ({}),
                 fillCircle: () => ({}),
+                fillRect: () => ({}),
                 strokeStyle: () => ({}),
                 strokeCircle: () => ({}),
                 setDepth: () => ({})
