@@ -32,7 +32,7 @@ describe('HuntScene', () => {
         expect(scene.constructor.name).toBe('HuntScene');
     });
 
-    it('should initialize empty entity arrays in create()', () => {
+    it('should initialize entity arrays in create()', () => {
         scene.create();
 
         expect(scene.players).toBeDefined();
@@ -45,10 +45,12 @@ describe('HuntScene', () => {
         expect(Array.isArray(scene.projectiles)).toBe(true);
         expect(Array.isArray(scene.trees)).toBe(true);
 
+        // Players, compys, and projectiles start empty
         expect(scene.players).toHaveLength(0);
         expect(scene.compys).toHaveLength(0);
         expect(scene.projectiles).toHaveLength(0);
-        expect(scene.trees).toHaveLength(0);
+        // Trees are populated by addTrees() called in create()
+        expect(scene.trees).toHaveLength(8);
     });
 
     it('should initialize hunt state machine in create()', () => {
@@ -63,7 +65,8 @@ describe('HuntScene', () => {
 
         expect(scene.obstacles).toBeDefined();
         expect(Array.isArray(scene.obstacles)).toBe(true);
-        expect(scene.obstacles).toHaveLength(0);
+        // Obstacles array contains 8 trees added by addTrees()
+        expect(scene.obstacles).toHaveLength(8);
 
         expect(scene.packCoordinator).toBe(null);
     });
@@ -114,6 +117,75 @@ describe('HuntScene', () => {
             expect(scene.arenaMaxX).toBe(30);
             expect(scene.arenaMinY).toBe(0);
             expect(scene.arenaMaxY).toBe(25);
+        });
+    });
+
+    describe('tree obstacles', () => {
+        it('addTrees() creates 8 trees with worldX/Y/Z and radius', () => {
+            scene.create(); // This already calls addTrees()
+
+            expect(scene.trees).toHaveLength(8);
+
+            // Verify each tree has required properties
+            scene.trees.forEach((tree, index) => {
+                expect(tree.worldX).toBeDefined();
+                expect(tree.worldY).toBeDefined();
+                expect(tree.worldZ).toBeDefined();
+                expect(tree.radius).toBe(1.5);
+                expect(tree.sprite).toBeDefined();
+                expect(typeof tree.worldX).toBe('number');
+                expect(typeof tree.worldY).toBe('number');
+                expect(typeof tree.worldZ).toBe('number');
+            });
+        });
+
+        it('addTrees() adds trees to obstacles array with type="tree"', () => {
+            scene.create(); // This already calls addTrees()
+
+            expect(scene.obstacles).toHaveLength(8);
+
+            scene.obstacles.forEach((obstacle) => {
+                expect(obstacle.type).toBe('tree');
+                expect(obstacle.worldX).toBeDefined();
+                expect(obstacle.worldY).toBeDefined();
+                expect(obstacle.radius).toBe(1.5);
+            });
+        });
+
+        it('addTrees() creates trees at specific positions', () => {
+            scene.create(); // This already calls addTrees()
+
+            const expectedPositions = [
+                {x:5, y:5}, {x:22, y:8}, {x:7, y:12}, {x:20, y:15},
+                {x:10, y:20}, {x:18, y:22}, {x:15, y:3}, {x:12, y:18}
+            ];
+
+            expectedPositions.forEach((expected, index) => {
+                expect(scene.trees[index].worldX).toBe(expected.x);
+                expect(scene.trees[index].worldY).toBe(expected.y);
+            });
+        });
+
+        it('isLineOfSightBlocked() detects when line passes through tree', () => {
+            scene.create(); // This already calls addTrees()
+
+            // Line that passes through first tree at (5, 5)
+            // From (0, 5) to (10, 5) should pass through tree at (5, 5) with radius 1.5
+            expect(scene.isLineOfSightBlocked(0, 5, 10, 5)).toBe(true);
+        });
+
+        it('isLineOfSightBlocked() returns false when line does not intersect any tree', () => {
+            scene.create(); // This already calls addTrees()
+
+            // Line far from all trees
+            expect(scene.isLineOfSightBlocked(0, 0, 2, 0)).toBe(false);
+        });
+
+        it('isLineOfSightBlocked() returns false for empty obstacles array', () => {
+            // Don't call create() - manually initialize just what we need
+            scene.obstacles = [];
+
+            expect(scene.isLineOfSightBlocked(0, 0, 10, 10)).toBe(false);
         });
     });
 });
