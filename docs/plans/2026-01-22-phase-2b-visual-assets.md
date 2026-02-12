@@ -619,6 +619,37 @@ Each painting represents a purchasable passive ability in the cave bar shop. The
 - **Outline:** "lineless"
 - **Style Note:** Emphasize "flat primitive art on stone wall" in description to avoid overly 3D block appearance
 
+**ChatGPT/DALL-E Alternative Prompts (Cave Paintings):**
+
+For generating with ChatGPT/DALL-E, use these detailed prompts for pixel art style:
+
+1. **Thick Hide (Shield)**
+```
+Pixel art cave painting of a wooden prehistoric shield with simple geometric patterns, primitive art style painted on rough stone wall surface, ochre and red earth tones, flat 2D wall decoration, isometric view, 64x64 pixels, clean pixel art aesthetic
+```
+
+2. **Swift Feet (Footprints)**
+```
+Pixel art cave painting showing a trail of human footprints in motion, primitive prehistoric art style painted on rough stone wall, ochre and dark brown colors, flat 2D wall decoration, isometric view, 64x64 pixels, clean pixel art aesthetic
+```
+
+3. **Hunter's Eye (Eye)**
+```
+Pixel art cave painting of a large all-seeing eye with simple lines, primitive prehistoric art style painted on rough stone wall surface, ochre red and black pigments, flat 2D wall decoration, isometric view, 64x64 pixels, clean pixel art aesthetic
+```
+
+4. **Pack Leader (Hunters)**
+```
+Pixel art cave painting depicting stick figure hunters working together as a group, primitive prehistoric art style painted on rough stone wall, ochre and red earth pigments, flat 2D wall decoration, isometric view, 64x64 pixels, clean pixel art aesthetic
+```
+
+5. **Scavenger (Treasure)**
+```
+Pixel art cave painting showing gems and treasures in a pile, primitive prehistoric art style painted on rough stone wall surface, ochre yellow and red colors, flat 2D wall decoration, isometric view, 64x64 pixels, clean pixel art aesthetic
+```
+
+**Note:** DALL-E prompts emphasize "pixel art" style and specific pixel dimensions for better results. Request transparent background and specify isometric perspective to match game art style.
+
 **Cave Wall Props (Natural Rock Formation):**
 - **Cave Wall Barrier** (192×192px)
   - Description: "rough natural cave stone wall barrier, vertical section of jagged irregular rock face, uneven bumpy surface with cracks and crevices, dark gray and brown cave stone texture, organic rock formation carved from living stone, primitive prehistoric cave interior wall, weathered ancient rock"
