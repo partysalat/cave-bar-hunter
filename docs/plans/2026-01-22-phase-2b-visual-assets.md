@@ -566,11 +566,58 @@ These descriptions guide how weapons should appear in character animations:
 **Props (10 props):**
 - Wooden Bar Stool Prop (96px)
 - Weapon Rack Prop (192px)
-- Cave Painting Panel Prop (128px)
 - Trophy Skull Mount Prop (128px)
 - Torch Sconce Prop (96px)
 - Bone Mug Prop (64px)
 - Scoreboard Stone Prop (192px)
+
+**Cave Painting Props - Passive Ability Upgrades (5 props):**
+
+Each painting represents a purchasable passive ability in the cave bar shop. These should be flat wall decorations with primitive art style.
+
+1. **Thick Hide Painting** (Defense upgrade)
+   - **Size:** 64px
+   - **Tile Shape:** Thin tile
+   - **Description:** "cave wall painting of a sturdy shield, flat primitive art on stone wall"
+   - **Ability:** +1 max health, extra protection
+   - **Status:** ✅ Generated (2026-02-12)
+
+2. **Swift Feet Painting** (Mobility upgrade)
+   - **Size:** 64px
+   - **Tile Shape:** Thin tile
+   - **Description:** "cave wall painting of running footprints, flat primitive art on stone wall"
+   - **Ability:** Dodge cooldown reduction (3s → 2s)
+   - **Status:** ✅ Generated (2026-02-12)
+
+3. **Hunter's Eye Painting** (Accuracy upgrade)
+   - **Size:** 64px
+   - **Tile Shape:** Thin tile
+   - **Description:** "cave wall painting of a large watching eye, flat primitive art on stone wall"
+   - **Ability:** Weak point hitboxes +30% larger
+   - **Status:** ✅ Generated (2026-02-12)
+
+4. **Pack Leader Painting** (Support upgrade)
+   - **Size:** 64px
+   - **Tile Shape:** Thin tile
+   - **Description:** "cave wall painting of hunters working together, flat primitive art on stone wall"
+   - **Ability:** Revive speed +50%, bonus damage after revive
+   - **Status:** ✅ Generated (2026-02-12)
+
+5. **Scavenger Painting** (Economy upgrade)
+   - **Size:** 64px
+   - **Tile Shape:** Thin tile
+   - **Description:** "cave wall painting of treasure gems, flat primitive art on stone wall"
+   - **Ability:** +25% bonus points
+   - **Status:** ✅ Generated (2026-02-12)
+
+**PixelLab Generation Settings (Cave Paintings):**
+- **Tool:** `create_isometric_tile`
+- **Size:** 64px (larger and more visible than 32px)
+- **Tile Shape:** "thin tile" (flatter, better for wall decorations)
+- **Shading:** "basic shading"
+- **Detail:** "medium detail"
+- **Outline:** "lineless"
+- **Style Note:** Emphasize "flat primitive art on stone wall" in description to avoid overly 3D block appearance
 
 **Cave Wall Props (Natural Rock Formation):**
 - **Cave Wall Barrier** (192×192px)
