@@ -1,5 +1,8 @@
 import Phaser from 'phaser';
 import { worldToScreen, calculateDepth } from '../systems/CoordinateSystem.js';
+import Player from '../entities/Player.js';
+import InputManager from '../systems/InputManager.js';
+import { gameSession } from '../systems/SessionManager.js';
 
 /**
  * HuntScene - Compy Pack Hunt
@@ -10,6 +13,18 @@ import { worldToScreen, calculateDepth } from '../systems/CoordinateSystem.js';
 export default class HuntScene extends Phaser.Scene {
     constructor() {
         super({ key: 'HuntScene' });
+    }
+
+    preload() {
+        // Load player spritesheets
+        const colors = ['red', 'blue', 'yellow', 'green'];
+        colors.forEach((color, index) => {
+            this.load.atlas(
+                `player-${index}`,
+                `/assets/generated/spritesheets/${color}-hero.png`,
+                `/assets/generated/spritesheets/${color}-hero.json`
+            );
+        });
     }
 
     create() {
@@ -32,9 +47,17 @@ export default class HuntScene extends Phaser.Scene {
         // Pack coordinator
         this.packCoordinator = null;
 
+        // Initialize input manager
+        this.inputManager = new InputManager(this);
+        this.inputManager.setupKeyboard();
+
         // Build arena
         this.buildJungleFloor();
         this.addTrees();
+
+        // Spawn players and create animations
+        this.spawnPlayers();
+        this.createPlayerAnimations();
     }
 
     /**
@@ -118,6 +141,70 @@ export default class HuntScene extends Phaser.Scene {
         });
 
         console.log(`Added ${this.trees.length} tree obstacles`);
+    }
+
+    /**
+     * Spawn 4 players in center formation (2x2 grid)
+     */
+    spawnPlayers() {
+        // Center position and spacing
+        const centerX = 15;
+        const centerY = 12.5;
+        const spacing = 2;
+
+        // 2x2 grid positions
+        const positions = [
+            { x: centerX - spacing/2, y: centerY - spacing/2 }, // Player 0: NW
+            { x: centerX + spacing/2, y: centerY - spacing/2 }, // Player 1: NE
+            { x: centerX - spacing/2, y: centerY + spacing/2 }, // Player 2: SW
+            { x: centerX + spacing/2, y: centerY + spacing/2 }  // Player 3: SE
+        ];
+
+        positions.forEach((pos, index) => {
+            const player = new Player(this, index, pos.x, pos.y, 0);
+            player.moveSpeed = 6; // Hunt speed (faster than normal)
+            this.players.push(player);
+        });
+
+        console.log(`Spawned ${this.players.length} players in center formation`);
+    }
+
+    /**
+     * Create animations for all 4 players
+     * Each player has run and idle animations for 8 directions
+     */
+    createPlayerAnimations() {
+        const directions = ['south', 'south-east', 'east', 'north-east', 'north', 'north-west', 'west', 'south-west'];
+
+        for (let playerIndex = 0; playerIndex < 4; playerIndex++) {
+            directions.forEach(direction => {
+                // Run animation
+                this.anims.create({
+                    key: `player-${playerIndex}-run-${direction}`,
+                    frames: this.anims.generateFrameNames(`player-${playerIndex}`, {
+                        prefix: `player-${playerIndex}-run-${direction}-`,
+                        start: 0,
+                        end: 7
+                    }),
+                    frameRate: 12,
+                    repeat: -1
+                });
+
+                // Idle animation
+                this.anims.create({
+                    key: `player-${playerIndex}-idle-${direction}`,
+                    frames: this.anims.generateFrameNames(`player-${playerIndex}`, {
+                        prefix: `player-${playerIndex}-idle-${direction}-`,
+                        start: 0,
+                        end: 3
+                    }),
+                    frameRate: 6,
+                    repeat: -1
+                });
+            });
+        }
+
+        console.log('Created player animations for 4 players × 8 directions × 2 types');
     }
 
     /**

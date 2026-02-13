@@ -606,7 +606,7 @@ Each painting represents a purchasable passive ability in the cave bar shop. The
 5. **Scavenger Painting** (Economy upgrade)
    - **Size:** 64px
    - **Tile Shape:** Thin tile
-   - **Description:** "cave wall painting of treasure gems, flat primitive art on stone wall"
+   - **Description:** "isometric cave wall painting of treasure gems, flat primitive art on stone wall"
    - **Ability:** +25% bonus points
    - **Status:** ✅ Generated (2026-02-12)
 

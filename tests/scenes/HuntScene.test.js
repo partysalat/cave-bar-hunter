@@ -1,5 +1,33 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { createMockScene } from '../fixtures/mockPhaser.js';
+import { createMockScene, createMockPlayer } from '../fixtures/mockPhaser.js';
+
+// Mock Player class
+vi.mock('../../src/entities/Player.js', () => ({
+    default: vi.fn((scene, playerNumber, worldX, worldY, worldZ) => {
+        return createMockPlayer(playerNumber, worldX, worldY, worldZ);
+    })
+}));
+
+// Mock InputManager
+vi.mock('../../src/systems/InputManager.js', () => ({
+    default: vi.fn(() => ({
+        setupKeyboard: vi.fn()
+    }))
+}));
+
+// Mock SessionManager
+vi.mock('../../src/systems/SessionManager.js', () => ({
+    gameSession: {
+        currentHunt: 1,
+        totalHunts: 5,
+        playerData: [
+            { playerIndex: 0, score: 0, weapon: 'stone-spear' },
+            { playerIndex: 1, score: 0, weapon: 'stone-spear' },
+            { playerIndex: 2, score: 0, weapon: 'stone-spear' },
+            { playerIndex: 3, score: 0, weapon: 'stone-spear' }
+        ]
+    }
+}));
 
 // Mock Phaser before importing HuntScene
 vi.mock('phaser', () => ({
@@ -45,8 +73,8 @@ describe('HuntScene', () => {
         expect(Array.isArray(scene.projectiles)).toBe(true);
         expect(Array.isArray(scene.trees)).toBe(true);
 
-        // Players, compys, and projectiles start empty
-        expect(scene.players).toHaveLength(0);
+        // Players are now spawned automatically in create()
+        expect(scene.players).toHaveLength(4);
         expect(scene.compys).toHaveLength(0);
         expect(scene.projectiles).toHaveLength(0);
         // Trees are populated by addTrees() called in create()
@@ -186,6 +214,94 @@ describe('HuntScene', () => {
             scene.obstacles = [];
 
             expect(scene.isLineOfSightBlocked(0, 0, 10, 10)).toBe(false);
+        });
+    });
+
+    describe('player spawning', () => {
+        it('spawnPlayers() creates 4 players at center positions', () => {
+            scene.create(); // Already calls spawnPlayers()
+
+            expect(scene.players).toHaveLength(4);
+
+            // Expected positions: center (15, 12.5), spacing 2
+            // 2x2 grid:
+            const expectedPositions = [
+                { x: 14, y: 11.5, playerNumber: 0 }, // NW
+                { x: 16, y: 11.5, playerNumber: 1 }, // NE
+                { x: 14, y: 13.5, playerNumber: 2 }, // SW
+                { x: 16, y: 13.5, playerNumber: 3 }  // SE
+            ];
+
+            expectedPositions.forEach((expected, index) => {
+                const player = scene.players[index];
+                expect(player.worldX).toBe(expected.x);
+                expect(player.worldY).toBe(expected.y);
+                expect(player.worldZ).toBe(0);
+                expect(player.playerNumber).toBe(expected.playerNumber);
+            });
+        });
+
+        it('spawnPlayers() sets player moveSpeed to 6', () => {
+            scene.create(); // Already calls spawnPlayers()
+
+            scene.players.forEach(player => {
+                expect(player.moveSpeed).toBe(6);
+            });
+        });
+    });
+
+    describe('player animations', () => {
+        it('createPlayerAnimations() creates run animations for all 4 players', () => {
+            scene.create();
+
+            const createSpy = vi.spyOn(scene.anims, 'create');
+
+            scene.createPlayerAnimations();
+
+            // Should create animations for 4 players × 8 directions × 2 types (run + idle)
+            expect(createSpy).toHaveBeenCalled();
+
+            // Verify at least one run animation was created
+            const runAnimCalls = createSpy.mock.calls.filter(call =>
+                call[0]?.key?.includes('-run-')
+            );
+            expect(runAnimCalls.length).toBeGreaterThan(0);
+        });
+
+        it('createPlayerAnimations() creates idle animations for all 4 players', () => {
+            scene.create();
+
+            const createSpy = vi.spyOn(scene.anims, 'create');
+
+            scene.createPlayerAnimations();
+
+            // Verify at least one idle animation was created
+            const idleAnimCalls = createSpy.mock.calls.filter(call =>
+                call[0]?.key?.includes('-idle-')
+            );
+            expect(idleAnimCalls.length).toBeGreaterThan(0);
+        });
+    });
+
+    describe('preload', () => {
+        it('preload() loads 4 player atlases', () => {
+            // Mock the load.atlas method
+            const atlasSpy = vi.spyOn(scene.load, 'atlas');
+
+            scene.preload();
+
+            // Should load 4 player spritesheets
+            expect(atlasSpy).toHaveBeenCalledTimes(4);
+
+            // Verify each color hero is loaded
+            const colors = ['red', 'blue', 'yellow', 'green'];
+            colors.forEach((color, index) => {
+                expect(atlasSpy).toHaveBeenCalledWith(
+                    `player-${index}`,
+                    `/assets/generated/spritesheets/${color}-hero.png`,
+                    `/assets/generated/spritesheets/${color}-hero.json`
+                );
+            });
         });
     });
 });
