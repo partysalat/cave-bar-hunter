@@ -105,9 +105,12 @@ export default class HuntScene extends Phaser.Scene {
         // Create grid of jungle tiles with variety
         for (let worldY = this.arenaMinY; worldY < this.arenaMaxY; worldY += tileSize) {
             for (let worldX = this.arenaMinX; worldX < this.arenaMaxX; worldX += tileSize) {
+                // Floor tiles at worldZ = -0.5 (below ground level)
+                const tileWorldZ = -0.5;
+
                 // Convert world position to screen coordinates
-                const screenPos = worldToScreen(worldX, worldY, 0);
-                const depth = calculateDepth(worldY, 0);
+                const screenPos = worldToScreen(worldX, worldY, tileWorldZ);
+                const depth = calculateDepth(worldY, tileWorldZ);
 
                 // Pick tile with variety (70% jungle-floor, 20% grass-patch, 10% roots)
                 const rand = Math.random();
@@ -120,9 +123,9 @@ export default class HuntScene extends Phaser.Scene {
                     tileKey = 'root-covered-ground';
                 }
 
-                // Create tile sprite (offset Y down so entities appear on top)
-                const tile = this.add.sprite(screenPos.x, screenPos.y + 16, tileKey);
-                tile.setDepth(-1); // Floor layer - always behind entities
+                // Create tile sprite
+                const tile = this.add.sprite(screenPos.x, screenPos.y, tileKey);
+                tile.setDepth(depth); // Uses proper depth calculation with worldZ -0.5
 
                 tileCount++;
             }
