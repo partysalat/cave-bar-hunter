@@ -405,4 +405,440 @@ describe('PackCoordinator', () => {
             });
         });
     });
+
+    describe('scheduleCoordinatedAttacks', () => {
+        beforeEach(() => {
+            coordinator = new PackCoordinator(compys, players);
+            compys.forEach((compy, i) => {
+                compy.ai = {
+                    target: players[0],
+                    state: 'CIRCLING',
+                    attackCooldown: 0,
+                    transitionToLunging: vi.fn()
+                };
+            });
+        });
+
+        it('should schedule swarm attack with 3+ compys on same target', () => {
+            // All 3 compys targeting player 0, ready to attack
+            coordinator.scheduleCoordinatedAttacks();
+
+            expect(coordinator.attackPatterns.length).toBe(1);
+            expect(coordinator.attackPatterns[0].type).toBe('swarm');
+            expect(coordinator.attackPatterns[0].compys.length).toBe(3);
+            expect(coordinator.attackPatterns[0].target).toBe(players[0]);
+        });
+
+        it('should schedule pincer attack with 2 compys on same target', () => {
+            // Only 2 compys available for player 0
+            compys = [createMockCompy(20, 15, 0), createMockCompy(22, 16, 0)];
+            compys.forEach(compy => {
+                compy.ai = {
+                    target: players[0],
+                    state: 'CIRCLING',
+                    attackCooldown: 0,
+                    transitionToLunging: vi.fn()
+                };
+            });
+            coordinator = new PackCoordinator(compys, players);
+
+            // Position compys on opposite sides of target (player 0 at 15, 12)
+            compys[0].worldX = 20;
+            compys[0].worldY = 12;
+            compys[1].worldX = 10;
+            compys[1].worldY = 12;
+            players[0].worldX = 15;
+            players[0].worldY = 12;
+
+            coordinator.scheduleCoordinatedAttacks();
+
+            expect(coordinator.attackPatterns.length).toBe(1);
+            expect(coordinator.attackPatterns[0].type).toBe('pincer');
+            expect(coordinator.attackPatterns[0].compys.length).toBe(2);
+        });
+
+        it('should only schedule for compys in CIRCLING state', () => {
+            compys[0].ai.state = 'LUNGING';
+            compys[1].ai.state = 'CIRCLING';
+            compys[2].ai.state = 'CIRCLING';
+
+            coordinator.scheduleCoordinatedAttacks();
+
+            // Should only schedule with 2 compys (not enough for swarm, need pincer check)
+            if (coordinator.attackPatterns.length > 0) {
+                expect(coordinator.attackPatterns[0].compys.length).toBeLessThan(3);
+            }
+        });
+
+        it('should only schedule for compys with attackCooldown = 0', () => {
+            compys[0].ai.attackCooldown = 1.5;
+            compys[1].ai.attackCooldown = 0;
+            compys[2].ai.attackCooldown = 0;
+
+            coordinator.scheduleCoordinatedAttacks();
+
+            // Should only consider 2 compys
+            if (coordinator.attackPatterns.length > 0) {
+                expect(coordinator.attackPatterns[0].compys.length).toBeLessThan(3);
+            }
+        });
+
+        it('should not schedule if less than 2 compys available', () => {
+            compys = [createMockCompy(20, 15, 0)];
+            compys[0].ai = {
+                target: players[0],
+                state: 'CIRCLING',
+                attackCooldown: 0,
+                transitionToLunging: vi.fn()
+            };
+            coordinator = new PackCoordinator(compys, players);
+
+            coordinator.scheduleCoordinatedAttacks();
+
+            expect(coordinator.attackPatterns.length).toBe(0);
+        });
+
+        it('should initialize pattern with correct structure', () => {
+            coordinator.scheduleCoordinatedAttacks();
+
+            const pattern = coordinator.attackPatterns[0];
+            expect(pattern).toHaveProperty('type');
+            expect(pattern).toHaveProperty('compys');
+            expect(pattern).toHaveProperty('target');
+            expect(pattern).toHaveProperty('startTime');
+            expect(pattern).toHaveProperty('completed');
+            expect(pattern.startTime).toBe(0);
+            expect(pattern.completed).toBe(false);
+        });
+    });
+
+    describe('schedulePincerAttack', () => {
+        beforeEach(() => {
+            coordinator = new PackCoordinator(compys, players);
+            players[0].worldX = 15;
+            players[0].worldY = 12;
+        });
+
+        it('should verify compys are on opposite sides (>90° apart)', () => {
+            const compy1 = createMockCompy(20, 12, 0); // East of target
+            const compy2 = createMockCompy(10, 12, 0); // West of target
+            const target = players[0];
+
+            coordinator.schedulePincerAttack([compy1, compy2], target);
+
+            expect(coordinator.attackPatterns.length).toBe(1);
+            expect(coordinator.attackPatterns[0].type).toBe('pincer');
+        });
+
+        it('should not schedule if compys are too close together (<90°)', () => {
+            const compy1 = createMockCompy(20, 12, 0); // East
+            const compy2 = createMockCompy(20, 13, 0); // Also East (small angle)
+            const target = players[0];
+
+            coordinator.schedulePincerAttack([compy1, compy2], target);
+
+            // Should not create pattern
+            expect(coordinator.attackPatterns.length).toBe(0);
+        });
+
+        it('should create pattern with triggered=false', () => {
+            const compy1 = createMockCompy(20, 12, 0);
+            const compy2 = createMockCompy(10, 12, 0);
+            const target = players[0];
+
+            coordinator.schedulePincerAttack([compy1, compy2], target);
+
+            expect(coordinator.attackPatterns[0].triggered).toBe(false);
+        });
+
+        it('should create pattern with nextTriggerTime=0', () => {
+            const compy1 = createMockCompy(20, 12, 0);
+            const compy2 = createMockCompy(10, 12, 0);
+            const target = players[0];
+
+            coordinator.schedulePincerAttack([compy1, compy2], target);
+
+            expect(coordinator.attackPatterns[0].nextTriggerTime).toBe(0);
+        });
+    });
+
+    describe('scheduleSwarmAttack', () => {
+        beforeEach(() => {
+            coordinator = new PackCoordinator(compys, players);
+        });
+
+        it('should create swarm pattern with 3 compys', () => {
+            coordinator.scheduleSwarmAttack(compys, players[0]);
+
+            expect(coordinator.attackPatterns.length).toBe(1);
+            expect(coordinator.attackPatterns[0].type).toBe('swarm');
+            expect(coordinator.attackPatterns[0].compys.length).toBe(3);
+        });
+
+        it('should create pattern with triggerIndex=0', () => {
+            coordinator.scheduleSwarmAttack(compys, players[0]);
+
+            expect(coordinator.attackPatterns[0].triggerIndex).toBe(0);
+        });
+
+        it('should create pattern with completed=false', () => {
+            coordinator.scheduleSwarmAttack(compys, players[0]);
+
+            expect(coordinator.attackPatterns[0].completed).toBe(false);
+        });
+
+        it('should create pattern with startTime=0', () => {
+            coordinator.scheduleSwarmAttack(compys, players[0]);
+
+            expect(coordinator.attackPatterns[0].startTime).toBe(0);
+        });
+    });
+
+    describe('processAttackPatterns', () => {
+        beforeEach(() => {
+            coordinator = new PackCoordinator(compys, players);
+        });
+
+        it('should increment pattern startTime', () => {
+            coordinator.attackPatterns.push({
+                type: 'swarm',
+                compys: compys,
+                target: players[0],
+                startTime: 0,
+                triggerIndex: 0,
+                completed: false
+            });
+
+            coordinator.processAttackPatterns(0.5);
+
+            expect(coordinator.attackPatterns[0].startTime).toBe(0.5);
+        });
+
+        it('should call processPincerPattern for pincer patterns', () => {
+            coordinator.processPincerPattern = vi.fn();
+            coordinator.attackPatterns.push({
+                type: 'pincer',
+                compys: [compys[0], compys[1]],
+                target: players[0],
+                startTime: 0,
+                triggered: false,
+                nextTriggerTime: 0,
+                completed: false
+            });
+
+            coordinator.processAttackPatterns(0.016);
+
+            expect(coordinator.processPincerPattern).toHaveBeenCalledWith(coordinator.attackPatterns[0]);
+        });
+
+        it('should call processSwarmPattern for swarm patterns', () => {
+            coordinator.processSwarmPattern = vi.fn();
+            coordinator.attackPatterns.push({
+                type: 'swarm',
+                compys: compys,
+                target: players[0],
+                startTime: 0,
+                triggerIndex: 0,
+                completed: false
+            });
+
+            coordinator.processAttackPatterns(0.016);
+
+            expect(coordinator.processSwarmPattern).toHaveBeenCalledWith(coordinator.attackPatterns[0]);
+        });
+
+        it('should remove completed patterns', () => {
+            coordinator.attackPatterns.push({
+                type: 'swarm',
+                compys: compys,
+                target: players[0],
+                startTime: 1.0,
+                triggerIndex: 3,
+                completed: true
+            });
+
+            coordinator.processAttackPatterns(0.016);
+
+            expect(coordinator.attackPatterns.length).toBe(0);
+        });
+
+        it('should not remove incomplete patterns', () => {
+            coordinator.attackPatterns.push({
+                type: 'swarm',
+                compys: compys,
+                target: players[0],
+                startTime: 0.5,
+                triggerIndex: 1,
+                completed: false
+            });
+
+            coordinator.processAttackPatterns(0.016);
+
+            expect(coordinator.attackPatterns.length).toBe(1);
+        });
+    });
+
+    describe('processPincerPattern', () => {
+        beforeEach(() => {
+            coordinator = new PackCoordinator(compys, players);
+            compys.forEach(compy => {
+                compy.ai = { transitionToLunging: vi.fn() };
+            });
+        });
+
+        it('should trigger first compy immediately', () => {
+            const pattern = {
+                type: 'pincer',
+                compys: [compys[0], compys[1]],
+                target: players[0],
+                startTime: 0,
+                triggered: false,
+                nextTriggerTime: 0,
+                completed: false
+            };
+
+            coordinator.processPincerPattern(pattern);
+
+            expect(compys[0].ai.transitionToLunging).toHaveBeenCalledOnce();
+            expect(pattern.triggered).toBe(false); // Still waiting for second
+            expect(pattern.nextTriggerTime).toBe(0.5);
+        });
+
+        it('should trigger second compy at 0.5s', () => {
+            const pattern = {
+                type: 'pincer',
+                compys: [compys[0], compys[1]],
+                target: players[0],
+                startTime: 0.5,
+                triggered: false,
+                nextTriggerTime: 0.5,
+                completed: false
+            };
+
+            coordinator.processPincerPattern(pattern);
+
+            expect(compys[1].ai.transitionToLunging).toHaveBeenCalledOnce();
+            expect(pattern.triggered).toBe(true);
+            expect(pattern.completed).toBe(true);
+        });
+
+        it('should not trigger second compy before 0.5s', () => {
+            const pattern = {
+                type: 'pincer',
+                compys: [compys[0], compys[1]],
+                target: players[0],
+                startTime: 0.3,
+                triggered: false,
+                nextTriggerTime: 0.5,
+                completed: false
+            };
+
+            coordinator.processPincerPattern(pattern);
+
+            expect(compys[0].ai.transitionToLunging).not.toHaveBeenCalled();
+            expect(compys[1].ai.transitionToLunging).not.toHaveBeenCalled();
+        });
+
+        it('should mark completed after second trigger', () => {
+            const pattern = {
+                type: 'pincer',
+                compys: [compys[0], compys[1]],
+                target: players[0],
+                startTime: 0.6,
+                triggered: false,
+                nextTriggerTime: 0.5,
+                completed: false
+            };
+
+            coordinator.processPincerPattern(pattern);
+
+            expect(pattern.completed).toBe(true);
+        });
+    });
+
+    describe('processSwarmPattern', () => {
+        beforeEach(() => {
+            coordinator = new PackCoordinator(compys, players);
+            compys.forEach(compy => {
+                compy.ai = { transitionToLunging: vi.fn() };
+            });
+        });
+
+        it('should trigger compys at 0.3s intervals', () => {
+            const pattern = {
+                type: 'swarm',
+                compys: compys,
+                target: players[0],
+                startTime: 0,
+                triggerIndex: 0,
+                completed: false
+            };
+
+            // First trigger at 0s
+            coordinator.processSwarmPattern(pattern);
+            expect(compys[0].ai.transitionToLunging).toHaveBeenCalledOnce();
+            expect(pattern.triggerIndex).toBe(1);
+
+            // Second trigger at 0.3s
+            pattern.startTime = 0.3;
+            coordinator.processSwarmPattern(pattern);
+            expect(compys[1].ai.transitionToLunging).toHaveBeenCalledOnce();
+            expect(pattern.triggerIndex).toBe(2);
+
+            // Third trigger at 0.6s
+            pattern.startTime = 0.6;
+            coordinator.processSwarmPattern(pattern);
+            expect(compys[2].ai.transitionToLunging).toHaveBeenCalledOnce();
+            expect(pattern.triggerIndex).toBe(3);
+        });
+
+        it('should mark completed when all triggered', () => {
+            const pattern = {
+                type: 'swarm',
+                compys: compys,
+                target: players[0],
+                startTime: 0.9,
+                triggerIndex: 3,
+                completed: false
+            };
+
+            coordinator.processSwarmPattern(pattern);
+
+            expect(pattern.completed).toBe(true);
+        });
+
+        it('should not trigger same compy twice', () => {
+            const pattern = {
+                type: 'swarm',
+                compys: compys,
+                target: players[0],
+                startTime: 0,
+                triggerIndex: 0,
+                completed: false
+            };
+
+            coordinator.processSwarmPattern(pattern);
+            expect(compys[0].ai.transitionToLunging).toHaveBeenCalledOnce();
+
+            // Call again - should not trigger again
+            coordinator.processSwarmPattern(pattern);
+            expect(compys[0].ai.transitionToLunging).toHaveBeenCalledOnce();
+        });
+
+        it('should not trigger before interval time', () => {
+            const pattern = {
+                type: 'swarm',
+                compys: compys,
+                target: players[0],
+                startTime: 0.2,
+                triggerIndex: 1,
+                completed: false
+            };
+
+            coordinator.processSwarmPattern(pattern);
+
+            // Should not trigger second compy (needs 0.3s)
+            expect(compys[1].ai.transitionToLunging).not.toHaveBeenCalled();
+        });
+    });
 });
