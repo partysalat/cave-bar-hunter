@@ -19,10 +19,9 @@ const config = {
         mode: Phaser.Scale.ENVELOP,
         autoCenter: Phaser.Scale.CENTER_BOTH
     },
-    // Active scene: HuntScene for Compy Pack hunt testing
-    // Switch back to CaveBarScene for cave bar development
+    // Active scene: CaveBarScene starts, transitions to HuntScene after timer
     // Switch to TestScene for combat testing
-    scene: [HuntScene, CaveBarScene, TestScene]
+    scene: [CaveBarScene, HuntScene, TestScene]
 };
 
 const game = new Phaser.Game(config);

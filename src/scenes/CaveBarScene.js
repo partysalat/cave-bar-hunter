@@ -468,7 +468,7 @@ export default class CaveBarScene extends Phaser.Scene {
             this.cameras.main.fadeOut(1000, 0, 0, 0);
             this.cameras.main.once('camerafadeoutcomplete', () => {
                 console.log('🎯 Transitioning to hunt scene...');
-                this.scene.start('TestScene');
+                this.scene.start('HuntScene');
             });
         });
     }
