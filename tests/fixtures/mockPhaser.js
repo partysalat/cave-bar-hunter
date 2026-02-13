@@ -25,6 +25,7 @@ export function createMockScene() {
                 setTint: vi.fn().mockReturnThis(),
                 setAlpha: vi.fn().mockReturnThis(),
                 setScale: vi.fn().mockReturnThis(),
+                setTexture: vi.fn().mockReturnThis(),
                 play: vi.fn().mockReturnThis(),
                 anims: {
                     currentAnim: null
@@ -46,7 +47,8 @@ export function createMockScene() {
             generateFrameNames: () => []
         },
         load: {
-            atlas: () => ({})
+            atlas: vi.fn(),
+            image: vi.fn()
         },
         time: {
             delayedCall: (delay, callback) => ({

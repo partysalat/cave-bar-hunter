@@ -11,7 +11,10 @@ vi.mock('../../src/entities/Player.js', () => ({
 // Mock InputManager
 vi.mock('../../src/systems/InputManager.js', () => ({
     default: vi.fn(() => ({
-        setupKeyboard: vi.fn()
+        setupKeyboard: vi.fn(),
+        getPlayerInput: vi.fn(() => null),
+        getPlayerInputWithKeyboard: vi.fn(() => null),
+        getDPadDirection: vi.fn(() => ({ x: 0, y: 0 }))
     }))
 }));
 
