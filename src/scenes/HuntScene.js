@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { worldToScreen, calculateDepth } from '../systems/CoordinateSystem.js';
+import { worldToScreen, calculateDepth, screenToWorldDirection } from '../systems/CoordinateSystem.js';
+import { updatePlayerAnimation } from '../systems/SpriteDirectionSystem.js';
 import Player from '../entities/Player.js';
 import Dinosaur from '../entities/Dinosaur.js';
 import InputManager from '../systems/InputManager.js';
