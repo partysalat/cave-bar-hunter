@@ -818,6 +818,37 @@ export default class CaveBarScene extends Phaser.Scene {
 
         this.bartender = new Bartender(this, bartenderX, bartenderY, bartenderZ);
 
+        // Add glowing mugs around the bar to indicate cocktails available
+        const bartenderScreenPos = worldToScreen(bartenderX, bartenderY, bartenderZ);
+
+        // Create 3 glowing mug indicators on the bar counter
+        const mugPositions = [
+            { x: bartenderX - 1.5, y: bartenderY + 1.8 },
+            { x: bartenderX, y: bartenderY + 2.0 },
+            { x: bartenderX + 1.5, y: bartenderY + 1.8 }
+        ];
+
+        mugPositions.forEach(pos => {
+            const mugScreenPos = worldToScreen(pos.x, pos.y, bartenderZ + 0.2);
+            const mugDepth = calculateDepth(pos.y, bartenderZ + 0.2);
+
+            // Glowing circle for each mug position
+            const mugGlow = this.add.circle(mugScreenPos.x, mugScreenPos.y, 20, 0x44ff88, 0.4);
+            mugGlow.setDepth(mugDepth);
+
+            // Gentle pulsing to indicate interactive bar
+            this.tweens.add({
+                targets: mugGlow,
+                alpha: 0.6,
+                scale: 1.2,
+                duration: 3000,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut',
+                delay: Math.random() * 1000 // Stagger the pulses
+            });
+        });
+
         // Create interaction prompt (positioned at bottom of U)
         const screenPos = worldToScreen(bartenderX, bartenderY + 3.0, bartenderZ);
         const promptY = screenPos.y + 20;
@@ -937,8 +968,25 @@ export default class CaveBarScene extends Phaser.Scene {
         const screenPos = worldToScreen(rackX, rackY, rackZ);
         const depth = calculateDepth(rackY, rackZ);
 
+        // Add glowing circle behind weapon rack for visibility
+        const glowRadius = 60;
+        const weaponGlow = this.add.circle(screenPos.x, screenPos.y, glowRadius, 0xff6644, 0.25);
+        weaponGlow.setDepth(depth - 1);
+
+        // Pulsing glow animation
+        this.tweens.add({
+            targets: weaponGlow,
+            alpha: 0.4,
+            scale: 1.1,
+            duration: 2500,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+        });
+
         this.weaponRack = {
             sprite: this.add.sprite(screenPos.x, screenPos.y, 'weapon-rack'),
+            glow: weaponGlow,
             worldX: rackX,
             worldY: rackY,
             worldZ: rackZ,
