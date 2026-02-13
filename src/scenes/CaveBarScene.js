@@ -1035,11 +1035,11 @@ export default class CaveBarScene extends Phaser.Scene {
 
         // Painting positions around the cave (5 paintings for 5 abilities)
         const paintingPositions = [
-            { x: 5, y: 3, z: 0.3 },    // North-west wall
-            { x: 15, y: 3, z: 0.3 },   // North-east wall
-            { x: 17, y: 8, z: 0.3 },   // East wall
-            { x: 6, y: 12, z: 0.3 },   // South-west wall
-            { x: 14, y: 12, z: 0.3 }   // South-east wall
+            { x: 5, y: 3, z: 0.3 },    // North-west wall - Thick Hide
+            { x: 15, y: 3, z: 0.3 },   // North-east wall - Swift Feet
+            { x: 17, y: 8, z: 0.3 },   // East wall - Hunter's Eye
+            { x: 6, y: 12, z: 0.3 },   // South-west wall - Pack Leader
+            { x: 2, y: 8, z: 0.3 }     // West wall - Scavenger (moved away from bar)
         ];
 
         this.cavePaintings = [];
