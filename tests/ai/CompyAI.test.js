@@ -742,4 +742,127 @@ describe('CompyAI', () => {
             });
         });
     });
+
+    describe('BITING state', () => {
+        beforeEach(() => {
+            ai = new CompyAI(compy, allCompys, players);
+            ai.state = 'BITING';
+            ai.target = players[0];
+            players[0].worldX = 20;
+            players[0].worldY = 15;
+            players[0].health = 2;
+            players[0].isDowned = false;
+            compy.worldX = 20;
+            compy.worldY = 15;
+            ai.stateTimer = 0;
+        });
+
+        it('should freeze velocity', () => {
+            compy.velocity.x = 5;
+            compy.velocity.y = 3;
+            ai.updateBiting(0.016);
+            expect(compy.velocity.x).toBe(0);
+            expect(compy.velocity.y).toBe(0);
+        });
+
+        it('should deal 0.5 damage on first frame only', () => {
+            const initialHealth = players[0].health;
+            ai.updateBiting(0.016);
+            expect(players[0].health).toBe(initialHealth - 0.5);
+        });
+
+        it('should not deal damage on subsequent frames', () => {
+            ai.updateBiting(0.016); // First frame - damage dealt
+            const healthAfterFirst = players[0].health;
+
+            ai.stateTimer = 0.016; // Simulate timer increment
+            ai.updateBiting(0.016); // Second frame
+            expect(players[0].health).toBe(healthAfterFirst); // No additional damage
+        });
+
+        it('should not deal damage if target out of range', () => {
+            compy.worldX = 25; // More than 0.5 units away
+            compy.worldY = 15;
+
+            const initialHealth = players[0].health;
+            ai.updateBiting(0.016);
+            expect(players[0].health).toBe(initialHealth);
+        });
+
+        it('should not deal damage if target is downed', () => {
+            players[0].isDowned = true;
+            const initialHealth = players[0].health;
+            ai.updateBiting(0.016);
+            expect(players[0].health).toBe(initialHealth);
+        });
+
+        it('should not deal damage if target is dead', () => {
+            players[0].isDead = true;
+            const initialHealth = players[0].health;
+            ai.updateBiting(0.016);
+            expect(players[0].health).toBe(initialHealth);
+        });
+
+        it('should transition to RETREATING after 0.5 seconds', () => {
+            ai.stateTimer = 0.5;
+            ai.updateBiting(0.016);
+            expect(ai.state).toBe('RETREATING');
+        });
+
+        it('should not transition before 0.5 seconds', () => {
+            ai.stateTimer = 0.4;
+            ai.updateBiting(0.016);
+            expect(ai.state).toBe('BITING');
+        });
+
+        it('should set attackCooldown to 2.0 when transitioning to RETREATING', () => {
+            ai.attackCooldown = 0;
+            ai.stateTimer = 0.5;
+            ai.updateBiting(0.016);
+            expect(ai.attackCooldown).toBe(2.0);
+        });
+
+        it('should not set attackCooldown before transitioning', () => {
+            ai.attackCooldown = 0;
+            ai.stateTimer = 0.4;
+            ai.updateBiting(0.016);
+            expect(ai.attackCooldown).toBe(0);
+        });
+
+        it('should maintain freeze across multiple frames', () => {
+            for (let i = 0; i < 5; i++) {
+                compy.velocity.x = 10;
+                compy.velocity.y = 10;
+                ai.stateTimer = i * 0.1;
+                ai.updateBiting(0.016);
+                expect(compy.velocity.x).toBe(0);
+                expect(compy.velocity.y).toBe(0);
+            }
+        });
+
+        it('should call takeDamage on target player', () => {
+            players[0].takeDamage = vi.fn();
+            ai.updateBiting(0.016);
+            expect(players[0].takeDamage).toHaveBeenCalledWith(0.5);
+        });
+
+        it('should only call takeDamage once', () => {
+            players[0].takeDamage = vi.fn();
+            ai.updateBiting(0.016); // First frame
+            ai.stateTimer = 0.016;
+            ai.updateBiting(0.016); // Second frame
+            expect(players[0].takeDamage).toHaveBeenCalledTimes(1);
+        });
+
+        it('should handle target becoming null', () => {
+            ai.target = null;
+            expect(() => ai.updateBiting(0.016)).not.toThrow();
+        });
+
+        it('should not deal damage if no target', () => {
+            ai.target = null;
+            expect(() => ai.updateBiting(0.016)).not.toThrow();
+            // No crash = success
+        });
+    });
 });

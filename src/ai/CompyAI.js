@@ -158,7 +158,26 @@ export default class CompyAI {
      * @param {number} dt - Delta time in seconds
      */
     updateBiting(dt) {
-        // Placeholder - will be implemented in Task 6
+        // Freeze velocity
+        this.compy.velocity.x = 0;
+        this.compy.velocity.y = 0;
+
+        // Deal damage on first frame only (stateTimer < dt means this is the first call)
+        if (this.stateTimer < dt && this.target) {
+            // Check if target is alive and in range
+            if (!this.target.isDowned && !this.target.isDead) {
+                const distToTarget = this.getDistanceTo(this.target);
+                if (distToTarget <= 0.5) {
+                    this.target.takeDamage(0.5);
+                }
+            }
+        }
+
+        // Transition after 0.5 seconds
+        if (this.stateTimer >= 0.5) {
+            this.attackCooldown = 2.0;
+            this.transitionToRetreating();
+        }
     }
 
     /**
