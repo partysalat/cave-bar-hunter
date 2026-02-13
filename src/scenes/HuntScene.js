@@ -122,7 +122,7 @@ export default class HuntScene extends Phaser.Scene {
 
                 // Create tile sprite (offset Y down so entities appear on top)
                 const tile = this.add.sprite(screenPos.x, screenPos.y + 16, tileKey);
-                tile.setDepth(depth - 0.1); // Slightly behind entities at same worldY
+                tile.setDepth(-1); // Floor layer - always behind entities
 
                 tileCount++;
             }
