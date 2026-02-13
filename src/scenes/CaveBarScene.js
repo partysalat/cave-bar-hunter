@@ -1004,8 +1004,25 @@ export default class CaveBarScene extends Phaser.Scene {
             // Get the specific painting image for this ability
             const paintingImage = abilityPaintingMap[ability.id];
 
+            // Add glowing circle behind painting for visibility
+            const glowRadius = 50;
+            const glow = this.add.circle(screenPos.x, screenPos.y, glowRadius, 0xffaa44, 0.3);
+            glow.setDepth(depth - 1); // Behind painting
+
+            // Pulsing glow animation to draw attention
+            this.tweens.add({
+                targets: glow,
+                alpha: 0.5,
+                scale: 1.15,
+                duration: 2000,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut'
+            });
+
             const painting = {
                 sprite: this.add.sprite(screenPos.x, screenPos.y, paintingImage),
+                glow: glow,
                 worldX: pos.x,
                 worldY: pos.y,
                 worldZ: pos.z,
@@ -1014,7 +1031,8 @@ export default class CaveBarScene extends Phaser.Scene {
             };
 
             painting.sprite.setDepth(depth);
-            painting.sprite.setTint(0x666666); // Start dimmed
+            // Remove dimming - keep paintings at full brightness
+            // painting.sprite.setTint(0x666666);
 
             this.cavePaintings.push(painting);
         });
