@@ -48,7 +48,8 @@ export function createMockScene() {
         },
         load: {
             atlas: vi.fn(),
-            image: vi.fn()
+            image: vi.fn(),
+            spritesheet: vi.fn()
         },
         time: {
             delayedCall: (delay, callback) => ({

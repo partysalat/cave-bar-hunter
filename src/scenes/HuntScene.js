@@ -394,8 +394,8 @@ export default class HuntScene extends Phaser.Scene {
         this.players.forEach(player => {
             if (player.isDowned) return;
 
-            // Get input from gamepad/keyboard
-            const input = this.inputManager.getPlayerInput(player.playerNumber);
+            // Get input from gamepad/keyboard (keyboard fallback for testing)
+            const input = this.inputManager.getPlayerInputWithKeyboard(player.playerNumber);
 
             // Skip if no input device connected
             if (!input) {
