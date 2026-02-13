@@ -542,5 +542,204 @@ describe('CompyAI', () => {
                 expect(ai.stateTimer).toBe(0);
             });
         });
+
+        describe('transitionToBiting', () => {
+            it('should set state to BITING', () => {
+                ai.state = 'LUNGING';
+                ai.transitionToBiting();
+                expect(ai.state).toBe('BITING');
+            });
+
+            it('should reset stateTimer to 0', () => {
+                ai.stateTimer = 3.0;
+                ai.transitionToBiting();
+                expect(ai.stateTimer).toBe(0);
+            });
+        });
+
+        describe('transitionToRetreating', () => {
+            it('should set state to RETREATING', () => {
+                ai.state = 'BITING';
+                ai.transitionToRetreating();
+                expect(ai.state).toBe('RETREATING');
+            });
+
+            it('should reset stateTimer to 0', () => {
+                ai.stateTimer = 2.0;
+                ai.transitionToRetreating();
+                expect(ai.stateTimer).toBe(0);
+            });
+        });
+    });
+
+    describe('LUNGING state', () => {
+        beforeEach(() => {
+            ai = new CompyAI(compy, allCompys, players);
+            ai.state = 'LUNGING';
+            ai.target = players[0];
+            players[0].worldX = 25;
+            players[0].worldY = 15;
+            compy.worldX = 20;
+            compy.worldY = 15;
+        });
+
+        it('should transition to CIRCLING if no target', () => {
+            ai.target = null;
+            ai.updateLunging(0.016);
+            expect(ai.state).toBe('CIRCLING');
+        });
+
+        describe('telegraph phase (stateTimer < 0.5)', () => {
+            beforeEach(() => {
+                ai.stateTimer = 0;
+            });
+
+            it('should freeze velocity during telegraph', () => {
+                ai.updateLunging(0.016);
+                expect(compy.velocity.x).toBe(0);
+                expect(compy.velocity.y).toBe(0);
+            });
+
+            it('should store lunge direction on first frame', () => {
+                ai.updateLunging(0.016);
+
+                // Direction should be normalized and stored
+                const magnitude = Math.sqrt(ai.lungeDirX ** 2 + ai.lungeDirY ** 2);
+                expect(magnitude).toBeCloseTo(1, 5);
+                expect(ai.lungeDirX).toBeGreaterThan(0); // Moving toward target to the right
+            });
+
+            it('should maintain stored direction across telegraph frames', () => {
+                ai.updateLunging(0.016); // Store direction
+                const dirX = ai.lungeDirX;
+                const dirY = ai.lungeDirY;
+
+                ai.updateLunging(0.1); // Another telegraph frame
+                expect(ai.lungeDirX).toBe(dirX);
+                expect(ai.lungeDirY).toBe(dirY);
+            });
+
+            it('should remain frozen for full telegraph duration', () => {
+                for (let i = 0; i < 30; i++) { // 30 frames at 16ms = ~0.48s
+                    ai.updateLunging(0.016);
+                    if (ai.stateTimer < 0.5) {
+                        expect(compy.velocity.x).toBe(0);
+                        expect(compy.velocity.y).toBe(0);
+                    }
+                }
+            });
+        });
+
+        describe('charge phase (stateTimer >= 0.5)', () => {
+            beforeEach(() => {
+                // Complete telegraph phase - manually set timer past 0.5
+                ai.stateTimer = 0;
+                ai.updateLunging(0.016); // Store direction during telegraph
+                ai.stateTimer = 0.5; // Manually advance past telegraph
+            });
+
+            it('should charge at 12 units per second', () => {
+                ai.updateLunging(0.016);
+
+                const magnitude = Math.sqrt(compy.velocity.x ** 2 + compy.velocity.y ** 2);
+                expect(magnitude).toBeCloseTo(12, 1);
+            });
+
+            it('should charge in stored direction', () => {
+                const dirX = ai.lungeDirX;
+                const dirY = ai.lungeDirY;
+
+                ai.updateLunging(0.016);
+
+                // Velocity should match stored direction * 12
+                expect(compy.velocity.x).toBeCloseTo(dirX * 12, 1);
+                expect(compy.velocity.y).toBeCloseTo(dirY * 12, 1);
+            });
+
+            it('should maintain charge speed across multiple frames', () => {
+                for (let i = 0; i < 10; i++) {
+                    ai.stateTimer = 0.5 + (i * 0.016); // Manually increment timer
+                    ai.updateLunging(0.016);
+                    if (ai.state === 'LUNGING') {
+                        const magnitude = Math.sqrt(compy.velocity.x ** 2 + compy.velocity.y ** 2);
+                        expect(magnitude).toBeCloseTo(12, 1);
+                    }
+                }
+            });
+        });
+
+        describe('reaching target', () => {
+            beforeEach(() => {
+                // Store direction during telegraph, then advance to charge phase
+                ai.stateTimer = 0;
+                ai.updateLunging(0.016);
+                ai.stateTimer = 0.5; // Past telegraph
+            });
+
+            it('should transition to BITING when within 0.5 units of target', () => {
+                compy.worldX = 24.7;
+                compy.worldY = 15;
+                ai.updateLunging(0.016);
+                expect(ai.state).toBe('BITING');
+            });
+
+            it('should not transition when farther than 0.5 units', () => {
+                compy.worldX = 24.4;
+                compy.worldY = 15;
+                ai.updateLunging(0.016);
+                expect(ai.state).toBe('LUNGING');
+            });
+
+            it('should check distance using getDistanceTo', () => {
+                ai.getDistanceTo = vi.fn(() => 0.3);
+                ai.updateLunging(0.016);
+                expect(ai.getDistanceTo).toHaveBeenCalledWith(ai.target);
+            });
+        });
+
+        describe('timeout', () => {
+            beforeEach(() => {
+                // Store direction during telegraph, then advance to charge phase
+                ai.stateTimer = 0;
+                ai.updateLunging(0.016);
+                ai.stateTimer = 0.5; // Complete telegraph
+            });
+
+            it('should transition to RETREATING after 1.0 seconds total', () => {
+                ai.stateTimer = 1.01; // Past timeout threshold
+                ai.updateLunging(0.016);
+                expect(ai.state).toBe('RETREATING');
+            });
+
+            it('should not timeout before 1.0 seconds', () => {
+                ai.stateTimer = 0.9;
+                ai.updateLunging(0.016);
+                expect(ai.state).toBe('LUNGING');
+            });
+
+            it('should timeout even if target not reached', () => {
+                compy.worldX = 20;
+                compy.worldY = 15;
+                ai.stateTimer = 1.01;
+                ai.updateLunging(0.016);
+                expect(ai.state).toBe('RETREATING');
+            });
+        });
+
+        describe('lost target', () => {
+            it('should transition to CIRCLING if target becomes null during telegraph', () => {
+                ai.stateTimer = 0.2;
+                ai.target = null;
+                ai.updateLunging(0.016);
+                expect(ai.state).toBe('CIRCLING');
+            });
+
+            it('should transition to CIRCLING if target becomes null during charge', () => {
+                ai.stateTimer = 0.6;
+                ai.target = null;
+                ai.updateLunging(0.016);
+                expect(ai.state).toBe('CIRCLING');
+            });
+        });
     });
 });

@@ -112,7 +112,45 @@ export default class CompyAI {
      * @param {number} dt - Delta time in seconds
      */
     updateLunging(dt) {
-        // Placeholder - will be implemented in Task 6
+        // If no target, return to circling
+        if (!this.target) {
+            this.transitionToCircling();
+            return;
+        }
+
+        // Telegraph phase (first 0.5 seconds)
+        if (this.stateTimer < 0.5) {
+            // Freeze in place
+            this.compy.velocity.x = 0;
+            this.compy.velocity.y = 0;
+
+            // Store direction to target (normalized)
+            const dx = this.target.worldX - this.compy.worldX;
+            const dy = this.target.worldY - this.compy.worldY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance > 0) {
+                this.lungeDirX = dx / distance;
+                this.lungeDirY = dy / distance;
+            }
+        } else {
+            // Charge phase - dash at 12 units/sec in stored direction
+            this.compy.velocity.x = this.lungeDirX * 12;
+            this.compy.velocity.y = this.lungeDirY * 12;
+
+            // Check if reached target
+            const distToTarget = this.getDistanceTo(this.target);
+            if (distToTarget <= 0.5) {
+                this.transitionToBiting();
+                return;
+            }
+
+            // Check for timeout (1.0 seconds total)
+            if (this.stateTimer >= 1.0) {
+                this.transitionToRetreating();
+                return;
+            }
+        }
     }
 
     /**
@@ -185,5 +223,23 @@ export default class CompyAI {
     transitionToCircling() {
         this.state = 'CIRCLING';
         this.stateTimer = 0;
+    }
+
+    /**
+     * Transition to BITING state
+     */
+    transitionToBiting() {
+        this.state = 'BITING';
+        this.stateTimer = 0;
+        console.log('Compy transitioning to BITING');
+    }
+
+    /**
+     * Transition to RETREATING state
+     */
+    transitionToRetreating() {
+        this.state = 'RETREATING';
+        this.stateTimer = 0;
+        console.log('Compy transitioning to RETREATING');
     }
 }
