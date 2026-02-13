@@ -57,11 +57,91 @@ export default class PackCoordinator {
     }
 
     /**
+     * Identifies priority targets (isolated and low-health players)
+     * @returns {Object} Object with isolated and lowHealth arrays
+     */
+    getPriorityTargets() {
+        const alivePlayers = this.players.filter(p => !p.isDowned && !p.isDead);
+        const isolated = [];
+        const lowHealth = [];
+
+        for (const player of alivePlayers) {
+            // Check if low-health (health <= 1)
+            if (player.health <= 1) {
+                lowHealth.push(player);
+            }
+
+            // Check if isolated (>5 units from all other alive players)
+            let isIsolated = true;
+            for (const otherPlayer of alivePlayers) {
+                if (player === otherPlayer) continue;
+
+                const dx = player.worldX - otherPlayer.worldX;
+                const dy = player.worldY - otherPlayer.worldY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance <= 5) {
+                    isIsolated = false;
+                    break;
+                }
+            }
+
+            if (isIsolated) {
+                isolated.push(player);
+            }
+        }
+
+        return { isolated, lowHealth };
+    }
+
+    /**
      * Assigns targets to compys based on priorities
-     * TODO: Implement target prioritization logic
+     * Priority order: isolated players (2-3 compys), low-health players (2 compys), spread rest evenly
      */
     assignTargets() {
-        // Placeholder - to be implemented
+        const alivePlayers = this.players.filter(p => !p.isDowned && !p.isDead);
+
+        // No alive players - nothing to assign
+        if (alivePlayers.length === 0) {
+            return;
+        }
+
+        const priorities = this.getPriorityTargets();
+        let availableCompys = [...this.compys];
+
+        // Assign 2-3 compys to each isolated player (high priority)
+        for (const isolatedPlayer of priorities.isolated) {
+            const numToAssign = Math.min(3, Math.max(2, Math.floor(Math.random() * 2) + 2));
+            const assignedCompys = availableCompys.splice(0, numToAssign);
+            assignedCompys.forEach(compy => {
+                if (compy.ai) {
+                    compy.ai.target = isolatedPlayer;
+                }
+            });
+        }
+
+        // Assign 2 compys to each low-health player (medium priority)
+        for (const lowHealthPlayer of priorities.lowHealth) {
+            // Skip if already targeted as isolated
+            if (priorities.isolated.includes(lowHealthPlayer)) continue;
+
+            const numToAssign = Math.min(2, availableCompys.length);
+            const assignedCompys = availableCompys.splice(0, numToAssign);
+            assignedCompys.forEach(compy => {
+                if (compy.ai) {
+                    compy.ai.target = lowHealthPlayer;
+                }
+            });
+        }
+
+        // Spread remaining compys evenly across all players
+        let playerIndex = 0;
+        for (const compy of availableCompys) {
+            if (compy.ai) {
+                compy.ai.target = alivePlayers[playerIndex];
+                playerIndex = (playerIndex + 1) % alivePlayers.length;
+            }
+        }
     }
 
     /**

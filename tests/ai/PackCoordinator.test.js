@@ -150,4 +150,259 @@ describe('PackCoordinator', () => {
             expect(() => coordinator.processAttackPatterns(0.016)).not.toThrow();
         });
     });
+
+    describe('getPriorityTargets', () => {
+        beforeEach(() => {
+            coordinator = new PackCoordinator(compys, players);
+        });
+
+        it('should identify isolated players (>5 units from all teammates)', () => {
+            // Both players are isolated from each other (distance ~18 units)
+            players[0].worldX = 5;
+            players[0].worldY = 5;
+            players[1].worldX = 20;
+            players[1].worldY = 15;
+
+            const priorities = coordinator.getPriorityTargets();
+            expect(priorities.isolated).toContain(players[0]);
+            expect(priorities.isolated).toContain(players[1]);
+            expect(priorities.isolated.length).toBe(2);
+        });
+
+        it('should identify low-health players (health <= 1)', () => {
+            players[0].health = 0.5;
+            players[1].health = 1.5;
+
+            const priorities = coordinator.getPriorityTargets();
+            expect(priorities.lowHealth).toContain(players[0]);
+            expect(priorities.lowHealth).not.toContain(players[1]);
+        });
+
+        it('should include players with exactly 1 health as low-health', () => {
+            players[0].health = 1.0;
+            players[1].health = 1.5;
+
+            const priorities = coordinator.getPriorityTargets();
+            expect(priorities.lowHealth).toContain(players[0]);
+        });
+
+        it('should only return alive players', () => {
+            players[0].isDowned = true;
+            players[1].health = 0.5;
+            players[1].isDowned = false;
+
+            const priorities = coordinator.getPriorityTargets();
+            expect(priorities.isolated).not.toContain(players[0]);
+            expect(priorities.lowHealth).not.toContain(players[0]);
+        });
+
+        it('should skip dead players', () => {
+            players[0].isDead = true;
+            players[1].health = 0.5;
+            players[1].isDead = false;
+
+            const priorities = coordinator.getPriorityTargets();
+            expect(priorities.isolated).not.toContain(players[0]);
+            expect(priorities.lowHealth).not.toContain(players[0]);
+        });
+
+        it('should return empty arrays if no players meet criteria', () => {
+            // All players are grouped and healthy
+            players[0].worldX = 15;
+            players[0].worldY = 12;
+            players[0].health = 2.0;
+            players[1].worldX = 16;
+            players[1].worldY = 13;
+            players[1].health = 2.0;
+
+            const priorities = coordinator.getPriorityTargets();
+            expect(priorities.isolated).toEqual([]);
+            expect(priorities.lowHealth).toEqual([]);
+        });
+
+        it('should identify multiple isolated players', () => {
+            players[0].worldX = 5;
+            players[0].worldY = 5;
+            players[1].worldX = 25;
+            players[1].worldY = 20;
+
+            const priorities = coordinator.getPriorityTargets();
+            expect(priorities.isolated.length).toBe(2);
+            expect(priorities.isolated).toContain(players[0]);
+            expect(priorities.isolated).toContain(players[1]);
+        });
+
+        it('should identify multiple low-health players', () => {
+            players[0].health = 0.5;
+            players[1].health = 0.8;
+
+            const priorities = coordinator.getPriorityTargets();
+            expect(priorities.lowHealth.length).toBe(2);
+            expect(priorities.lowHealth).toContain(players[0]);
+            expect(priorities.lowHealth).toContain(players[1]);
+        });
+
+        it('should calculate distance correctly for isolation', () => {
+            // Player 0 at (0, 0), Player 1 at (5, 0) = exactly 5 units
+            // Not isolated (needs >5)
+            players[0].worldX = 0;
+            players[0].worldY = 0;
+            players[1].worldX = 5;
+            players[1].worldY = 0;
+
+            const priorities = coordinator.getPriorityTargets();
+            expect(priorities.isolated).toEqual([]);
+        });
+
+        it('should detect isolation with exactly >5 units', () => {
+            // Player 0 at (0, 0), Player 1 at (5.1, 0) = 5.1 units
+            // Both are isolated from each other
+            players[0].worldX = 0;
+            players[0].worldY = 0;
+            players[1].worldX = 5.1;
+            players[1].worldY = 0;
+
+            const priorities = coordinator.getPriorityTargets();
+            expect(priorities.isolated.length).toBe(2);
+        });
+    });
+
+    describe('assignTargets', () => {
+        beforeEach(() => {
+            coordinator = new PackCoordinator(compys, players);
+            // Add AI objects to compys for testing
+            compys.forEach(compy => {
+                compy.ai = { target: null };
+            });
+        });
+
+        it('should assign 2-3 compys to isolated players', () => {
+            // Create 5 compys for better testing
+            compys = [
+                createMockCompy(20, 15, 0),
+                createMockCompy(22, 16, 0),
+                createMockCompy(18, 14, 0),
+                createMockCompy(19, 15, 0),
+                createMockCompy(21, 16, 0)
+            ];
+            compys.forEach(compy => {
+                compy.ai = { target: null };
+            });
+
+            // Make player 0 isolated
+            players[0].worldX = 5;
+            players[0].worldY = 5;
+            players[1].worldX = 20;
+            players[1].worldY = 15;
+
+            coordinator = new PackCoordinator(compys, players);
+            coordinator.assignTargets();
+
+            // Count how many compys are targeting the isolated player
+            const targetingIsolated = compys.filter(c => c.ai.target === players[0]).length;
+            expect(targetingIsolated).toBeGreaterThanOrEqual(2);
+            expect(targetingIsolated).toBeLessThanOrEqual(3);
+        });
+
+        it('should assign 2 compys to low-health players from priority system', () => {
+            // Create exactly 2 compys to test priority assignment without spreading
+            compys = [
+                createMockCompy(20, 15, 0),
+                createMockCompy(22, 16, 0)
+            ];
+            compys.forEach(compy => {
+                compy.ai = { target: null };
+            });
+
+            // Make player 0 low-health (not isolated)
+            players[0].health = 0.5;
+            players[0].worldX = 15;
+            players[0].worldY = 12;
+            players[1].worldX = 16;
+            players[1].worldY = 13;
+
+            coordinator = new PackCoordinator(compys, players);
+            coordinator.assignTargets();
+
+            // Both compys should target the low-health player
+            const targetingLowHealth = compys.filter(c => c.ai.target === players[0]).length;
+            expect(targetingLowHealth).toBe(2);
+        });
+
+        it('should spread remaining compys evenly across all players', () => {
+            // No priority targets - should spread evenly
+            players[0].worldX = 15;
+            players[0].worldY = 12;
+            players[0].health = 2.0;
+            players[1].worldX = 16;
+            players[1].worldY = 13;
+            players[1].health = 2.0;
+
+            coordinator.assignTargets();
+
+            // Count assignments per player
+            const player0Count = compys.filter(c => c.ai.target === players[0]).length;
+            const player1Count = compys.filter(c => c.ai.target === players[1]).length;
+
+            // Should be roughly even (difference of at most 1)
+            expect(Math.abs(player0Count - player1Count)).toBeLessThanOrEqual(1);
+        });
+
+        it('should assign all compys to targets', () => {
+            coordinator.assignTargets();
+
+            // Every compy should have a target
+            compys.forEach(compy => {
+                expect(compy.ai.target).not.toBeNull();
+            });
+        });
+
+        it('should prioritize isolated over low-health', () => {
+            compys = [];
+            for (let i = 0; i < 5; i++) {
+                const compy = createMockCompy(20 + i, 15, 0);
+                compy.ai = { target: null };
+                compys.push(compy);
+            }
+
+            // Player 0 is isolated, Player 1 is low-health
+            players[0].worldX = 5;
+            players[0].worldY = 5;
+            players[0].health = 2.0;
+            players[1].worldX = 20;
+            players[1].worldY = 15;
+            players[1].health = 0.5;
+
+            coordinator = new PackCoordinator(compys, players);
+            coordinator.assignTargets();
+
+            // Isolated player should get 2-3 compys
+            const isolatedCount = compys.filter(c => c.ai.target === players[0]).length;
+            expect(isolatedCount).toBeGreaterThanOrEqual(2);
+            expect(isolatedCount).toBeLessThanOrEqual(3);
+
+            // Low-health player should get 2 compys
+            const lowHealthCount = compys.filter(c => c.ai.target === players[1]).length;
+            expect(lowHealthCount).toBe(2);
+        });
+
+        it('should handle case with no alive players', () => {
+            players[0].isDowned = true;
+            players[1].isDead = true;
+
+            expect(() => coordinator.assignTargets()).not.toThrow();
+        });
+
+        it('should only assign to alive players', () => {
+            players[0].isDowned = true;
+            players[1].isDowned = false;
+
+            coordinator.assignTargets();
+
+            // All compys should target player 1
+            compys.forEach(compy => {
+                expect(compy.ai.target).toBe(players[1]);
+            });
+        });
+    });
 });
