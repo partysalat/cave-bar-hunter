@@ -61,7 +61,10 @@ export function createMockScene() {
             main: {
                 scrollX: 0,
                 scrollY: 0,
-                zoom: 1
+                zoom: 1,
+                centerOn: vi.fn(),
+                fadeOut: vi.fn(),
+                once: vi.fn()
             }
         }
     };
