@@ -230,15 +230,26 @@ assets/
 - Projectiles, weak points, dodge mechanics, damage, scoring, downed state, HUD
 
 🔄 **Phase 2b: Visual Assets** - In Progress
-- Generating pixel art assets via PixelLab MCP
-- Player character sprites (4 colors × 8 directions)
-- Animations (walking, idle, attack, dodge, downed)
+- Player character sprites (4 colors × 8 directions) - Complete
+- Compy character sprites (8 directions) - Complete
+- Animations (walking, idle, attack, dodge, downed) - Complete
 
-🔄 **Phase 3: Content Creation** - Not Started
-- All 12 dinosaurs with unique behaviors
-- 6 arena environments
-- Cave bar scene and shop
-- Weapons and cocktail system
+🔄 **Phase 3: Content Creation** - In Progress
+- **Compy Pack Hunt** (Hunt #1) - 85% Complete:
+  - ✅ HuntScene foundation with state machine
+  - ✅ Dense Jungle arena (floor, trees, line-of-sight collision)
+  - ✅ Player spawning (2×2 formation) and movement
+  - ✅ CompyAI state machine (CIRCLING → LUNGING → BITING → RETREATING)
+  - ✅ Visual telegraph feedback (red tint, pulsing)
+  - ✅ PackCoordinator with target prioritization
+  - ✅ Coordinated attack patterns (pincer, swarm)
+  - 🔄 Scene integration (implementing now)
+  - ⏳ Game flow integration (CaveBar → Hunt)
+  - ⏳ Victory/failure sequences
+- All 12 dinosaurs with unique behaviors - Not Started
+- 6 arena environments - Not Started
+- Cave bar scene and shop - Partial (hub exists, no shop yet)
+- Weapons and cocktail system - Not Started
 
 ## Important Notes
 

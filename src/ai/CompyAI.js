@@ -79,8 +79,8 @@ export default class CompyAI {
 
         // If still no target, stop moving
         if (!this.target) {
-            this.compy.velocity.x = 0;
-            this.compy.velocity.y = 0;
+            this.compy.velocityX = 0;
+            this.compy.velocityY = 0;
             return;
         }
 
@@ -97,8 +97,8 @@ export default class CompyAI {
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         if (distance > 0) {
-            this.compy.velocity.x = (dx / distance) * 6;
-            this.compy.velocity.y = (dy / distance) * 6;
+            this.compy.velocityX = (dx / distance) * 6;
+            this.compy.velocityY = (dy / distance) * 6;
         }
 
         // Random attack: 2% chance per frame if cooldown is ready
@@ -121,8 +121,8 @@ export default class CompyAI {
         // Telegraph phase (first 0.5 seconds)
         if (this.stateTimer < 0.5) {
             // Freeze in place
-            this.compy.velocity.x = 0;
-            this.compy.velocity.y = 0;
+            this.compy.velocityX = 0;
+            this.compy.velocityY = 0;
 
             // Store direction to target (normalized)
             const dx = this.target.worldX - this.compy.worldX;
@@ -135,8 +135,8 @@ export default class CompyAI {
             }
         } else {
             // Charge phase - dash at 12 units/sec in stored direction
-            this.compy.velocity.x = this.lungeDirX * 12;
-            this.compy.velocity.y = this.lungeDirY * 12;
+            this.compy.velocityX = this.lungeDirX * 12;
+            this.compy.velocityY = this.lungeDirY * 12;
 
             // Check if reached target
             const distToTarget = this.getDistanceTo(this.target);
@@ -159,8 +159,8 @@ export default class CompyAI {
      */
     updateBiting(dt) {
         // Freeze velocity
-        this.compy.velocity.x = 0;
-        this.compy.velocity.y = 0;
+        this.compy.velocityX = 0;
+        this.compy.velocityY = 0;
 
         // Deal damage on first frame only (stateTimer < dt means this is the first call)
         if (this.stateTimer < dt && this.target) {
@@ -187,8 +187,8 @@ export default class CompyAI {
     updateRetreating(dt) {
         // If no target, freeze and return to circling
         if (!this.target) {
-            this.compy.velocity.x = 0;
-            this.compy.velocity.y = 0;
+            this.compy.velocityX = 0;
+            this.compy.velocityY = 0;
             this.transitionToCircling();
             return;
         }
@@ -199,8 +199,8 @@ export default class CompyAI {
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         if (distance > 0) {
-            this.compy.velocity.x = (dx / distance) * 4;
-            this.compy.velocity.y = (dy / distance) * 4;
+            this.compy.velocityX = (dx / distance) * 4;
+            this.compy.velocityY = (dy / distance) * 4;
         }
 
         // Transition back to circling after 2.5 seconds

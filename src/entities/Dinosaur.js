@@ -28,9 +28,19 @@ export default class Dinosaur extends Entity {
         // Weak points based on type
         this.weakPoints = this.createWeakPointsForType(type);
 
-        // Color tint based on type (temporary visualization)
-        const color = type === 'compy' ? 0xff00ff : 0x00ffff;
-        this.sprite.setTint(color);
+        // Facing direction for sprite rotation
+        this.facingX = 0;
+        this.facingY = 1; // Default facing south
+
+        // Set type-specific sprite
+        if (type === 'compy') {
+            this.sprite.setTexture('compy-south');
+            this.sprite.setScale(1.5);
+        } else {
+            // Color tint based on type (temporary visualization)
+            const color = type === 'compy' ? 0xff00ff : 0x00ffff;
+            this.sprite.setTint(color);
+        }
     }
 
     /**
@@ -129,6 +139,43 @@ export default class Dinosaur extends Entity {
     }
 
     /**
+     * Update sprite direction based on velocity
+     * Updates facing direction and sets appropriate texture
+     */
+    updateSpriteDirection() {
+        // Only update for compy type
+        if (this.type !== 'compy') return;
+
+        // Only update if moving
+        if (this.velocityX === 0 && this.velocityY === 0) return;
+
+        // Update facing direction from velocity
+        this.facingX = this.velocityX;
+        this.facingY = this.velocityY;
+
+        // Map facing vector to direction string (same logic as Player.getCurrentDirection)
+        const angle = Math.atan2(this.facingY, this.facingX);
+        const degrees = angle * (180 / Math.PI);
+
+        // Normalize to 0-360
+        const normalizedDegrees = (degrees + 360) % 360;
+
+        // Map to 8 directions (45 degree segments)
+        let direction;
+        if (normalizedDegrees < 22.5 || normalizedDegrees >= 337.5) direction = 'east';
+        else if (normalizedDegrees < 67.5) direction = 'south-east';
+        else if (normalizedDegrees < 112.5) direction = 'south';
+        else if (normalizedDegrees < 157.5) direction = 'south-west';
+        else if (normalizedDegrees < 202.5) direction = 'west';
+        else if (normalizedDegrees < 247.5) direction = 'north-west';
+        else if (normalizedDegrees < 292.5) direction = 'north';
+        else direction = 'north-east';
+
+        // Update sprite texture
+        this.sprite.setTexture(`compy-${direction}`);
+    }
+
+    /**
      * Update AI behavior and weak points
      * @param {number} delta
      */
@@ -144,6 +191,9 @@ export default class Dinosaur extends Entity {
         if (this.ai && !this.isDead) {
             this.ai.update(delta);
         }
+
+        // Update sprite direction based on movement
+        this.updateSpriteDirection();
 
         // Update visual feedback based on AI state
         this.updateVisualState();
