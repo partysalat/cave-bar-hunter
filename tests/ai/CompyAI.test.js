@@ -113,6 +113,7 @@ describe('CompyAI', () => {
 
         it('should increment stateTimer on multiple updates', () => {
             ai.stateTimer = 0;
+            ai.attackCooldown = 10; // Prevent random attack transitions
             ai.update(500); // 0.5s
             ai.update(300); // 0.3s
             ai.update(200); // 0.2s
