@@ -20,11 +20,12 @@ export function createMockScene() {
             }),
             sprite: (x, y, texture) => ({
                 x, y, texture,
-                setOrigin: () => ({}),
-                setDepth: () => ({}),
-                setTint: () => ({}),
-                setScale: () => ({}),
-                play: () => ({}),
+                setOrigin: vi.fn().mockReturnThis(),
+                setDepth: vi.fn().mockReturnThis(),
+                setTint: vi.fn().mockReturnThis(),
+                setAlpha: vi.fn().mockReturnThis(),
+                setScale: vi.fn().mockReturnThis(),
+                play: vi.fn().mockReturnThis(),
                 anims: {
                     currentAnim: null
                 }
@@ -73,11 +74,12 @@ export function createMockScene() {
  */
 export function createMockPlayer(playerNumber = 0, worldX = 15, worldY = 12, worldZ = 0) {
     const mockSprite = {
-        setOrigin: () => ({}),
-        setDepth: () => ({}),
-        setTint: () => ({}),
-        setScale: () => ({}),
-        play: () => ({}),
+        setOrigin: vi.fn().mockReturnThis(),
+        setDepth: vi.fn().mockReturnThis(),
+        setTint: vi.fn().mockReturnThis(),
+        setAlpha: vi.fn().mockReturnThis(),
+        setScale: vi.fn().mockReturnThis(),
+        play: vi.fn().mockReturnThis(),
         anims: { currentAnim: null }
     };
 
@@ -124,9 +126,10 @@ export function createMockPlayer(playerNumber = 0, worldX = 15, worldY = 12, wor
  */
 export function createMockCompy(worldX = 20, worldY = 15, worldZ = 0) {
     const mockSprite = {
-        setOrigin: () => ({}),
-        setDepth: () => ({}),
-        setTint: () => ({})
+        setOrigin: vi.fn().mockReturnThis(),
+        setDepth: vi.fn().mockReturnThis(),
+        setTint: vi.fn().mockReturnThis(),
+        setAlpha: vi.fn().mockReturnThis()
     };
 
     return {

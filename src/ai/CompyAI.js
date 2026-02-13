@@ -282,4 +282,20 @@ export default class CompyAI {
         this.stateTimer = 0;
         console.log('Compy transitioning to RETREATING');
     }
+
+    /**
+     * Check if compy is in telegraph phase (warning before charge)
+     * @returns {boolean}
+     */
+    isTelegraphing() {
+        return this.state === 'LUNGING' && this.stateTimer < 0.5;
+    }
+
+    /**
+     * Check if compy is charging (moving towards target)
+     * @returns {boolean}
+     */
+    isCharging() {
+        return this.state === 'LUNGING' && this.stateTimer >= 0.5;
+    }
 }

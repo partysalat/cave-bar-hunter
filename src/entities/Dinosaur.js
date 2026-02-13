@@ -144,5 +144,47 @@ export default class Dinosaur extends Entity {
         if (this.ai && !this.isDead) {
             this.ai.update(delta);
         }
+
+        // Update visual feedback based on AI state
+        this.updateVisualState();
+    }
+
+    /**
+     * Update visual effects based on AI state
+     */
+    updateVisualState() {
+        // If no AI, return early
+        if (!this.ai) return;
+
+        // Reset to default appearance
+        this.sprite.setTint(0xffffff);
+        this.sprite.setAlpha(1.0);
+
+        // Apply state-specific visual effects
+        switch (this.ai.state) {
+            case 'LUNGING':
+                if (this.ai.stateTimer < 0.5) {
+                    // Telegraph phase: red tint with pulsing alpha
+                    this.sprite.setTint(0xff0000);
+                    const pulseAlpha = 0.7 + Math.sin(this.ai.stateTimer * 20) * 0.3;
+                    this.sprite.setAlpha(pulseAlpha);
+                } else {
+                    // Charge phase: brighter red
+                    this.sprite.setTint(0xffaaaa);
+                }
+                break;
+
+            case 'BITING':
+                if (this.ai.stateTimer < 0.1) {
+                    // White flash on bite impact
+                    this.sprite.setTint(0xffffff);
+                }
+                break;
+
+            case 'RETREATING':
+                // Faded during retreat
+                this.sprite.setAlpha(0.8);
+                break;
+        }
     }
 }

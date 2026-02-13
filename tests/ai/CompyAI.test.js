@@ -571,6 +571,58 @@ describe('CompyAI', () => {
                 expect(ai.stateTimer).toBe(0);
             });
         });
+
+        describe('isTelegraphing', () => {
+            it('should return true during first 0.5s of LUNGING', () => {
+                ai.state = 'LUNGING';
+                ai.stateTimer = 0.3;
+                expect(ai.isTelegraphing()).toBe(true);
+            });
+
+            it('should return false after 0.5s of LUNGING', () => {
+                ai.state = 'LUNGING';
+                ai.stateTimer = 0.6;
+                expect(ai.isTelegraphing()).toBe(false);
+            });
+
+            it('should return false when not in LUNGING state', () => {
+                ai.state = 'CIRCLING';
+                ai.stateTimer = 0.3;
+                expect(ai.isTelegraphing()).toBe(false);
+            });
+
+            it('should return false at exactly 0.5s', () => {
+                ai.state = 'LUNGING';
+                ai.stateTimer = 0.5;
+                expect(ai.isTelegraphing()).toBe(false);
+            });
+        });
+
+        describe('isCharging', () => {
+            it('should return true when LUNGING and stateTimer >= 0.5', () => {
+                ai.state = 'LUNGING';
+                ai.stateTimer = 0.6;
+                expect(ai.isCharging()).toBe(true);
+            });
+
+            it('should return false during telegraph phase', () => {
+                ai.state = 'LUNGING';
+                ai.stateTimer = 0.3;
+                expect(ai.isCharging()).toBe(false);
+            });
+
+            it('should return false when not in LUNGING state', () => {
+                ai.state = 'CIRCLING';
+                ai.stateTimer = 0.6;
+                expect(ai.isCharging()).toBe(false);
+            });
+
+            it('should return true at exactly 0.5s', () => {
+                ai.state = 'LUNGING';
+                ai.stateTimer = 0.5;
+                expect(ai.isCharging()).toBe(true);
+            });
+        });
     });
 
     describe('LUNGING state', () => {
