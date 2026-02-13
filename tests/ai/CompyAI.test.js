@@ -274,8 +274,8 @@ describe('CompyAI', () => {
                 ai.target = null;
                 ai.selectTarget = vi.fn(() => null);
                 ai.updateCircling(0.016);
-                expect(compy.velocity.x).toBe(0);
-                expect(compy.velocity.y).toBe(0);
+                expect(compy.velocityX).toBe(0);
+                expect(compy.velocityY).toBe(0);
             });
         });
 
@@ -309,7 +309,7 @@ describe('CompyAI', () => {
                 ai.updateCircling(0.016);
 
                 // Should have velocity pointing toward orbit position (target.x + 4, target.y + 0)
-                expect(compy.velocity.x).toBeGreaterThan(0); // Moving right toward orbit position
+                expect(compy.velocityX).toBeGreaterThan(0); // Moving right toward orbit position
             });
 
             it('should move at approximately 6 units per second', () => {
@@ -321,7 +321,7 @@ describe('CompyAI', () => {
                 ai.updateCircling(0.016);
 
                 // Velocity magnitude should be around 6
-                const magnitude = Math.sqrt(compy.velocity.x ** 2 + compy.velocity.y ** 2);
+                const magnitude = Math.sqrt(compy.velocityX ** 2 + compy.velocityY ** 2);
                 expect(magnitude).toBeCloseTo(6, 1);
             });
 
@@ -342,7 +342,7 @@ describe('CompyAI', () => {
                     compy.worldX = players[0].worldX;
                     compy.worldY = players[0].worldY;
                     ai.updateCircling(0.016);
-                    positions.push({ x: compy.velocity.x, y: compy.velocity.y });
+                    positions.push({ x: compy.velocityX, y: compy.velocityY });
                 }
 
                 // Velocities should point in different directions (toward orbit points)
@@ -649,8 +649,8 @@ describe('CompyAI', () => {
 
             it('should freeze velocity during telegraph', () => {
                 ai.updateLunging(0.016);
-                expect(compy.velocity.x).toBe(0);
-                expect(compy.velocity.y).toBe(0);
+                expect(compy.velocityX).toBe(0);
+                expect(compy.velocityY).toBe(0);
             });
 
             it('should store lunge direction on first frame', () => {
@@ -676,8 +676,8 @@ describe('CompyAI', () => {
                 for (let i = 0; i < 30; i++) { // 30 frames at 16ms = ~0.48s
                     ai.updateLunging(0.016);
                     if (ai.stateTimer < 0.5) {
-                        expect(compy.velocity.x).toBe(0);
-                        expect(compy.velocity.y).toBe(0);
+                        expect(compy.velocityX).toBe(0);
+                        expect(compy.velocityY).toBe(0);
                     }
                 }
             });
@@ -694,7 +694,7 @@ describe('CompyAI', () => {
             it('should charge at 12 units per second', () => {
                 ai.updateLunging(0.016);
 
-                const magnitude = Math.sqrt(compy.velocity.x ** 2 + compy.velocity.y ** 2);
+                const magnitude = Math.sqrt(compy.velocityX ** 2 + compy.velocityY ** 2);
                 expect(magnitude).toBeCloseTo(12, 1);
             });
 
@@ -705,8 +705,8 @@ describe('CompyAI', () => {
                 ai.updateLunging(0.016);
 
                 // Velocity should match stored direction * 12
-                expect(compy.velocity.x).toBeCloseTo(dirX * 12, 1);
-                expect(compy.velocity.y).toBeCloseTo(dirY * 12, 1);
+                expect(compy.velocityX).toBeCloseTo(dirX * 12, 1);
+                expect(compy.velocityY).toBeCloseTo(dirY * 12, 1);
             });
 
             it('should maintain charge speed across multiple frames', () => {
@@ -714,7 +714,7 @@ describe('CompyAI', () => {
                     ai.stateTimer = 0.5 + (i * 0.016); // Manually increment timer
                     ai.updateLunging(0.016);
                     if (ai.state === 'LUNGING') {
-                        const magnitude = Math.sqrt(compy.velocity.x ** 2 + compy.velocity.y ** 2);
+                        const magnitude = Math.sqrt(compy.velocityX ** 2 + compy.velocityY ** 2);
                         expect(magnitude).toBeCloseTo(12, 1);
                     }
                 }
@@ -811,11 +811,11 @@ describe('CompyAI', () => {
         });
 
         it('should freeze velocity', () => {
-            compy.velocity.x = 5;
-            compy.velocity.y = 3;
+            compy.velocityX = 5;
+            compy.velocityY = 3;
             ai.updateBiting(0.016);
-            expect(compy.velocity.x).toBe(0);
-            expect(compy.velocity.y).toBe(0);
+            expect(compy.velocityX).toBe(0);
+            expect(compy.velocityY).toBe(0);
         });
 
         it('should deal 0.5 damage on first frame only', () => {
@@ -884,12 +884,12 @@ describe('CompyAI', () => {
 
         it('should maintain freeze across multiple frames', () => {
             for (let i = 0; i < 5; i++) {
-                compy.velocity.x = 10;
-                compy.velocity.y = 10;
+                compy.velocityX = 10;
+                compy.velocityY = 10;
                 ai.stateTimer = i * 0.1;
                 ai.updateBiting(0.016);
-                expect(compy.velocity.x).toBe(0);
-                expect(compy.velocity.y).toBe(0);
+                expect(compy.velocityX).toBe(0);
+                expect(compy.velocityY).toBe(0);
             }
         });
 
@@ -941,7 +941,7 @@ describe('CompyAI', () => {
             ai.updateRetreating(0.016);
 
             // Velocity should point away (negative X direction)
-            expect(compy.velocity.x).toBeLessThan(0);
+            expect(compy.velocityX).toBeLessThan(0);
         });
 
         it('should move at 4 units per second', () => {
@@ -949,7 +949,7 @@ describe('CompyAI', () => {
             compy.worldY = 15;
             ai.updateRetreating(0.016);
 
-            const magnitude = Math.sqrt(compy.velocity.x ** 2 + compy.velocity.y ** 2);
+            const magnitude = Math.sqrt(compy.velocityX ** 2 + compy.velocityY ** 2);
             expect(magnitude).toBeCloseTo(4, 1);
         });
 
@@ -961,7 +961,7 @@ describe('CompyAI', () => {
                 ai.stateTimer = i * 0.1;
                 ai.updateRetreating(0.016);
                 if (ai.state === 'RETREATING') {
-                    const magnitude = Math.sqrt(compy.velocity.x ** 2 + compy.velocity.y ** 2);
+                    const magnitude = Math.sqrt(compy.velocityX ** 2 + compy.velocityY ** 2);
                     expect(magnitude).toBeCloseTo(4, 1);
                 }
             }
@@ -978,8 +978,8 @@ describe('CompyAI', () => {
             const expectedX = 1 / Math.sqrt(5);
             const expectedY = 2 / Math.sqrt(5);
 
-            expect(compy.velocity.x).toBeCloseTo(expectedX * 4, 1);
-            expect(compy.velocity.y).toBeCloseTo(expectedY * 4, 1);
+            expect(compy.velocityX).toBeCloseTo(expectedX * 4, 1);
+            expect(compy.velocityY).toBeCloseTo(expectedY * 4, 1);
         });
 
         it('should transition to CIRCLING after 2.5 seconds', () => {
@@ -998,8 +998,8 @@ describe('CompyAI', () => {
             ai.target = null;
             ai.updateRetreating(0.016);
 
-            expect(compy.velocity.x).toBe(0);
-            expect(compy.velocity.y).toBe(0);
+            expect(compy.velocityX).toBe(0);
+            expect(compy.velocityY).toBe(0);
             expect(ai.state).toBe('CIRCLING');
         });
 
@@ -1009,13 +1009,13 @@ describe('CompyAI', () => {
 
             // First frame with target - should move
             ai.updateRetreating(0.016);
-            expect(compy.velocity.x).not.toBe(0);
+            expect(compy.velocityX).not.toBe(0);
 
             // Second frame without target - should freeze
             ai.target = null;
             ai.updateRetreating(0.016);
-            expect(compy.velocity.x).toBe(0);
-            expect(compy.velocity.y).toBe(0);
+            expect(compy.velocityX).toBe(0);
+            expect(compy.velocityY).toBe(0);
         });
 
         it('should transition to CIRCLING when target is lost', () => {
@@ -1037,8 +1037,8 @@ describe('CompyAI', () => {
                 compy.worldY = dir.compyY;
                 ai.updateRetreating(0.016);
 
-                expect(compy.velocity.x).toBeCloseTo(dir.expectedVX, 1);
-                expect(compy.velocity.y).toBeCloseTo(dir.expectedVY, 1);
+                expect(compy.velocityX).toBeCloseTo(dir.expectedVX, 1);
+                expect(compy.velocityY).toBeCloseTo(dir.expectedVY, 1);
             }
         });
 
@@ -1052,7 +1052,7 @@ describe('CompyAI', () => {
                 ai.updateRetreating(0.016);
                 if (ai.state === 'RETREATING') {
                     // Should still be retreating
-                    const magnitude = Math.sqrt(compy.velocity.x ** 2 + compy.velocity.y ** 2);
+                    const magnitude = Math.sqrt(compy.velocityX ** 2 + compy.velocityY ** 2);
                     expect(magnitude).toBeCloseTo(4, 1);
                 }
             }

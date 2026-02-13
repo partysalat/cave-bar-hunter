@@ -90,11 +90,9 @@ export function createMockPlayer(playerNumber = 0, worldX = 15, worldY = 12, wor
         worldX,
         worldY,
         worldZ,
-        velocity: {
-            x: 0,
-            y: 0,
-            z: 0
-        },
+        velocityX: 0,
+        velocityY: 0,
+        velocityZ: 0,
         health: 2,
         maxHealth: 2,
         isDowned: false,
@@ -131,7 +129,9 @@ export function createMockCompy(worldX = 20, worldY = 15, worldZ = 0) {
         setOrigin: vi.fn().mockReturnThis(),
         setDepth: vi.fn().mockReturnThis(),
         setTint: vi.fn().mockReturnThis(),
-        setAlpha: vi.fn().mockReturnThis()
+        setAlpha: vi.fn().mockReturnThis(),
+        setTexture: vi.fn().mockReturnThis(),
+        setScale: vi.fn().mockReturnThis()
     };
 
     return {
@@ -139,11 +139,9 @@ export function createMockCompy(worldX = 20, worldY = 15, worldZ = 0) {
         worldX,
         worldY,
         worldZ,
-        velocity: {
-            x: 0,
-            y: 0,
-            z: 0
-        },
+        velocityX: 0,
+        velocityY: 0,
+        velocityZ: 0,
         health: 20,
         maxHealth: 20,
         isDead: false,

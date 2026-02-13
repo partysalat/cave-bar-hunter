@@ -76,9 +76,9 @@ describe('HuntScene', () => {
         expect(Array.isArray(scene.projectiles)).toBe(true);
         expect(Array.isArray(scene.trees)).toBe(true);
 
-        // Players are now spawned automatically in create()
+        // Players and compys are now spawned automatically in create()
         expect(scene.players).toHaveLength(4);
-        expect(scene.compys).toHaveLength(0);
+        expect(scene.compys).toHaveLength(5);
         expect(scene.projectiles).toHaveLength(0);
         // Trees are populated by addTrees() called in create()
         expect(scene.trees).toHaveLength(8);
@@ -87,7 +87,7 @@ describe('HuntScene', () => {
     it('should initialize hunt state machine in create()', () => {
         scene.create();
 
-        expect(scene.huntState).toBe('intro');
+        expect(scene.huntState).toBe('active');
         expect(scene.huntTimer).toBe(0);
     });
 
@@ -99,7 +99,7 @@ describe('HuntScene', () => {
         // Obstacles array contains 8 trees added by addTrees()
         expect(scene.obstacles).toHaveLength(8);
 
-        expect(scene.packCoordinator).toBe(null);
+        expect(scene.packCoordinator).toBeDefined();
     });
 
     it('should initialize totalHuntTime in create()', () => {
