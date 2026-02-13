@@ -38,6 +38,11 @@ export default class HuntScene extends Phaser.Scene {
                 `/assets/enemies/compy-dino/rotations/${direction}.png`
             );
         });
+
+        // Load jungle floor tiles
+        this.load.image('jungle-floor', '/assets/environments/arena-3-dense-jungle/tiles/jungle-floor.png');
+        this.load.image('grass-patch', '/assets/environments/arena-3-dense-jungle/tiles/grass-patch.png');
+        this.load.image('root-covered-ground', '/assets/environments/arena-3-dense-jungle/tiles/root-covered-ground.png');
     }
 
     create() {
@@ -96,17 +101,26 @@ export default class HuntScene extends Phaser.Scene {
         const tileSize = 0.64; // World units per tile
         let tileCount = 0;
 
-        // Create grid of green placeholder tiles
+        // Create grid of jungle tiles with variety
         for (let worldY = this.arenaMinY; worldY < this.arenaMaxY; worldY += tileSize) {
             for (let worldX = this.arenaMinX; worldX < this.arenaMaxX; worldX += tileSize) {
                 // Convert world position to screen coordinates
                 const screenPos = worldToScreen(worldX, worldY, 0);
                 const depth = calculateDepth(worldY, 0);
 
-                // Create placeholder green rectangle
-                const tile = this.add.graphics();
-                tile.fillStyle(0x3a5f3a, 1); // Dark green
-                tile.fillRect(screenPos.x - 32, screenPos.y - 16, 64, 32);
+                // Pick tile with variety (70% jungle-floor, 20% grass-patch, 10% roots)
+                const rand = Math.random();
+                let tileKey;
+                if (rand < 0.7) {
+                    tileKey = 'jungle-floor';
+                } else if (rand < 0.9) {
+                    tileKey = 'grass-patch';
+                } else {
+                    tileKey = 'root-covered-ground';
+                }
+
+                // Create tile sprite
+                const tile = this.add.sprite(screenPos.x, screenPos.y, tileKey);
                 tile.setDepth(depth);
 
                 tileCount++;
