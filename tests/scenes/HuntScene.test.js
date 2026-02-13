@@ -127,17 +127,17 @@ describe('HuntScene', () => {
     });
 
     describe('jungle floor', () => {
-        it('buildJungleFloor() calls this.add.graphics', () => {
+        it('buildJungleFloor() creates tile sprites', () => {
             scene.create();
 
-            // Spy on add.graphics
-            const graphicsSpy = vi.spyOn(scene.add, 'graphics');
+            // Spy on add.sprite
+            const spriteSpy = vi.spyOn(scene.add, 'sprite');
 
             scene.buildJungleFloor();
 
             // Should have been called multiple times (once per tile)
-            expect(graphicsSpy).toHaveBeenCalled();
-            expect(graphicsSpy.mock.calls.length).toBeGreaterThan(100);
+            expect(spriteSpy).toHaveBeenCalled();
+            expect(spriteSpy.mock.calls.length).toBeGreaterThan(100);
         });
 
         it('sets arena bounds (arenaMinX=0, arenaMaxX=30, arenaMinY=0, arenaMaxY=25)', () => {
