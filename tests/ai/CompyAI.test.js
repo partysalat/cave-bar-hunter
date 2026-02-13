@@ -865,4 +865,149 @@ describe('CompyAI', () => {
             // No crash = success
         });
     });
+
+    describe('RETREATING state', () => {
+        beforeEach(() => {
+            ai = new CompyAI(compy, allCompys, players);
+            ai.state = 'RETREATING';
+            ai.target = players[0];
+            players[0].worldX = 25;
+            players[0].worldY = 15;
+            compy.worldX = 25;
+            compy.worldY = 15;
+            ai.stateTimer = 0;
+        });
+
+        it('should move away from target', () => {
+            ai.updateRetreating(0.016);
+
+            // Should have velocity pointing away from target
+            // Compy is at (25, 15), target at (25, 15), so need to move compy closer first
+            compy.worldX = 24;
+            compy.worldY = 15;
+            ai.updateRetreating(0.016);
+
+            // Velocity should point away (negative X direction)
+            expect(compy.velocity.x).toBeLessThan(0);
+        });
+
+        it('should move at 4 units per second', () => {
+            compy.worldX = 24;
+            compy.worldY = 15;
+            ai.updateRetreating(0.016);
+
+            const magnitude = Math.sqrt(compy.velocity.x ** 2 + compy.velocity.y ** 2);
+            expect(magnitude).toBeCloseTo(4, 1);
+        });
+
+        it('should maintain retreat speed across multiple frames', () => {
+            compy.worldX = 24;
+            compy.worldY = 15;
+
+            for (let i = 0; i < 10; i++) {
+                ai.stateTimer = i * 0.1;
+                ai.updateRetreating(0.016);
+                if (ai.state === 'RETREATING') {
+                    const magnitude = Math.sqrt(compy.velocity.x ** 2 + compy.velocity.y ** 2);
+                    expect(magnitude).toBeCloseTo(4, 1);
+                }
+            }
+        });
+
+        it('should retreat in normalized direction', () => {
+            compy.worldX = 26;
+            compy.worldY = 17;
+
+            ai.updateRetreating(0.016);
+
+            // Direction should be normalized (away from target at 25, 15)
+            // Expected direction: (1, 2) normalized = (0.447, 0.894)
+            const expectedX = 1 / Math.sqrt(5);
+            const expectedY = 2 / Math.sqrt(5);
+
+            expect(compy.velocity.x).toBeCloseTo(expectedX * 4, 1);
+            expect(compy.velocity.y).toBeCloseTo(expectedY * 4, 1);
+        });
+
+        it('should transition to CIRCLING after 2.5 seconds', () => {
+            ai.stateTimer = 2.5;
+            ai.updateRetreating(0.016);
+            expect(ai.state).toBe('CIRCLING');
+        });
+
+        it('should not transition before 2.5 seconds', () => {
+            ai.stateTimer = 2.4;
+            ai.updateRetreating(0.016);
+            expect(ai.state).toBe('RETREATING');
+        });
+
+        it('should handle no target by freezing and transitioning', () => {
+            ai.target = null;
+            ai.updateRetreating(0.016);
+
+            expect(compy.velocity.x).toBe(0);
+            expect(compy.velocity.y).toBe(0);
+            expect(ai.state).toBe('CIRCLING');
+        });
+
+        it('should freeze immediately when target is lost', () => {
+            compy.worldX = 24;
+            compy.worldY = 15;
+
+            // First frame with target - should move
+            ai.updateRetreating(0.016);
+            expect(compy.velocity.x).not.toBe(0);
+
+            // Second frame without target - should freeze
+            ai.target = null;
+            ai.updateRetreating(0.016);
+            expect(compy.velocity.x).toBe(0);
+            expect(compy.velocity.y).toBe(0);
+        });
+
+        it('should transition to CIRCLING when target is lost', () => {
+            ai.target = null;
+            ai.updateRetreating(0.016);
+            expect(ai.state).toBe('CIRCLING');
+        });
+
+        it('should retreat in all directions correctly', () => {
+            const directions = [
+                { compyX: 26, compyY: 15, expectedVX: 4, expectedVY: 0 },  // East
+                { compyX: 24, compyY: 15, expectedVX: -4, expectedVY: 0 }, // West
+                { compyX: 25, compyY: 16, expectedVX: 0, expectedVY: 4 },  // South
+                { compyX: 25, compyY: 14, expectedVX: 0, expectedVY: -4 }, // North
+            ];
+
+            for (const dir of directions) {
+                compy.worldX = dir.compyX;
+                compy.worldY = dir.compyY;
+                ai.updateRetreating(0.016);
+
+                expect(compy.velocity.x).toBeCloseTo(dir.expectedVX, 1);
+                expect(compy.velocity.y).toBeCloseTo(dir.expectedVY, 1);
+            }
+        });
+
+        it('should complete full retreat cycle', () => {
+            compy.worldX = 24;
+            compy.worldY = 15;
+
+            // Run through full retreat duration
+            for (let t = 0; t < 2.5; t += 0.1) {
+                ai.stateTimer = t;
+                ai.updateRetreating(0.016);
+                if (ai.state === 'RETREATING') {
+                    // Should still be retreating
+                    const magnitude = Math.sqrt(compy.velocity.x ** 2 + compy.velocity.y ** 2);
+                    expect(magnitude).toBeCloseTo(4, 1);
+                }
+            }
+
+            // After 2.5s, should transition
+            ai.stateTimer = 2.5;
+            ai.updateRetreating(0.016);
+            expect(ai.state).toBe('CIRCLING');
+        });
+    });
 });

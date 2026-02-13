@@ -185,7 +185,28 @@ export default class CompyAI {
      * @param {number} dt - Delta time in seconds
      */
     updateRetreating(dt) {
-        // Placeholder - will be implemented in Task 6
+        // If no target, freeze and return to circling
+        if (!this.target) {
+            this.compy.velocity.x = 0;
+            this.compy.velocity.y = 0;
+            this.transitionToCircling();
+            return;
+        }
+
+        // Move away from target at 4 units/sec
+        const dx = this.compy.worldX - this.target.worldX;
+        const dy = this.compy.worldY - this.target.worldY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance > 0) {
+            this.compy.velocity.x = (dx / distance) * 4;
+            this.compy.velocity.y = (dy / distance) * 4;
+        }
+
+        // Transition back to circling after 2.5 seconds
+        if (this.stateTimer >= 2.5) {
+            this.transitionToCircling();
+        }
     }
 
     /**
