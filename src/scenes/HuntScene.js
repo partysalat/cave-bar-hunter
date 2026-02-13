@@ -75,6 +75,10 @@ export default class HuntScene extends Phaser.Scene {
         // Spawn enemies
         this.spawnCompys();
 
+        // Center camera on arena (15, 12.5 = center of 30×25 arena)
+        const arenaCenter = worldToScreen(15, 12.5, 0);
+        this.cameras.main.centerOn(arenaCenter.x, arenaCenter.y);
+
         // Start hunt
         this.huntState = 'active';
     }
