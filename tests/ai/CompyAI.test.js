@@ -238,4 +238,309 @@ describe('CompyAI', () => {
             expect(() => ai.updateRetreating(0.016)).not.toThrow();
         });
     });
+
+    describe('CIRCLING state', () => {
+        beforeEach(() => {
+            ai = new CompyAI(compy, allCompys, players);
+            ai.state = 'CIRCLING';
+        });
+
+        describe('target selection', () => {
+            it('should call selectTarget if no target', () => {
+                ai.target = null;
+                ai.selectTarget = vi.fn(() => players[0]);
+                ai.updateCircling(0.016);
+                expect(ai.selectTarget).toHaveBeenCalledOnce();
+            });
+
+            it('should call selectTarget if target is downed', () => {
+                ai.target = players[0];
+                players[0].isDowned = true;
+                ai.selectTarget = vi.fn(() => players[1]);
+                ai.updateCircling(0.016);
+                expect(ai.selectTarget).toHaveBeenCalledOnce();
+            });
+
+            it('should not call selectTarget if target is valid', () => {
+                ai.target = players[0];
+                players[0].isDowned = false;
+                ai.selectTarget = vi.fn();
+                ai.updateCircling(0.016);
+                expect(ai.selectTarget).not.toHaveBeenCalled();
+            });
+
+            it('should set velocity to 0 if no valid target after selection', () => {
+                ai.target = null;
+                ai.selectTarget = vi.fn(() => null);
+                ai.updateCircling(0.016);
+                expect(compy.velocity.x).toBe(0);
+                expect(compy.velocity.y).toBe(0);
+            });
+        });
+
+        describe('orbiting behavior', () => {
+            beforeEach(() => {
+                ai.target = players[0];
+                players[0].worldX = 15;
+                players[0].worldY = 12;
+            });
+
+            it('should increment orbitAngle based on delta', () => {
+                const initialAngle = ai.orbitAngle;
+                ai.updateCircling(1.0); // 1 second
+                expect(ai.orbitAngle).toBeCloseTo(initialAngle + 0.5, 5);
+            });
+
+            it('should increment orbitAngle smoothly over multiple updates', () => {
+                const initialAngle = ai.orbitAngle;
+                ai.updateCircling(0.1); // 0.1 second
+                ai.updateCircling(0.1);
+                ai.updateCircling(0.1);
+                expect(ai.orbitAngle).toBeCloseTo(initialAngle + 0.15, 5);
+            });
+
+            it('should move toward orbit position around target', () => {
+                ai.orbitAngle = 0; // Point to the right of target
+                ai.orbitRadius = 4;
+                compy.worldX = 10;
+                compy.worldY = 12;
+
+                ai.updateCircling(0.016);
+
+                // Should have velocity pointing toward orbit position (target.x + 4, target.y + 0)
+                expect(compy.velocity.x).toBeGreaterThan(0); // Moving right toward orbit position
+            });
+
+            it('should move at approximately 6 units per second', () => {
+                ai.orbitAngle = Math.PI / 2; // 90 degrees
+                ai.orbitRadius = 4;
+                compy.worldX = 15;
+                compy.worldY = 8; // 4 units away from target
+
+                ai.updateCircling(0.016);
+
+                // Velocity magnitude should be around 6
+                const magnitude = Math.sqrt(compy.velocity.x ** 2 + compy.velocity.y ** 2);
+                expect(magnitude).toBeCloseTo(6, 1);
+            });
+
+            it('should orbit in a circular pattern', () => {
+                ai.target = players[0];
+                players[0].worldX = 15;
+                players[0].worldY = 12;
+                ai.orbitRadius = 4;
+
+                // Test at 4 cardinal directions
+                // Position compy far from orbit path so direction is clear
+                const angles = [0, Math.PI / 2, Math.PI, 3 * Math.PI / 2];
+                const positions = [];
+
+                for (let angle of angles) {
+                    ai.orbitAngle = angle;
+                    // Position compy at center, so velocity will point toward orbit
+                    compy.worldX = players[0].worldX;
+                    compy.worldY = players[0].worldY;
+                    ai.updateCircling(0.016);
+                    positions.push({ x: compy.velocity.x, y: compy.velocity.y });
+                }
+
+                // Velocities should point in different directions (toward orbit points)
+                expect(positions[0].x).toBeGreaterThan(0); // Toward East
+                expect(positions[1].y).toBeGreaterThan(0); // Toward South
+                expect(positions[2].x).toBeLessThan(0); // Toward West
+                expect(positions[3].y).toBeLessThan(0); // Toward North
+            });
+        });
+
+        describe('attack transitions', () => {
+            beforeEach(() => {
+                ai.target = players[0];
+                players[0].worldX = 15;
+                players[0].worldY = 12;
+            });
+
+            it('should not transition to LUNGING if attackCooldown > 0', () => {
+                ai.attackCooldown = 1.0;
+                const initialState = ai.state;
+
+                // Run many updates to ensure random check would trigger
+                for (let i = 0; i < 100; i++) {
+                    ai.updateCircling(0.016);
+                }
+
+                expect(ai.state).toBe(initialState);
+            });
+
+            it('should eventually transition to LUNGING when cooldown is 0', () => {
+                ai.attackCooldown = 0;
+                let transitioned = false;
+
+                // Run updates until transition happens (with safety limit)
+                for (let i = 0; i < 1000 && !transitioned; i++) {
+                    ai.updateCircling(0.016);
+                    if (ai.state === 'LUNGING') {
+                        transitioned = true;
+                    }
+                }
+
+                expect(transitioned).toBe(true);
+            });
+
+            it('should transition to LUNGING with 2% probability per frame', () => {
+                ai.attackCooldown = 0;
+                let transitionCount = 0;
+                const iterations = 1000;
+
+                for (let i = 0; i < iterations; i++) {
+                    ai.state = 'CIRCLING';
+                    ai.updateCircling(0.016);
+                    if (ai.state === 'LUNGING') {
+                        transitionCount++;
+                    }
+                }
+
+                // Should transition roughly 2% of the time (20 out of 1000)
+                // Allow for variance (10-40 transitions)
+                expect(transitionCount).toBeGreaterThan(5);
+                expect(transitionCount).toBeLessThan(50);
+            });
+
+            it('should reset stateTimer when transitioning to LUNGING', () => {
+                ai.attackCooldown = 0;
+                ai.stateTimer = 5.0;
+
+                // Force transition by running many updates
+                for (let i = 0; i < 1000; i++) {
+                    if (ai.state === 'LUNGING') break;
+                    ai.updateCircling(0.016);
+                }
+
+                if (ai.state === 'LUNGING') {
+                    expect(ai.stateTimer).toBe(0);
+                }
+            });
+        });
+    });
+
+    describe('helper methods', () => {
+        beforeEach(() => {
+            ai = new CompyAI(compy, allCompys, players);
+        });
+
+        describe('selectTarget', () => {
+            it('should select closest alive player', () => {
+                players[0].worldX = 20;
+                players[0].worldY = 15;
+                players[0].isDowned = false;
+                players[1].worldX = 25;
+                players[1].worldY = 15;
+                players[1].isDowned = false;
+                compy.worldX = 20;
+                compy.worldY = 15;
+
+                const target = ai.selectTarget();
+                expect(target).toBe(players[0]);
+            });
+
+            it('should skip downed players', () => {
+                players[0].worldX = 20;
+                players[0].worldY = 15;
+                players[0].isDowned = true;
+                players[1].worldX = 25;
+                players[1].worldY = 15;
+                players[1].isDowned = false;
+                compy.worldX = 20;
+                compy.worldY = 15;
+
+                const target = ai.selectTarget();
+                expect(target).toBe(players[1]);
+            });
+
+            it('should skip dead players', () => {
+                players[0].worldX = 20;
+                players[0].worldY = 15;
+                players[0].isDead = true;
+                players[1].worldX = 25;
+                players[1].worldY = 15;
+                players[1].isDowned = false;
+                compy.worldX = 20;
+                compy.worldY = 15;
+
+                const target = ai.selectTarget();
+                expect(target).toBe(players[1]);
+            });
+
+            it('should return null if all players are downed or dead', () => {
+                players[0].isDowned = true;
+                players[1].isDead = true;
+
+                const target = ai.selectTarget();
+                expect(target).toBeNull();
+            });
+
+            it('should return null if no players exist', () => {
+                ai.players = [];
+                const target = ai.selectTarget();
+                expect(target).toBeNull();
+            });
+        });
+
+        describe('getDistanceTo', () => {
+            it('should calculate 2D distance between compy and entity', () => {
+                compy.worldX = 20;
+                compy.worldY = 15;
+                const target = { worldX: 23, worldY: 19 };
+
+                const distance = ai.getDistanceTo(target);
+                expect(distance).toBeCloseTo(5, 5); // sqrt(9 + 16) = 5
+            });
+
+            it('should return 0 for same position', () => {
+                compy.worldX = 20;
+                compy.worldY = 15;
+                const target = { worldX: 20, worldY: 15 };
+
+                const distance = ai.getDistanceTo(target);
+                expect(distance).toBe(0);
+            });
+
+            it('should ignore Z coordinate', () => {
+                compy.worldX = 20;
+                compy.worldY = 15;
+                compy.worldZ = 0;
+                const target = { worldX: 23, worldY: 19, worldZ: 10 };
+
+                const distance = ai.getDistanceTo(target);
+                expect(distance).toBeCloseTo(5, 5); // Z doesn't affect distance
+            });
+        });
+
+        describe('transitionToLunging', () => {
+            it('should set state to LUNGING', () => {
+                ai.state = 'CIRCLING';
+                ai.transitionToLunging();
+                expect(ai.state).toBe('LUNGING');
+            });
+
+            it('should reset stateTimer to 0', () => {
+                ai.stateTimer = 5.0;
+                ai.transitionToLunging();
+                expect(ai.stateTimer).toBe(0);
+            });
+        });
+
+        describe('transitionToCircling', () => {
+            it('should set state to CIRCLING', () => {
+                ai.state = 'LUNGING';
+                ai.transitionToCircling();
+                expect(ai.state).toBe('CIRCLING');
+            });
+
+            it('should reset stateTimer to 0', () => {
+                ai.stateTimer = 5.0;
+                ai.transitionToCircling();
+                expect(ai.stateTimer).toBe(0);
+            });
+        });
+    });
 });

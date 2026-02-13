@@ -7,3 +7,6 @@ dist/
 # Generated sprite sheets (run npm run build:spritesheets to regenerate)
 assets/generated/
 .venv/
+
+# bv (beads viewer) local config and caches
+.bv/
