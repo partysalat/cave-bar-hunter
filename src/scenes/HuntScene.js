@@ -397,53 +397,44 @@ export default class HuntScene extends Phaser.Scene {
             // Get input from gamepad/keyboard (keyboard fallback for testing)
             const input = this.inputManager.getPlayerInputWithKeyboard(player.playerNumber);
 
-            // Skip if no input device connected
-            if (!input) {
-                player.velocityX = 0;
-                player.velocityY = 0;
-                player.isMoving = false;
-                player.update(delta);
-                return;
-            }
+            if (input) {
+                // Convert D-pad to screen-space direction
+                const screenDirection = this.inputManager.getDPadDirection(input.dpad);
 
-            // Apply movement
-            if (input.moveX !== 0 || input.moveY !== 0) {
-                const speedMultiplier = delta / 1000;
-                player.velocityX = input.moveX * player.moveSpeed * speedMultiplier;
-                player.velocityY = input.moveY * player.moveSpeed * speedMultiplier;
-                player.isMoving = true;
+                if (screenDirection.x !== 0 || screenDirection.y !== 0) {
+                    // Convert screen-space input to world-space direction (critical for isometric)
+                    const worldDirection = screenToWorldDirection(screenDirection.x, screenDirection.y);
 
-                // Update facing direction
-                if (input.moveX !== 0 || input.moveY !== 0) {
-                    player.facingX = input.moveX;
-                    player.facingY = input.moveY;
+                    // Apply movement
+                    const moveSpeed = player.moveSpeed;
+                    const deltaSeconds = delta / 1000;
+                    player.worldX += worldDirection.x * moveSpeed * deltaSeconds;
+                    player.worldY += worldDirection.y * moveSpeed * deltaSeconds;
+
+                    // Constrain to arena boundaries
+                    player.worldX = Math.max(this.arenaMinX, Math.min(this.arenaMaxX, player.worldX));
+                    player.worldY = Math.max(this.arenaMinY, Math.min(this.arenaMaxY, player.worldY));
+
+                    // Update facing direction
+                    player.facingX = worldDirection.x;
+                    player.facingY = worldDirection.y;
+                    player.isMoving = true;
+                } else {
+                    player.isMoving = false;
                 }
-            } else {
-                player.velocityX = 0;
-                player.velocityY = 0;
-                player.isMoving = false;
+
+                // Update player animation
+                updatePlayerAnimation(
+                    player.sprite,
+                    player.playerNumber,
+                    player.facingX,
+                    player.facingY,
+                    player.isMoving
+                );
             }
 
-            // Update player
+            // Update player entity
             player.update(delta);
-
-            // Constrain to arena bounds
-            player.worldX = Math.max(this.arenaMinX, Math.min(this.arenaMaxX, player.worldX));
-            player.worldY = Math.max(this.arenaMinY, Math.min(this.arenaMaxY, player.worldY));
-
-            // Update animation
-            const direction = player.getCurrentDirection();
-            if (player.isMoving) {
-                const runKey = `player-${player.playerNumber}-run-${direction}`;
-                if (player.sprite.anims.currentAnim?.key !== runKey) {
-                    player.sprite.play(runKey);
-                }
-            } else {
-                const idleKey = `player-${player.playerNumber}-idle-${direction}`;
-                if (player.sprite.anims.currentAnim?.key !== idleKey) {
-                    player.sprite.play(idleKey);
-                }
-            }
         });
 
         // Update compys
