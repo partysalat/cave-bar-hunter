@@ -32,6 +32,8 @@ npm test -- CoordinateSystem.test.js    # Run specific test file
 npm test -- -t "test name pattern"      # Run tests matching pattern
 ```
 
+Use 'bd' for task tracking
+
 ### Sprite Sheet Build System
 
 The game uses optimized sprite sheets instead of loading individual frames:
@@ -224,3 +226,4 @@ assets/
 **Design Doc:**
 - Refer to `docs/design/2026-01-18-prehistoric-hunter-bar-game-design.md` for complete game specifications
 - Contains exact damage values, timing windows, boss patterns, and technical requirements
+
