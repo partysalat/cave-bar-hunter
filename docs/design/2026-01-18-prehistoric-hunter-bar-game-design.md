@@ -182,7 +182,7 @@ After each hunt, players return to the cave bar hub:
 
 ## Weapons & Equipment
 
-### Primary Weapons (150-300 points, purchased at Cave Bar)
+### Primary Weapons (150-250 points, purchased at Cave Bar)
 
 **Stone Spear (Starting weapon, free)**
 - Balanced stats: Medium damage, medium fire rate
@@ -196,16 +196,10 @@ After each hunt, players return to the cave bar hub:
 - Stuns dinosaurs briefly on hit
 - Best for: Tank builds, aggressive players
 
-**Sling (150 points)**
+**Bow (150 points)**
 - Low damage per hit, fast fire rate (1-second reload)
-- Unlimited range, slight arc trajectory
+- Unlimited range, arc trajectory (arrows follow a ballistic arc)
 - Best for: Kiting, consistent damage, speed builds
-
-**Fire Spear (300 points)**
-- High initial damage, applies burning DOT (damage over time)
-- Normal reload speed (2 seconds)
-- Burn effect: 50% weapon damage over 5 seconds
-- Best for: DPS builds, burst damage
 
 **Net Launcher (250 points)**
 - Low direct damage, immobilizes dinosaur weak point for 3 seconds
@@ -247,7 +241,7 @@ Purchased from cave bar bartender, consumed immediately with animation.
 
 **Raptor Rush (75 points)** - Fiery red drink
 - +30% attack speed (reduced reload times) for entire hunt
-- Synergy: Sling (machine gun effect), Fire Spear (more DOT applications)
+- Synergy: Bow (rapid arrow volley), Bone Club (faster stun combos)
 
 **Dino Daiquiri (75 points)** - Green herbal drink
 - Regenerate 1 HP every 10 seconds (slow heal over time)
@@ -255,15 +249,15 @@ Purchased from cave bar bartender, consumed immediately with animation.
 
 **Saber Slam (75 points)** - Purple berry drink
 - Next 3 attacks deal double damage (2x multiplier)
-- Synergy: Fire Spear (massive burn), save for stagger phases
+- Synergy: Bone Club (massive single hits), save for stagger phases
 
 **Tar Pit Tonic (75 points)** - Thick black drink
 - Absorbs next hit without taking damage (1-hit shield)
 - Synergy: Aggressive play, perfect dodge practice, clutch saves
 
 **Volcano Mojito (50 points)** - Orange smoking drink
-- All attacks apply brief burn effect (mini Fire Spear)
-- Synergy: Fast weapons (Sling), multi-hit strategies
+- All attacks apply brief burn effect
+- Synergy: Bow (rapid arrows each apply burn), multi-hit strategies
 
 ### Strategic Loadout Examples
 
@@ -274,10 +268,10 @@ Purchased from cave bar bartender, consumed immediately with animation.
 - Role: Frontline fighter, draws aggro, revives teammates
 
 **DPS Build:**
-- Weapon: Fire Spear
+- Weapon: Bow
 - Passive: Hunter's Eye
 - Cocktails: Saber Slam + Raptor Rush
-- Role: Maximize damage output, focus weak points
+- Role: Maximize damage output, rapid weak point hits
 
 **Support Build:**
 - Weapon: Net Launcher
@@ -286,7 +280,7 @@ Purchased from cave bar bartender, consumed immediately with animation.
 - Role: Enable team damage, keep players alive
 
 **Kiter Build:**
-- Weapon: Sling
+- Weapon: Bow
 - Passive: Swift Feet
 - Cocktails: Raptor Rush + Mammoth Mule
 - Role: Mobile harasser, never stops moving/shooting

@@ -44,6 +44,22 @@ export default class HuntScene extends Phaser.Scene {
         this.load.image('jungle-floor', '/assets/environments/arena-3-dense-jungle/tiles/jungle-floor.png');
         this.load.image('grass-patch', '/assets/environments/arena-3-dense-jungle/tiles/grass-patch.png');
         this.load.image('root-covered-ground', '/assets/environments/arena-3-dense-jungle/tiles/root-covered-ground.png');
+
+        // Load floor variety tiles
+        this.load.image('tile-leafy', '/assets/environments/arena-3-dense-jungle/variety/tile-leafy.png');
+        this.load.image('tile-muddy', '/assets/environments/arena-3-dense-jungle/variety/tile-muddy.png');
+
+        // Load props
+        this.load.image('large-tree-trunk', '/assets/environments/arena-3-dense-jungle/props/large-tree-trunk.png');
+        this.load.image('rock-formation', '/assets/environments/arena-3-dense-jungle/props/rock-formation.png');
+        this.load.image('hanging-vines', '/assets/environments/arena-3-dense-jungle/props/hanging-vines.png');
+        this.load.image('prop-mushrooms', '/assets/environments/arena-3-dense-jungle/variety/prop-mushrooms.png');
+
+        // Load elevation assets
+        this.load.image('platform-low', '/assets/environments/arena-3-dense-jungle/elevation/platform-low.png');
+        this.load.image('platform-mid', '/assets/environments/arena-3-dense-jungle/elevation/platform-mid.png');
+        this.load.image('platform-high', '/assets/environments/arena-3-dense-jungle/elevation/platform-high.png');
+        this.load.image('ramp', '/assets/environments/arena-3-dense-jungle/elevation/ramp.png');
     }
 
     create() {
@@ -72,7 +88,10 @@ export default class HuntScene extends Phaser.Scene {
 
         // Build arena
         this.buildJungleFloor();
+        this.addElevation();
         this.addTrees();
+        this.addRocks();
+        this.addDecorations();
 
         // Spawn players and create animations
         this.spawnPlayers();
@@ -112,15 +131,19 @@ export default class HuntScene extends Phaser.Scene {
                 const screenPos = worldToScreen(worldX, worldY, tileWorldZ);
                 const depth = calculateDepth(worldY, tileWorldZ);
 
-                // Pick tile with variety (70% jungle-floor, 20% grass-patch, 10% roots)
+                // Pick tile with variety (50% jungle-floor, 18% grass-patch, 10% roots, 14% leafy, 8% muddy)
                 const rand = Math.random();
                 let tileKey;
-                if (rand < 0.7) {
+                if (rand < 0.50) {
                     tileKey = 'jungle-floor';
-                } else if (rand < 0.9) {
+                } else if (rand < 0.68) {
                     tileKey = 'grass-patch';
-                } else {
+                } else if (rand < 0.78) {
                     tileKey = 'root-covered-ground';
+                } else if (rand < 0.92) {
+                    tileKey = 'tile-leafy';
+                } else {
+                    tileKey = 'tile-muddy';
                 }
 
                 // Create tile sprite
@@ -157,13 +180,9 @@ export default class HuntScene extends Phaser.Scene {
             const screenPos = worldToScreen(pos.x, pos.y, 0);
             const depth = calculateDepth(pos.y, 0);
 
-            // Create brown circle sprite for tree
-            const treeSprite = this.add.circle(
-                screenPos.x,
-                screenPos.y,
-                treeRadius * 32, // Convert world radius to screen pixels (approximate)
-                0x4a3728 // Brown color
-            );
+            // Create tree trunk sprite
+            const treeSprite = this.add.image(screenPos.x, screenPos.y, 'large-tree-trunk');
+            treeSprite.setScale(0.75);
             treeSprite.setDepth(depth);
 
             // Create tree object
@@ -182,6 +201,117 @@ export default class HuntScene extends Phaser.Scene {
         });
 
         console.log(`Added ${this.trees.length} tree obstacles`);
+    }
+
+    /**
+     * Add rock formation obstacles at positions that don't overlap trees
+     */
+    addRocks() {
+        const rockPositions = [
+            { x: 2, y: 8 },
+            { x: 27, y: 18 },
+            { x: 8, y: 2 },
+            { x: 23, y: 22 },
+            { x: 14, y: 10 }
+        ];
+
+        const rockRadius = 1.2;
+
+        rockPositions.forEach(pos => {
+            const screenPos = worldToScreen(pos.x, pos.y, 0);
+            const depth = calculateDepth(pos.y, 0);
+
+            const rockSprite = this.add.image(screenPos.x, screenPos.y, 'rock-formation');
+            rockSprite.setScale(0.65);
+            rockSprite.setDepth(depth);
+
+            const rock = {
+                type: 'rock',
+                worldX: pos.x,
+                worldY: pos.y,
+                worldZ: 0,
+                radius: rockRadius,
+                sprite: rockSprite
+            };
+
+            this.obstacles.push(rock);
+        });
+
+        console.log(`Added ${rockPositions.length} rock obstacles`);
+    }
+
+    /**
+     * Add decorative props: hanging vines and mushroom clusters
+     */
+    addDecorations() {
+        // Hanging vines near tree edges (decoration only, no collision)
+        const vinePositions = [
+            { x: 5, y: 4 },
+            { x: 15, y: 2.5 },
+            { x: 22, y: 7.5 },
+            { x: 7, y: 11 },
+            { x: 20, y: 14.5 }
+        ];
+
+        vinePositions.forEach(pos => {
+            const screenPos = worldToScreen(pos.x, pos.y, 0.5);
+            const depth = calculateDepth(pos.y, 0.5);
+
+            const vineSprite = this.add.image(screenPos.x, screenPos.y, 'hanging-vines');
+            vineSprite.setScale(0.75);
+            vineSprite.setDepth(depth);
+        });
+
+        // Mushroom clusters scattered around open areas
+        const mushroomPositions = [
+            { x: 3, y: 15 },
+            { x: 11, y: 6 },
+            { x: 25, y: 10 },
+            { x: 16, y: 20 },
+            { x: 9, y: 24 },
+            { x: 26, y: 4 },
+            { x: 1, y: 20 }
+        ];
+
+        mushroomPositions.forEach(pos => {
+            const screenPos = worldToScreen(pos.x, pos.y, 0);
+            const depth = calculateDepth(pos.y, 0) + 1;
+
+            const mushSprite = this.add.image(screenPos.x, screenPos.y, 'prop-mushrooms');
+            mushSprite.setScale(0.5);
+            mushSprite.setDepth(depth);
+        });
+
+        console.log(`Added ${vinePositions.length} vine decorations and ${mushroomPositions.length} mushroom clusters`);
+    }
+
+    /**
+     * Add elevation platforms (visual only) to give the arena height variation
+     */
+    addElevation() {
+        const elevationPieces = [
+            { x: 2, y: 2, worldZ: 1.5, key: 'platform-high' },
+            { x: 28, y: 4, worldZ: 1.0, key: 'platform-mid' },
+            { x: 1, y: 22, worldZ: 1.0, key: 'platform-mid' },
+            { x: 28, y: 23, worldZ: 1.5, key: 'platform-high' },
+            { x: 12, y: 2, worldZ: 0.5, key: 'platform-low' },
+            { x: 24, y: 24, worldZ: 0.5, key: 'platform-low' },
+            // Ramps leading up to platforms
+            { x: 3, y: 3, worldZ: 0.5, key: 'ramp' },
+            { x: 27, y: 5, worldZ: 0.5, key: 'ramp' },
+            { x: 2, y: 21, worldZ: 0.5, key: 'ramp' },
+            { x: 27, y: 22, worldZ: 0.5, key: 'ramp' }
+        ];
+
+        elevationPieces.forEach(piece => {
+            const screenPos = worldToScreen(piece.x, piece.y, piece.worldZ);
+            const depth = calculateDepth(piece.y, piece.worldZ);
+
+            const sprite = this.add.image(screenPos.x, screenPos.y, piece.key);
+            sprite.setDepth(depth);
+        });
+
+        console.log(`Added ${elevationPieces.length} elevation pieces`);
     }
 
     /**
@@ -445,6 +575,10 @@ export default class HuntScene extends Phaser.Scene {
         this.compys.forEach(compy => {
             if (!compy.isDead) {
                 compy.update(delta);
+
+                // Constrain to arena boundaries (prevent retreating out of bounds)
+                compy.worldX = Math.max(this.arenaMinX, Math.min(this.arenaMaxX, compy.worldX));
+                compy.worldY = Math.max(this.arenaMinY, Math.min(this.arenaMaxY, compy.worldY));
             }
         });
 

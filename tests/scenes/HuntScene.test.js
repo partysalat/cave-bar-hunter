@@ -96,8 +96,8 @@ describe('HuntScene', () => {
 
         expect(scene.obstacles).toBeDefined();
         expect(Array.isArray(scene.obstacles)).toBe(true);
-        // Obstacles array contains 8 trees added by addTrees()
-        expect(scene.obstacles).toHaveLength(8);
+        // Obstacles array contains 8 trees + 5 rocks added by addTrees() and addRocks()
+        expect(scene.obstacles).toHaveLength(13);
 
         expect(scene.packCoordinator).toBeDefined();
     });
@@ -171,11 +171,13 @@ describe('HuntScene', () => {
         });
 
         it('addTrees() adds trees to obstacles array with type="tree"', () => {
-            scene.create(); // This already calls addTrees()
+            scene.create(); // This already calls addTrees() and addRocks()
 
-            expect(scene.obstacles).toHaveLength(8);
+            // Filter to only tree obstacles (rocks are also added)
+            const treeObstacles = scene.obstacles.filter(o => o.type === 'tree');
+            expect(treeObstacles).toHaveLength(8);
 
-            scene.obstacles.forEach((obstacle) => {
+            treeObstacles.forEach((obstacle) => {
                 expect(obstacle.type).toBe('tree');
                 expect(obstacle.worldX).toBeDefined();
                 expect(obstacle.worldY).toBeDefined();

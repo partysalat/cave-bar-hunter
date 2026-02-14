@@ -31,6 +31,14 @@ export function createMockScene() {
                     currentAnim: null
                 }
             }),
+            image: (x, y, texture) => ({
+                x, y, texture,
+                setOrigin: vi.fn().mockReturnThis(),
+                setDepth: vi.fn().mockReturnThis(),
+                setScale: vi.fn().mockReturnThis(),
+                setAlpha: vi.fn().mockReturnThis(),
+                setTint: vi.fn().mockReturnThis()
+            }),
             circle: (x, y, radius, color) => ({
                 x, y, radius, color,
                 setOrigin: () => ({}),

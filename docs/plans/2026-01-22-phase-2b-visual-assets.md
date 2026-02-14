@@ -97,7 +97,7 @@ These animations don't change based on equipped weapon:
 
 Each weapon requires a complete locomotion + attack set (4 animations per weapon: idle/run/jump/attack):
 
-**Priority Weapons: Club, Spear, Slingshot** (3 weapons × 4 animations × 4 colors = 48 animations)
+**Priority Weapons: Club, Spear, Bow** (3 weapons × 4 animations × 4 colors = 48 animations)
 
 ---
 
@@ -173,61 +173,77 @@ Each weapon requires a complete locomotion + attack set (4 animations per weapon
 
 ---
 
-#### 3. Sling Set (Ranged Weapon)
+#### 3. Bow Set (Ranged Weapon)
 
-**Sling Idle Animation**
+**Bow Idle Animation**
 - **Template:** `breathing-idle`
-- **Action:** "nimble prehistoric hunter in alert skirmisher stance, leather sling held in right hand with stone loaded in pouch dangling at waist level, left hand near ammunition pouch on belt, weight on balls of feet ready to move, shoulders relaxed but ready, skilled ranged combatant posture, eyes tracking targets"
-- **Weapon Visual:** Leather sling with stone ammunition pouch, prehistoric ranged weapon
+- **Action:** "nimble prehistoric hunter in alert skirmisher stance, primitive short bow held vertically in left hand at side, right hand resting near arrow quiver on back, weight on balls of feet ready to move, shoulders relaxed but ready, skilled ranged combatant posture, eyes tracking targets"
+- **Weapon Visual:** Primitive short bow made from bent wood and sinew string, with stone-tipped arrows in back quiver
 - **Duration:** 6-8 frames
 - **Loop:** Yes
 - **Status (Red Hero):** 🔲 Not Started
 
-**Sling Run Animation**
+**Bow Run Animation**
 - **Template:** `running-8-frames`
-- **Action:** "agile hunter sprinting with quick light footwork, leather sling gripped in right hand with loaded stone, left arm pumping for speed, athletic runner's form with smooth efficient stride, sling swaying with movement, mobile skirmisher ready to kite and strike from range"
-- **Weapon Visual:** Leather sling with stone ammunition pouch, prehistoric ranged weapon
+- **Action:** "agile hunter sprinting with quick light footwork, primitive short bow gripped in left hand at shoulder height, right arm pumping for speed, athletic runner's form with smooth efficient stride, bow and arrow ready for quick deployment, mobile skirmisher ready to kite and strike from range"
+- **Weapon Visual:** Primitive short bow made from bent wood and sinew string, with stone-tipped arrows in back quiver
 - **Duration:** 8 frames
 - **Loop:** Yes
 - **Status (Red Hero):** 🔲 Not Started
 
-**Sling Jump Animation**
+**Bow Jump Animation**
 - **Template:** `jumping-1`
-- **Action:** "lithe warrior springing upward with nimble athletic form, leather sling clutched in right hand with stone secure in pouch, left arm extended for balance, body compact during jump, graceful evasive leap like dodging while maintaining weapon ready"
-- **Weapon Visual:** Leather sling with stone ammunition pouch, prehistoric ranged weapon
+- **Action:** "lithe warrior springing upward with nimble athletic form, primitive short bow clutched in left hand, right arm extended for balance, body compact during jump, graceful evasive leap like dodging while maintaining weapon ready"
+- **Weapon Visual:** Primitive short bow made from bent wood and sinew string, with stone-tipped arrows in back quiver
 - **Duration:** 6-8 frames
 - **Loop:** No
 - **Status (Red Hero):** 🔲 Not Started
 
-**Sling Throw Attack Animation**
-- **Template:** `custom-throw-a-slingshot`
-- **Action:** "skilled slinger executing overhead whip throw: spinning leather sling in tight circle above head building momentum, body pivoting at waist, then snapping release with precise timing as sling whips forward, stone projectile launching at high speed, expert ranged weapon technique"
-- **Weapon Visual:** Leather sling with stone ammunition pouch, prehistoric ranged weapon
+**Bow Shoot Attack Animation**
+- **Template:** `throw-object`
+- **Action:** "skilled archer executing draw and release: reaching back to quiver to draw arrow, nocking arrow to bow string, pulling string back to cheek with full draw, bow arm extended forward with slight upward arc for ballistic trajectory, releasing with snap of fingers, arrow launching upward in arc, follow-through with bow arm, expert prehistoric ranged weapon technique"
+- **Weapon Visual:** Primitive short bow made from bent wood and sinew string, with stone-tipped arrows in back quiver
 - **Duration:** 8-10 frames
 - **Loop:** No
-- **Status:** ✅ Complete (All Heroes)
+- **Status:** 🔲 Not Started (replaces Sling Throw - needs regeneration for all Heroes)
 
 ---
 
-#### 4. Fire Spear Set (Future - Tier 2 Upgrade)
+#### 4. Net Launcher Set (Future - Support Weapon)
 
 **Status:** 🔲 Deprioritized - Generate after core weapons complete
 
-- Fire Spear Idle (with flaming tip visual)
-- Fire Spear Run (with flaming tip visual)
-- Fire Spear Jump (with flaming tip visual)
-- Fire Spear Throw Attack (with fire trail effect)
+**Net Launcher Idle Animation**
+- **Template:** `breathing-idle`
+- **Action:** "tactical prehistoric hunter in careful support stance, primitive crossbow-style net launcher held horizontally across body at waist level with both hands gripping stock and barrel, weight balanced and steady, alert posture scanning for opportunities to assist teammates, patient supportive warrior ready to immobilize targets"
+- **Weapon Visual:** Primitive crossbow-style launcher built from lashed wood and bone, thick cord string, loaded with bundled net bundle visible at front
+- **Duration:** 6-8 frames
+- **Loop:** Yes
+- **Status (Red Hero):** 🔲 Not Started
 
----
+**Net Launcher Run Animation**
+- **Template:** `running-8-frames`
+- **Action:** "support hunter running with purposeful stride, primitive net launcher tucked under right arm with both hands securing it, left arm partially extended for balance, efficient movement prioritizing weapon safety, focused repositioning run like getting into optimal support position"
+- **Weapon Visual:** Primitive crossbow-style launcher built from lashed wood and bone, thick cord string, loaded with bundled net bundle visible at front
+- **Duration:** 8 frames
+- **Loop:** Yes
+- **Status (Red Hero):** 🔲 Not Started
 
-#### 5. Net Launcher Set (Future - Support Weapon)
+**Net Launcher Jump Animation**
+- **Template:** `jumping-1`
+- **Action:** "support warrior leaping with controlled form, primitive net launcher gripped firmly in both hands held close to chest during jump, knees tucking upward, careful to protect the weapon mechanism during the jump, deliberate athletic leap"
+- **Weapon Visual:** Primitive crossbow-style launcher built from lashed wood and bone, thick cord string, loaded with bundled net bundle visible at front
+- **Duration:** 6-8 frames
+- **Loop:** No
+- **Status (Red Hero):** 🔲 Not Started
 
-**Status:** 🔲 Deprioritized - Generate after core weapons complete
-
-- Net Launcher Idle (crossbow-style weapon)
-- Net Launcher Run (crossbow-style weapon)
-- Net Launcher Jump (crossbow-style weapon)
-- Net Launcher Throw Attack (launches net projectile)
+**Net Launch Attack Animation**
+- **Template:** `throw-object`
+- **Action:** "hunter firing net launcher: planting feet wide in stable firing stance, raising launcher to shoulder level with both hands, squinting to aim, then squeezing trigger mechanism with right hand, launcher recoiling slightly with the shot, net projectile launching forward trailing cords, follow-through holding aim position, skilled support weapon deployment"
+- **Weapon Visual:** Primitive crossbow-style launcher built from lashed wood and bone, thick cord string, loaded with bundled net bundle visible at front
+- **Duration:** 8-10 frames
+- **Loop:** No
+- **Status:** 🔲 Not Started
 
 ---
 
@@ -235,14 +251,14 @@ Each weapon requires a complete locomotion + attack set (4 animations per weapon
 
 **Weapon-Agnostic Animations:** 6 animations × 4 colors = **24 animations**
 
-**Priority Weapon Sets (Spear/Club/Sling):**
+**Priority Weapon Sets (Spear/Club/Bow):**
 - 3 weapons × 4 animations each × 4 colors = **48 animations**
 
-**Future Weapon Sets (Fire Spear/Net Launcher):**
-- 2 weapons × 4 animations each × 4 colors = **32 animations** (deprioritized)
+**Future Weapon Sets (Net Launcher):**
+- 1 weapon × 4 animations each × 4 colors = **16 animations** (deprioritized)
 
-**Total Player Animations:** 24 + 48 + 32 = **104 animations**
-**Current Priority Total:** 24 + 48 = **72 animations** (focus on club/spear/sling)
+**Total Player Animations:** 24 + 48 + 16 = **88 animations**
+**Current Priority Total:** 24 + 48 = **72 animations** (focus on club/spear/bow)
 
 **Total Player Assets:** 4 base characters + 72 priority animations = **76 generations**
 
@@ -270,19 +286,19 @@ Each weapon requires a complete locomotion + attack set (4 animations per weapon
 - 🔲 Club Jump (need to generate)
 - ✅ Club Swing Attack
 
-**Sling Set (Red Hero):**
-- 🔲 Sling Idle (need to generate)
-- 🔲 Sling Run (need to generate)
-- 🔲 Sling Jump (need to generate)
-- ✅ Sling Throw Attack
+**Bow Set (Red Hero):**
+- 🔲 Bow Idle (need to generate)
+- 🔲 Bow Run (need to generate)
+- 🔲 Bow Jump (need to generate)
+- 🔲 Bow Shoot Attack (needs regeneration - sling throw animation is obsolete)
 
 **Status by Color:**
-- **Red Hero:** 6/6 agnostic ✅, 4/4 spear ✅, 1/4 club, 1/4 sling
-- **Blue/Yellow/Green Heroes:** 2/6 agnostic (spear throw, sling throw only)
+- **Red Hero:** 6/6 agnostic ✅, 4/4 spear ✅, 1/4 club, 0/4 bow
+- **Blue/Yellow/Green Heroes:** 1/6 agnostic (spear throw only - sling throw obsolete)
 
 **Next Priority:**
 1. Generate Club idle/run/jump for Red Hero (3 animations)
-2. Generate Sling idle/run/jump for Red Hero (3 animations)
+2. Generate Bow full set for Red Hero (4 animations including shoot attack)
 3. Replicate all weapon sets to Blue/Yellow/Green Heroes (54 animations)
 
 ---
@@ -303,21 +319,18 @@ These descriptions guide how weapons should appear in character animations:
    - Visual: "Primitive wooden club with thick rounded knob head, natural wood grain texture, rough bark on handle, simple prehistoric melee weapon"
    - Used in: Club swing animation, idle/walking animations (held)
 
-3. **Sling**
-   - Visual: "Leather sling with stone ammunition pouch, prehistoric ranged weapon"
-   - Used in: Throw animation (`custom-throw-a-slingshot`), idle animations
+3. **Bow**
+   - Visual: "Primitive short bow made from bent wood and sinew string, with stone-tipped arrows in back quiver"
+   - Used in: Bow shoot animation (`throw-object` adapted), idle/running animations
 
-4. **Fire Spear**
-   - Visual: "Stone spear with flaming tip, burning prehistoric weapon with fire effect"
-   - Used in: Throw animation variant (future), special animations
-
-5. **Net Launcher**
-   - Visual: "Crossbow-style net launcher weapon, prehistoric support weapon"
-   - Used in: Throw animation variant (future), support animations
+4. **Net Launcher**
+   - Visual: "Primitive crossbow-style launcher built from lashed wood and bone, thick cord string, loaded with bundled net bundle visible at front"
+   - Used in: Net launch animation (`throw-object` adapted), idle/running animations
 
 **Weapon Animation Variants:**
 - Weapon-specific animations are generated as part of the character animation set
-- Completed: `custom-swing-a-club` (club melee), `custom-throw-a-spear` (spear ranged), `custom-throw-a-slingshot` (sling ranged)
+- Completed: `custom-swing-a-club` (club melee), `custom-throw-a-spear` (spear ranged)
+- Pending: Bow shoot attack (replaces obsolete sling throw animation)
 - Base animations (throw, idle, walk) use the default stone spear
 - Additional weapon variants are generated as needed per weapon type
 - Each weapon variant is a full character animation (8 directions) integrated with the weapon visual
@@ -828,7 +841,7 @@ This expansion can be done incrementally as needed during gameplay development.
 
 | Category | Base Sprites | Animations | Priority Gen | Full Target |
 |----------|--------------|------------|--------------|-------------|
-| **Players** | 4 | 72 (3 weapons) | 76 | 108 (5 weapons) |
+| **Players** | 4 | 72 (3 weapons) | 76 | 88 (4 weapons) |
 | **Weapons** | 0 | 0 | 0* | 0* |
 | **Dinosaurs** | 12 | 72 + ~10 special | 94 | 94 |
 | **Bartender** | 1 | 4 | 5 | 5 |
@@ -842,9 +855,10 @@ This expansion can be done incrementally as needed during gameplay development.
 \* *Weapons are integrated into character animations, not generated as separate assets*
 
 **Current Progress:**
-- 🔄 Players: Partial (Red Hero spear set complete, club/sling attacks only, other colors incomplete)
-  - Need: Club/Sling locomotion sets (idle/run/jump) for all 4 colors
-  - Deprioritized: Fire Spear and Net Launcher weapon sets (32 animations)
+- 🔄 Players: Partial (Red Hero spear set complete, club swing attack only, sling throw obsolete, other colors incomplete)
+  - Need: Club locomotion set (idle/run/jump) + full Bow set (4 animations) for Red Hero
+  - Need: All weapon sets for Blue/Yellow/Green Heroes (54 animations)
+  - Deprioritized: Net Launcher weapon set (16 animations)
 - ✅ Environments Base: Complete (31 arena assets across 6 arenas)
 - ✅ Cave Bar Hub: Complete (20 assets - regenerated cave wall props with natural rock)
 - 🔄 Dinosaurs: Not started (94 animations)
