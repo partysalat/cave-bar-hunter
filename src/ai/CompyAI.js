@@ -2,10 +2,13 @@
  * CompyAI - AI controller for individual Compy dinosaurs
  *
  * State Machine:
- * - CIRCLING: Orbiting around pack center, looking for opening
- * - LUNGING: Rapid dash towards target player
+ * - CIRCLING: Moving left/right at mid-range, looking for attack opening
+ * - LUNGING: Horizontal dash towards target player
  * - BITING: Brief pause at target to deal damage
- * - RETREATING: Moving back to pack after attack
+ * - RETREATING: Moving away horizontally after attack
+ *
+ * Sidescroller movement: AI controls velocityX only.
+ * velocityY is managed by gravity (PhysicsManager.applyGravity).
  */
 export default class CompyAI {
     /**
@@ -31,7 +34,7 @@ export default class CompyAI {
         this.orbitRadius = 4;
         this.orbitAngle = Math.random() * Math.PI * 2; // Random starting angle
 
-        // Lunge tracking
+        // Lunge tracking - horizontal direction only (+1 right, -1 left)
         this.lungeDirX = 0;
         this.lungeDirY = 0;
     }
@@ -68,7 +71,8 @@ export default class CompyAI {
     }
 
     /**
-     * CIRCLING state: Orbit around pack center, look for attack opening
+     * CIRCLING state: Move left/right at mid-range, look for attack opening.
+     * Uses orbitAngle to determine desired X position relative to target.
      * @param {number} dt - Delta time in seconds
      */
     updateCircling(dt) {
@@ -80,26 +84,18 @@ export default class CompyAI {
         // If still no target, stop moving
         if (!this.target) {
             this.compy.velocityX = 0;
-            this.compy.velocityY = 0;
             return;
         }
 
-        // Increment orbit angle
+        // Increment orbit angle (drives left/right oscillation via cosine)
         this.orbitAngle += dt * 0.5;
 
-        // Calculate desired position on orbit
+        // Desired horizontal position: orbit radius away from target on current side
         const desiredX = this.target.worldX + Math.cos(this.orbitAngle) * this.orbitRadius;
-        const desiredY = this.target.worldY + Math.sin(this.orbitAngle) * this.orbitRadius;
 
-        // Move toward desired position at 6 units/sec
+        // Move toward desired X at 6 units/sec
         const dx = desiredX - this.compy.worldX;
-        const dy = desiredY - this.compy.worldY;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-
-        if (distance > 0) {
-            this.compy.velocityX = (dx / distance) * 6;
-            this.compy.velocityY = (dy / distance) * 6;
-        }
+        this.compy.velocityX = dx !== 0 ? Math.sign(dx) * 6 : 0;
 
         // Random attack: 2% chance per frame if cooldown is ready
         if (this.attackCooldown <= 0 && Math.random() < 0.02) {
@@ -108,7 +104,7 @@ export default class CompyAI {
     }
 
     /**
-     * LUNGING state: Rapid dash towards target player
+     * LUNGING state: Horizontal dash towards target player.
      * @param {number} dt - Delta time in seconds
      */
     updateLunging(dt) {
@@ -122,23 +118,16 @@ export default class CompyAI {
         if (this.stateTimer < 0.5) {
             // Freeze in place
             this.compy.velocityX = 0;
-            this.compy.velocityY = 0;
 
-            // Store direction to target (normalized)
+            // Store horizontal direction to target (+1 right, -1 left)
             const dx = this.target.worldX - this.compy.worldX;
-            const dy = this.target.worldY - this.compy.worldY;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-
-            if (distance > 0) {
-                this.lungeDirX = dx / distance;
-                this.lungeDirY = dy / distance;
-            }
+            this.lungeDirX = dx !== 0 ? Math.sign(dx) : 1;
+            this.lungeDirY = 0;
         } else {
-            // Charge phase - dash at 12 units/sec in stored direction
+            // Charge phase - horizontal dash at 12 units/sec
             this.compy.velocityX = this.lungeDirX * 12;
-            this.compy.velocityY = this.lungeDirY * 12;
 
-            // Check if reached target
+            // Check if reached target (horizontal proximity)
             const distToTarget = this.getDistanceTo(this.target);
             if (distToTarget <= 0.5) {
                 this.transitionToBiting();
@@ -154,17 +143,16 @@ export default class CompyAI {
     }
 
     /**
-     * BITING state: Brief pause at target to deal damage
+     * BITING state: Brief pause at target to deal damage.
      * @param {number} dt - Delta time in seconds
      */
     updateBiting(dt) {
-        // Freeze velocity
+        // Freeze horizontal velocity
         this.compy.velocityX = 0;
-        this.compy.velocityY = 0;
 
         // Deal damage on first frame only (stateTimer < dt means this is the first call)
         if (this.stateTimer < dt && this.target) {
-            // Check if target is alive and in range
+            // Check if target is alive and horizontally in range
             if (!this.target.isDowned && !this.target.isDead) {
                 const distToTarget = this.getDistanceTo(this.target);
                 if (distToTarget <= 0.5) {
@@ -181,27 +169,20 @@ export default class CompyAI {
     }
 
     /**
-     * RETREATING state: Move back to pack after attack
+     * RETREATING state: Move away horizontally after attack.
      * @param {number} dt - Delta time in seconds
      */
     updateRetreating(dt) {
         // If no target, freeze and return to circling
         if (!this.target) {
             this.compy.velocityX = 0;
-            this.compy.velocityY = 0;
             this.transitionToCircling();
             return;
         }
 
-        // Move away from target at 4 units/sec
+        // Move away from target horizontally at 4 units/sec
         const dx = this.compy.worldX - this.target.worldX;
-        const dy = this.compy.worldY - this.target.worldY;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-
-        if (distance > 0) {
-            this.compy.velocityX = (dx / distance) * 4;
-            this.compy.velocityY = (dy / distance) * 4;
-        }
+        this.compy.velocityX = dx !== 0 ? Math.sign(dx) * 4 : -this.lungeDirX * 4;
 
         // Transition back to circling after 2.5 seconds
         if (this.stateTimer >= 2.5) {

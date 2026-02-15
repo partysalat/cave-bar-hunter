@@ -325,31 +325,27 @@ describe('CompyAI', () => {
                 expect(magnitude).toBeCloseTo(6, 1);
             });
 
-            it('should orbit in a circular pattern', () => {
+            it('should orbit in a circular pattern (horizontal only)', () => {
                 ai.target = players[0];
                 players[0].worldX = 15;
                 players[0].worldY = 12;
                 ai.orbitRadius = 4;
 
-                // Test at 4 cardinal directions
-                // Position compy far from orbit path so direction is clear
-                const angles = [0, Math.PI / 2, Math.PI, 3 * Math.PI / 2];
-                const positions = [];
+                // Sidescroller: only X direction changes based on cos(orbitAngle)
+                // angle=0: desiredX = 15+4=19, compy at 15 → move right (velocityX > 0)
+                // angle=PI: desiredX = 15-4=11, compy at 15 → move left (velocityX < 0)
+                const angles = [0, Math.PI];
+                const velocities = [];
 
                 for (let angle of angles) {
                     ai.orbitAngle = angle;
-                    // Position compy at center, so velocity will point toward orbit
-                    compy.worldX = players[0].worldX;
-                    compy.worldY = players[0].worldY;
+                    compy.worldX = players[0].worldX; // Start at center
                     ai.updateCircling(0.016);
-                    positions.push({ x: compy.velocityX, y: compy.velocityY });
+                    velocities.push(compy.velocityX);
                 }
 
-                // Velocities should point in different directions (toward orbit points)
-                expect(positions[0].x).toBeGreaterThan(0); // Toward East
-                expect(positions[1].y).toBeGreaterThan(0); // Toward South
-                expect(positions[2].x).toBeLessThan(0); // Toward West
-                expect(positions[3].y).toBeLessThan(0); // Toward North
+                expect(velocities[0]).toBeGreaterThan(0); // cos(0)=1, orbit right of target
+                expect(velocities[1]).toBeLessThan(0);    // cos(PI)=-1, orbit left of target
             });
         });
 
@@ -810,12 +806,12 @@ describe('CompyAI', () => {
             ai.stateTimer = 0;
         });
 
-        it('should freeze velocity', () => {
+        it('should freeze horizontal velocity', () => {
             compy.velocityX = 5;
             compy.velocityY = 3;
             ai.updateBiting(0.016);
             expect(compy.velocityX).toBe(0);
-            expect(compy.velocityY).toBe(0);
+            // velocityY is controlled by gravity, not reset by AI
         });
 
         it('should deal 0.5 damage on first frame only', () => {
@@ -882,14 +878,13 @@ describe('CompyAI', () => {
             expect(ai.attackCooldown).toBe(0);
         });
 
-        it('should maintain freeze across multiple frames', () => {
+        it('should maintain horizontal freeze across multiple frames', () => {
             for (let i = 0; i < 5; i++) {
                 compy.velocityX = 10;
-                compy.velocityY = 10;
                 ai.stateTimer = i * 0.1;
                 ai.updateBiting(0.016);
                 expect(compy.velocityX).toBe(0);
-                expect(compy.velocityY).toBe(0);
+                // velocityY is controlled by gravity, not reset by AI
             }
         });
 
@@ -967,19 +962,16 @@ describe('CompyAI', () => {
             }
         });
 
-        it('should retreat in normalized direction', () => {
+        it('should retreat horizontally (sign-based direction)', () => {
             compy.worldX = 26;
             compy.worldY = 17;
 
             ai.updateRetreating(0.016);
 
-            // Direction should be normalized (away from target at 25, 15)
-            // Expected direction: (1, 2) normalized = (0.447, 0.894)
-            const expectedX = 1 / Math.sqrt(5);
-            const expectedY = 2 / Math.sqrt(5);
-
-            expect(compy.velocityX).toBeCloseTo(expectedX * 4, 1);
-            expect(compy.velocityY).toBeCloseTo(expectedY * 4, 1);
+            // Sidescroller: retreat is horizontal only, sign-based direction
+            // compy.worldX(26) > target.worldX(25) → move right at 4 units/sec
+            expect(compy.velocityX).toBeCloseTo(4, 1);
+            // velocityY is not set by AI (gravity-controlled)
         });
 
         it('should transition to CIRCLING after 2.5 seconds', () => {
@@ -1024,12 +1016,11 @@ describe('CompyAI', () => {
             expect(ai.state).toBe('CIRCLING');
         });
 
-        it('should retreat in all directions correctly', () => {
+        it('should retreat horizontally left or right from target', () => {
+            // Sidescroller: retreat is horizontal only
             const directions = [
-                { compyX: 26, compyY: 15, expectedVX: 4, expectedVY: 0 },  // East
-                { compyX: 24, compyY: 15, expectedVX: -4, expectedVY: 0 }, // West
-                { compyX: 25, compyY: 16, expectedVX: 0, expectedVY: 4 },  // South
-                { compyX: 25, compyY: 14, expectedVX: 0, expectedVY: -4 }, // North
+                { compyX: 26, compyY: 15, expectedVX: 4 },  // East of target → move right
+                { compyX: 24, compyY: 15, expectedVX: -4 }, // West of target → move left
             ];
 
             for (const dir of directions) {
@@ -1038,7 +1029,6 @@ describe('CompyAI', () => {
                 ai.updateRetreating(0.016);
 
                 expect(compy.velocityX).toBeCloseTo(dir.expectedVX, 1);
-                expect(compy.velocityY).toBeCloseTo(dir.expectedVY, 1);
             }
         });
 
