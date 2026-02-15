@@ -13,7 +13,7 @@ These systems have no isometric dependencies:
 
 | System | File | Notes |
 |---|---|---|
-| CombatSystem | `src/systems/CombatSystem.js` | Pure logic, no coordinates |
+| CombatSystem | `src/systems/CombatSystem.js` | Pure logic, no coordinates. Note: the club attack cone geometry will need redesigning for sidescroller (currently uses isometric horizontal plane), but this is a gameplay balance decision deferred to post-migration content work - not a coordinate system migration concern. |
 | ScoreManager | `src/systems/ScoreManager.js` | Pure data |
 | SessionManager | `src/systems/SessionManager.js` | Scene flow only |
 | UpgradeManager | `src/systems/UpgradeManager.js` | Stat modifiers |
@@ -72,6 +72,8 @@ function calculateDepth(worldX, worldY) {
 - `worldY` now means **vertical height** (0 = ground), not isometric depth
 - Add `velocityY` for jump physics (separate from `worldVelocityY` which was isometric depth velocity)
 - Add `onGround` boolean
+
+> **Why worldY and not a new axis name?** Reusing `worldY` for vertical keeps the entity interface consistent and all rendering/physics code written in M1 immediately correct. AI systems (CompyAI, PackCoordinator) that currently use `worldY` for depth-based positioning are explicitly reworked in M5 *after* this semantic change is stable - the phase ordering is the mitigation for the naming collision.
 
 **PhysicsManager.js changes:**
 - Remove Z-axis collision checks
@@ -142,7 +144,7 @@ if (input.jump && this.onGround) {
 - Remove isometric tile grid rendering
 - Add: background layer (parallax), platform layer, foreground layer
 - Platforms defined as `{ worldX, worldY, width }` rectangles
-- Camera: horizontal follow only (no vertical scroll)
+- Camera: horizontal follow only (no vertical scroll). Clamp X to `[screenHalfWidth, arenaWidth * PIXELS_PER_UNIT - screenHalfWidth]` to prevent showing empty space past arena edges.
 
 **Arena data structure (new):**
 ```javascript
@@ -207,7 +209,7 @@ The CompyAI state machine (CIRCLING → LUNGING → BITING → RETREATING) is mo
 **What to discard:**
 - `assets/characters/{color}-hero/rotations/` - 8-direction sprites no longer needed
 - `assets/generated/spritesheets/` - sprite sheets built from isometric frames
-- `scripts/build-spritesheets.js` - may need update for new animation structure
+- `scripts/build-spritesheets.js` - requires full rewrite: animation key schema changes from `player-0-run-south-west` (8-direction) to `player-0-run` with sprite flip for direction. Every texture key reference in Phaser asset loading will need updating to match.
 
 ---
 
@@ -266,11 +268,23 @@ const JUNGLE_ARENA = {
 **Physics model:**
 - Player on liana: position = anchor + (sin(angle) * length, -cos(angle) * length)
 - Angular velocity affected by gravity each frame: `angularVelocity += (-GRAVITY / length) * sin(angle) * dt`
-- Player inherits linear velocity on release: `velocityX = angularVelocity * length * cos(angle)`
+- Player inherits linear velocity on release (both components required for correct arc trajectory):
+  ```javascript
+  velocityX = angularVelocity * length * Math.cos(angle);
+  velocityY = angularVelocity * length * Math.sin(angle);
+  // Note: omitting velocityY gives horizontal-only launch - players fall straight down instead of arcing
+  ```
 
 **Grab detection:** On A press, check if any liana's rope is within 1.5 world units of player. Grab nearest.
 
-**Perfect release detection:** Track `Math.abs(angularVelocity)` - peak is at apex. Window: ±0.1 seconds around true apex. Same pattern as perfect dodge timing.
+**Perfect release detection:** Detect when `angularVelocity` crosses zero (sign change from positive to negative or vice versa). At the apex of a pendulum swing, angular velocity is zero - NOT at its maximum. Maximum |angularVelocity| occurs at the bottom of the swing, which is the worst release point. Fire the perfect-release window when:
+  ```javascript
+  const prevSign = Math.sign(prevAngularVelocity);
+  const currSign = Math.sign(angularVelocity);
+  if (prevSign !== currSign) { // zero crossing = apex
+    openPerfectReleaseWindow(); // ±0.1 seconds
+  }
+  ```
 
 **Hunt opener sequence:**
 - New scene state: `INTRO_SWING` before `FIGHTING`
