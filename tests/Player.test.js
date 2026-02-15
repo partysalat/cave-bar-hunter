@@ -12,6 +12,7 @@ describe('Player', () => {
                     setDepth: () => ({}),
                     setTint: () => ({}),
                     setTexture: () => ({}),
+                    setFlipX: () => ({}),
                     play: () => ({}),
                     setScale: () => ({}),
                     anims: {
@@ -26,16 +27,16 @@ describe('Player', () => {
     });
 
     it('initializes with player number and color', () => {
-        const player = new Player(mockScene, 0, 15, 12, 0);
+        const player = new Player(mockScene, 0, 15, 12);
         expect(player.playerNumber).toBe(0);
         expect(player.color).toBe(0xff0000); // Red
     });
 
     it('assigns correct colors to player numbers', () => {
-        const p0 = new Player(mockScene, 0, 0, 0, 0);
-        const p1 = new Player(mockScene, 1, 0, 0, 0);
-        const p2 = new Player(mockScene, 2, 0, 0, 0);
-        const p3 = new Player(mockScene, 3, 0, 0, 0);
+        const p0 = new Player(mockScene, 0, 0, 0);
+        const p1 = new Player(mockScene, 1, 0, 0);
+        const p2 = new Player(mockScene, 2, 0, 0);
+        const p3 = new Player(mockScene, 3, 0, 0);
 
         expect(p0.color).toBe(0xff0000); // Red
         expect(p1.color).toBe(0x0000ff); // Blue
@@ -44,13 +45,13 @@ describe('Player', () => {
     });
 
     it('initializes with starting weapon', () => {
-        const player = new Player(mockScene, 0, 0, 0, 0);
+        const player = new Player(mockScene, 0, 0, 0);
         expect(player.weapon).toBe('stone-spear');
         expect(player.health).toBe(2);
     });
 
     it('constrains position to arena bounds', () => {
-        const player = new Player(mockScene, 0, 0, 0, 0);
+        const player = new Player(mockScene, 0, 0, 0);
 
         // Try to move out of bounds
         player.worldX = -5;
@@ -69,7 +70,7 @@ describe('Player', () => {
     });
 
     it('throws spear with cooldown', () => {
-        const player = new Player(mockScene, 0, 15, 12, 0);
+        const player = new Player(mockScene, 0, 15, 12);
 
         expect(player.canThrowSpear()).toBe(true);
 
@@ -79,7 +80,7 @@ describe('Player', () => {
     });
 
     it('performs dodge roll with cooldown', () => {
-        const player = new Player(mockScene, 0, 15, 12, 0);
+        const player = new Player(mockScene, 0, 15, 12);
 
         expect(player.canDodge()).toBe(true);
 
@@ -90,7 +91,7 @@ describe('Player', () => {
     });
 
     it('has invincibility frames during dodge', () => {
-        const player = new Player(mockScene, 0, 15, 12, 0);
+        const player = new Player(mockScene, 0, 15, 12);
 
         player.startDodge();
 
@@ -98,7 +99,7 @@ describe('Player', () => {
     });
 
     it('ends dodge after duration', () => {
-        const player = new Player(mockScene, 0, 15, 12, 0);
+        const player = new Player(mockScene, 0, 15, 12);
 
         player.startDodge();
         expect(player.isDodging).toBe(true);
@@ -109,7 +110,7 @@ describe('Player', () => {
     });
 
     it('enters downed state at 0 health', () => {
-        const player = new Player(mockScene, 0, 15, 12, 0);
+        const player = new Player(mockScene, 0, 15, 12);
 
         player.takeDamage(2); // Full damage
 
@@ -118,17 +119,17 @@ describe('Player', () => {
     });
 
     it('can crawl while downed at reduced speed', () => {
-        const player = new Player(mockScene, 0, 15, 12, 0);
+        const player = new Player(mockScene, 0, 15, 12);
         player.isDowned = true;
 
-        player.move(1, 0);
+        player.move(1);
 
         expect(player.velocityX).toBeGreaterThan(0);
         expect(player.velocityX).toBeLessThan(player.moveSpeed); // Slower than normal
     });
 
     it('can be revived by teammate', () => {
-        const player = new Player(mockScene, 0, 15, 12, 0);
+        const player = new Player(mockScene, 0, 15, 12);
         player.isDowned = true;
         player.health = 0;
 
@@ -148,6 +149,7 @@ describe('Player - Club Attack', () => {
                 sprite: () => ({
                     setOrigin: () => ({}),
                     setDepth: () => ({}),
+                    setFlipX: () => ({}),
                     play: () => ({}),
                     setScale: () => ({}),
                     anims: {
@@ -162,7 +164,7 @@ describe('Player - Club Attack', () => {
     });
 
     it('can start attack when not on cooldown', () => {
-        const player = new Player(mockScene, 0, 10, 10, 0);
+        const player = new Player(mockScene, 0, 10, 10);
 
         expect(player.canAttack()).toBe(true);
 
@@ -173,7 +175,7 @@ describe('Player - Club Attack', () => {
     });
 
     it('cannot attack when already attacking', () => {
-        const player = new Player(mockScene, 0, 10, 10, 0);
+        const player = new Player(mockScene, 0, 10, 10);
 
         player.startAttack();
         const canAttackAgain = player.canAttack();
@@ -182,7 +184,7 @@ describe('Player - Club Attack', () => {
     });
 
     it('cannot attack when on cooldown', () => {
-        const player = new Player(mockScene, 0, 10, 10, 0);
+        const player = new Player(mockScene, 0, 10, 10);
 
         player.attackCooldown = 500; // Still on cooldown
 
@@ -190,7 +192,7 @@ describe('Player - Club Attack', () => {
     });
 
     it('cannot attack when downed', () => {
-        const player = new Player(mockScene, 0, 10, 10, 0);
+        const player = new Player(mockScene, 0, 10, 10);
 
         player.isDowned = true;
 
@@ -198,7 +200,7 @@ describe('Player - Club Attack', () => {
     });
 
     it('progresses through attack phases over time', () => {
-        const player = new Player(mockScene, 0, 10, 10, 0);
+        const player = new Player(mockScene, 0, 10, 10);
 
         player.startAttack();
         expect(player.attackPhase).toBe('windup');
@@ -218,7 +220,7 @@ describe('Player - Club Attack', () => {
     });
 
     it('starts cooldown after attack completes', () => {
-        const player = new Player(mockScene, 0, 10, 10, 0);
+        const player = new Player(mockScene, 0, 10, 10);
 
         player.startAttack();
 
@@ -230,7 +232,7 @@ describe('Player - Club Attack', () => {
     });
 
     it('clears hit enemies list when starting new attack', () => {
-        const player = new Player(mockScene, 0, 10, 10, 0);
+        const player = new Player(mockScene, 0, 10, 10);
 
         player.hitEnemiesThisSwing = ['enemy1', 'enemy2'];
         player.startAttack();
@@ -239,15 +241,15 @@ describe('Player - Club Attack', () => {
     });
 
     it('moves slower while attacking', () => {
-        const player = new Player(mockScene, 0, 10, 10, 0);
+        const player = new Player(mockScene, 0, 10, 10);
 
         // Move normally first to get baseline speed
-        player.move(1, 0);
+        player.move(1);
         const normalSpeed = player.velocityX;
 
         // Now attack and move
         player.startAttack();
-        player.move(1, 0);
+        player.move(1);
 
         // Speed should be 50% of normal
         expect(player.velocityX).toBeGreaterThan(0);

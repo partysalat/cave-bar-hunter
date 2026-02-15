@@ -1,5 +1,5 @@
 import Entity from './Entity.js';
-import { updatePlayerAnimation, getPlayerAnimationKey } from '../systems/SpriteDirectionSystem.js';
+import { updatePlayerAnimation, updatePlayerSpriteDirection, getPlayerAnimationKey } from '../systems/SpriteDirectionSystem.js';
 
 // Player color mapping from design doc (kept for reference, now using PixelLab sprites)
 const PLAYER_COLORS = [
@@ -27,16 +27,17 @@ export default class Player extends Entity {
      * @param {number} worldY
      * @param {number} worldZ
      */
-    constructor(scene, playerNumber, worldX, worldY, worldZ) {
-        super(scene, worldX, worldY, worldZ);
+    constructor(scene, playerNumber, worldX, worldY) {
+        super(scene, worldX, worldY);
+        this.affectedByGravity = true;
 
         this.playerNumber = playerNumber;
         this.color = PLAYER_COLORS[playerNumber];
 
         this.sprite.setScale(1.5);
 
-        // Initialize sprite with idle animation facing south
-        const initialAnimKey = getPlayerAnimationKey(playerNumber, 'south', false);
+        // Initialize sprite with idle animation
+        const initialAnimKey = getPlayerAnimationKey(playerNumber, 'idle');
         this.sprite.play(initialAnimKey);
 
         // Weapon state (weapons are baked into animations)
@@ -67,8 +68,10 @@ export default class Player extends Entity {
         // Attack stats
         this.spearCooldown = 0; // ms until can throw again
         this.spearCooldownTime = 2000; // 2 seconds (from design doc)
-        this.facingX = 0; // Direction player is facing
-        this.facingY = 1; // Start facing south
+        this.facingX = 1; // Direction player is facing (positive = right)
+
+        // Jump state
+        this.jumpVelocity = 15; // world units/second upward
 
         // Dodge stats (from design doc)
         this.isDodging = false;
@@ -78,7 +81,6 @@ export default class Player extends Entity {
         this.dodgeCooldownTime = 3000; // 3 seconds (from design doc)
         this.dodgeSpeed = 16; // 2× normal speed during roll
         this.dodgeDirectionX = 0;
-        this.dodgeDirectionY = 0;
 
         // Perfect dodge buff
         this.perfectDodgeBuff = 0; // ms remaining of damage buff
@@ -105,21 +107,12 @@ export default class Player extends Entity {
     }
 
     /**
-     * Moves player based on D-pad input direction
-     * @param {number} dirX - X direction (-1, 0, 1)
-     * @param {number} dirY - Y direction (-1, 0, 1)
+     * Moves player horizontally based on input
+     * @param {number} dirX - Horizontal direction (-1, 0, 1)
      */
-    move(dirX, dirY) {
-        if (this.isDodging) return; // Can't move during dodge
+    move(dirX) {
+        if (this.isDodging) return;
 
-        // Normalize diagonal movement
-        if (dirX !== 0 && dirY !== 0) {
-            const length = Math.sqrt(dirX * dirX + dirY * dirY);
-            dirX /= length;
-            dirY /= length;
-        }
-
-        // Calculate speed based on state
         let speed = this.moveSpeed;
         if (this.isDowned) {
             speed = this.crawlSpeed;
@@ -128,19 +121,24 @@ export default class Player extends Entity {
         }
 
         this.velocityX = dirX * speed;
-        this.velocityY = dirY * speed;
 
-        // Update facing and animation (but not during attack - attack animation takes priority)
-        if (dirX !== 0 || dirY !== 0) {
+        if (dirX !== 0) {
             this.facingX = dirX;
-            this.facingY = dirY;
             this.isMoving = true;
-
-            // Don't override attack animation with movement animation
             if (!this.isAttacking) {
-                updatePlayerAnimation(this.sprite, this.playerNumber, this.facingX, this.facingY, this.isMoving);
+                updatePlayerAnimation(this.sprite, this.playerNumber, this.facingX, this.isMoving, !this.onGround, this.velocityY);
             }
         }
+    }
+
+    /**
+     * Jump if on the ground
+     */
+    jump() {
+        if (!this.onGround || this.isDowned || this.isDodging) return;
+        this.velocityY = this.jumpVelocity;
+        this.onGround = false;
+        updatePlayerAnimation(this.sprite, this.playerNumber, this.facingX, this.isMoving, true, this.velocityY);
     }
 
     /**
@@ -148,12 +146,10 @@ export default class Player extends Entity {
      */
     stop() {
         this.velocityX = 0;
-        this.velocityY = 0;
         this.isMoving = false;
 
-        // Don't override attack animation with idle animation
         if (!this.isAttacking) {
-            this.updateIdleAnimation(); // Use weapon-aware idle animation
+            this.updateIdleAnimation();
         }
     }
 
@@ -238,21 +234,17 @@ export default class Player extends Entity {
 
         // Update facing direction and animation
         this.facingX = dirX;
-        this.facingY = dirY;
-        updatePlayerAnimation(this.sprite, this.playerNumber, this.facingX, this.facingY, this.isMoving);
+        updatePlayerAnimation(this.sprite, this.playerNumber, this.facingX, this.isMoving, !this.onGround, this.velocityY);
 
         // Start cooldown
         this.spearCooldown = this.spearCooldownTime;
 
-        // Return projectile creation data with damage multiplier
         return {
             worldX: this.worldX,
             worldY: this.worldY,
-            worldZ: this.worldZ + 0.5, // Throw from chest height
             dirX,
             dirY,
-            dirZ: 0,
-            damageMultiplier: this.getDamageMultiplier() // Include buffs
+            damageMultiplier: this.getDamageMultiplier()
         };
     }
 
@@ -275,10 +267,9 @@ export default class Player extends Entity {
         this.attackPhase = 'windup';
         this.hitEnemiesThisSwing = [];
 
-        // Play club swing attack animation
-        const direction = this.getCurrentDirection();
-        const clubSwingKey = `player-${this.playerNumber}-club-swing-${direction}`;
-        this.sprite.play(clubSwingKey);
+        // Direction handled by sprite flip, not animation key
+        updatePlayerSpriteDirection(this.sprite, this.facingX);
+        this.sprite.play(`player-${this.playerNumber}-attack`);
     }
 
     /**
@@ -314,20 +305,10 @@ export default class Player extends Entity {
      * Updates idle animation based on weapon state
      */
     updateIdleAnimation() {
-        const direction = this.getCurrentDirection();
-
-        if (this.hasWeaponDrawn) {
-            // Use fight stance idle when weapon is equipped
-            const fightStanceKey = `player-${this.playerNumber}-fight-stance-${direction}`;
-            if (this.sprite.anims.currentAnim?.key !== fightStanceKey) {
-                this.sprite.play(fightStanceKey);
-            }
-        } else {
-            // Use normal breathing idle when no weapon
-            const idleKey = `player-${this.playerNumber}-idle-${direction}`;
-            if (this.sprite.anims.currentAnim?.key !== idleKey) {
-                this.sprite.play(idleKey);
-            }
+        updatePlayerSpriteDirection(this.sprite, this.facingX);
+        const idleKey = getPlayerAnimationKey(this.playerNumber, 'idle');
+        if (this.sprite.anims.currentAnim?.key !== idleKey) {
+            this.sprite.play(idleKey);
         }
     }
 
@@ -336,22 +317,7 @@ export default class Player extends Entity {
      * @returns {string} Direction name
      */
     getCurrentDirection() {
-        // Map facing vector to direction string
-        const angle = Math.atan2(this.facingY, this.facingX);
-        const degrees = angle * (180 / Math.PI);
-
-        // Normalize to 0-360
-        const normalizedDegrees = (degrees + 360) % 360;
-
-        // Map to 8 directions (45 degree segments)
-        if (normalizedDegrees < 22.5 || normalizedDegrees >= 337.5) return 'east';
-        if (normalizedDegrees < 67.5) return 'south-east';
-        if (normalizedDegrees < 112.5) return 'south';
-        if (normalizedDegrees < 157.5) return 'south-west';
-        if (normalizedDegrees < 202.5) return 'west';
-        if (normalizedDegrees < 247.5) return 'north-west';
-        if (normalizedDegrees < 292.5) return 'north';
-        return 'north-east';
+        return this.facingX >= 0 ? 'right' : 'left';
     }
 
     /**
@@ -367,28 +333,15 @@ export default class Player extends Entity {
      * @param {number} dirX - Direction to dodge (optional, uses facing if not provided)
      * @param {number} dirY
      */
-    startDodge(dirX = this.facingX, dirY = this.facingY) {
+    startDodge(dirX = this.facingX) {
         if (!this.canDodge()) return;
 
-        // Normalize direction
-        const length = Math.sqrt(dirX * dirX + dirY * dirY);
-        if (length === 0) {
-            dirX = this.facingX;
-            dirY = this.facingY;
-        } else {
-            dirX /= length;
-            dirY /= length;
-        }
-
+        const dir = dirX >= 0 ? 1 : -1;
         this.isDodging = true;
         this.dodgeTimer = 0;
-        this.dodgeDirectionX = dirX;
-        this.dodgeDirectionY = dirY;
+        this.dodgeDirectionX = dir;
         this.dodgeCooldown = this.dodgeCooldownTime;
-
-        // Set dodge velocity
-        this.velocityX = dirX * this.dodgeSpeed;
-        this.velocityY = dirY * this.dodgeSpeed;
+        this.velocityX = dir * this.dodgeSpeed;
     }
 
     /**

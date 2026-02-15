@@ -1,60 +1,100 @@
-import { describe, it, expect } from 'vitest';
-import { getDirectionFromFacing, getPlayerSpriteKey } from '../src/systems/SpriteDirectionSystem.js';
-import { screenToWorldDirection } from '../src/systems/CoordinateSystem.js';
+import { describe, it, expect, vi } from 'vitest';
+import {
+    getDirectionFromFacing,
+    getPlayerAnimationKey,
+    updatePlayerAnimation,
+    updatePlayerSpriteDirection
+} from '../src/systems/SpriteDirectionSystem.js';
+
+function makeMockSprite() {
+    return {
+        setFlipX: vi.fn(),
+        play: vi.fn(),
+        anims: { currentAnim: null }
+    };
+}
 
 describe('SpriteDirectionSystem', () => {
     describe('getDirectionFromFacing', () => {
-        it('should return south for no movement', () => {
-            expect(getDirectionFromFacing(0, 0)).toBe('south');
+        it('returns right for positive facingX', () => {
+            expect(getDirectionFromFacing(1)).toBe('right');
+            expect(getDirectionFromFacing(0.5)).toBe('right');
         });
 
-        it('should correctly map world directions to screen sprite directions', () => {
-            // When player presses W (screen north), world direction is (0 + -1, -0 + -1) = (0, -1)
-            // Should show north sprite
-            const worldNorth = screenToWorldDirection(0, -1);
-            expect(getDirectionFromFacing(worldNorth.x, worldNorth.y)).toBe('north');
-
-            // When player presses D (screen east), world direction is (1 + 0, -1 + 0) = (1, -1)
-            // Should show east sprite
-            const worldEast = screenToWorldDirection(1, 0);
-            expect(getDirectionFromFacing(worldEast.x, worldEast.y)).toBe('east');
-
-            // When player presses S (screen south), world direction is (0 + 1, -0 + 1) = (0, 1)
-            // Should show south sprite
-            const worldSouth = screenToWorldDirection(0, 1);
-            expect(getDirectionFromFacing(worldSouth.x, worldSouth.y)).toBe('south');
-
-            // When player presses A (screen west), world direction is (-1 + 0, 1 + 0) = (-1, 1)
-            // Should show west sprite
-            const worldWest = screenToWorldDirection(-1, 0);
-            expect(getDirectionFromFacing(worldWest.x, worldWest.y)).toBe('west');
+        it('returns right for zero facingX (default facing)', () => {
+            expect(getDirectionFromFacing(0)).toBe('right');
         });
 
-        it('should correctly map diagonal world directions to screen sprite directions', () => {
-            // Screen north-east → world (1, -1) → should show north-east sprite
-            const worldNE = screenToWorldDirection(1, -1);
-            expect(getDirectionFromFacing(worldNE.x, worldNE.y)).toBe('north-east');
-
-            // Screen south-east → world (1, 1) → should show south-east sprite
-            const worldSE = screenToWorldDirection(1, 1);
-            expect(getDirectionFromFacing(worldSE.x, worldSE.y)).toBe('south-east');
-
-            // Screen south-west → world (-1, 1) → should show south-west sprite
-            const worldSW = screenToWorldDirection(-1, 1);
-            expect(getDirectionFromFacing(worldSW.x, worldSW.y)).toBe('south-west');
-
-            // Screen north-west → world (-1, -1) → should show north-west sprite
-            const worldNW = screenToWorldDirection(-1, -1);
-            expect(getDirectionFromFacing(worldNW.x, worldNW.y)).toBe('north-west');
+        it('returns left for negative facingX', () => {
+            expect(getDirectionFromFacing(-1)).toBe('left');
+            expect(getDirectionFromFacing(-0.1)).toBe('left');
         });
     });
 
-    describe('getPlayerSpriteKey', () => {
-        it('should generate correct sprite keys', () => {
-            expect(getPlayerSpriteKey(0, 'south')).toBe('player-0-south');
-            expect(getPlayerSpriteKey(1, 'north-east')).toBe('player-1-north-east');
-            expect(getPlayerSpriteKey(2, 'west')).toBe('player-2-west');
-            expect(getPlayerSpriteKey(3, 'south-west')).toBe('player-3-south-west');
+    describe('getPlayerAnimationKey', () => {
+        it('builds key from player number and state', () => {
+            expect(getPlayerAnimationKey(0, 'idle')).toBe('player-0-idle');
+            expect(getPlayerAnimationKey(2, 'run')).toBe('player-2-run');
+            expect(getPlayerAnimationKey(3, 'jump')).toBe('player-3-jump');
+        });
+    });
+
+    describe('updatePlayerAnimation', () => {
+        it('plays idle animation when not moving and on ground', () => {
+            const sprite = makeMockSprite();
+            updatePlayerAnimation(sprite, 0, 1, false, false, 0);
+            expect(sprite.play).toHaveBeenCalledWith('player-0-idle');
+        });
+
+        it('plays run animation when moving on ground', () => {
+            const sprite = makeMockSprite();
+            updatePlayerAnimation(sprite, 1, 1, true, false, 0);
+            expect(sprite.play).toHaveBeenCalledWith('player-1-run');
+        });
+
+        it('plays jump animation when airborne with positive velocity', () => {
+            const sprite = makeMockSprite();
+            updatePlayerAnimation(sprite, 0, 1, false, true, 10);
+            expect(sprite.play).toHaveBeenCalledWith('player-0-jump');
+        });
+
+        it('plays fall animation when airborne with negative velocity', () => {
+            const sprite = makeMockSprite();
+            updatePlayerAnimation(sprite, 0, 1, false, true, -5);
+            expect(sprite.play).toHaveBeenCalledWith('player-0-fall');
+        });
+
+        it('flips sprite for left-facing', () => {
+            const sprite = makeMockSprite();
+            updatePlayerAnimation(sprite, 0, -1, false, false, 0);
+            expect(sprite.setFlipX).toHaveBeenCalledWith(true);
+        });
+
+        it('does not flip sprite for right-facing', () => {
+            const sprite = makeMockSprite();
+            updatePlayerAnimation(sprite, 0, 1, false, false, 0);
+            expect(sprite.setFlipX).toHaveBeenCalledWith(false);
+        });
+
+        it('does not replay same animation', () => {
+            const sprite = makeMockSprite();
+            sprite.anims.currentAnim = { key: 'player-0-idle' };
+            updatePlayerAnimation(sprite, 0, 1, false, false, 0);
+            expect(sprite.play).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('updatePlayerSpriteDirection', () => {
+        it('flips sprite for left-facing', () => {
+            const sprite = makeMockSprite();
+            updatePlayerSpriteDirection(sprite, -1);
+            expect(sprite.setFlipX).toHaveBeenCalledWith(true);
+        });
+
+        it('does not flip for right-facing', () => {
+            const sprite = makeMockSprite();
+            updatePlayerSpriteDirection(sprite, 1);
+            expect(sprite.setFlipX).toHaveBeenCalledWith(false);
         });
     });
 });
