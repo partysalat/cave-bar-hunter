@@ -154,11 +154,11 @@ export default class HuntScene extends Phaser.Scene {
      */
     createPlayerAnimations() {
         for (let playerIndex = 0; playerIndex < 4; playerIndex++) {
-            // Idle
+            // Idle — breathing-idle east frames: player-N-idle-0 ... player-N-idle-3
             this.anims.create({
                 key: `player-${playerIndex}-idle`,
                 frames: this.anims.generateFrameNames(`player-${playerIndex}`, {
-                    prefix: `player-${playerIndex}-idle-south-`,
+                    prefix: `player-${playerIndex}-idle-`,
                     start: 0,
                     end: 3
                 }),
@@ -166,11 +166,11 @@ export default class HuntScene extends Phaser.Scene {
                 repeat: -1
             });
 
-            // Run
+            // Run — running-8-frames east: player-N-run-0 ... player-N-run-7
             this.anims.create({
                 key: `player-${playerIndex}-run`,
                 frames: this.anims.generateFrameNames(`player-${playerIndex}`, {
-                    prefix: `player-${playerIndex}-run-south-`,
+                    prefix: `player-${playerIndex}-run-`,
                     start: 0,
                     end: 7
                 }),
@@ -178,35 +178,35 @@ export default class HuntScene extends Phaser.Scene {
                 repeat: -1
             });
 
-            // Jump (rising)
+            // Jump — jumping-1 east: player-N-jump-0 ...
             this.anims.create({
                 key: `player-${playerIndex}-jump`,
                 frames: this.anims.generateFrameNames(`player-${playerIndex}`, {
-                    prefix: `player-${playerIndex}-idle-north-`,
+                    prefix: `player-${playerIndex}-jump-`,
                     start: 0,
-                    end: 0
+                    end: 3
                 }),
-                frameRate: 6,
+                frameRate: 8,
                 repeat: 0
             });
 
-            // Fall (descending)
+            // Fall — same source frames as jump (build script copies them as player-N-fall-N)
             this.anims.create({
                 key: `player-${playerIndex}-fall`,
                 frames: this.anims.generateFrameNames(`player-${playerIndex}`, {
-                    prefix: `player-${playerIndex}-idle-south-`,
+                    prefix: `player-${playerIndex}-fall-`,
                     start: 0,
-                    end: 0
+                    end: 3
                 }),
-                frameRate: 6,
+                frameRate: 8,
                 repeat: 0
             });
 
-            // Attack
+            // Attack — cross-punch east: player-N-attack-0 ...
             this.anims.create({
                 key: `player-${playerIndex}-attack`,
                 frames: this.anims.generateFrameNames(`player-${playerIndex}`, {
-                    prefix: `player-${playerIndex}-run-east-`,
+                    prefix: `player-${playerIndex}-attack-`,
                     start: 0,
                     end: 7
                 }),
@@ -215,7 +215,7 @@ export default class HuntScene extends Phaser.Scene {
             });
         }
 
-        console.log('Created player animations for 4 players (sidescroller)');
+        console.log('Created player animations for 4 players (side-view)');
     }
 
     /**

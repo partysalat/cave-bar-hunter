@@ -1,20 +1,29 @@
 #!/usr/bin/env node
 
 /**
- * Sprite Sheet Generator
+ * Sprite Sheet Generator - Sidescroller Edition
  *
- * Packs individual animation frames into optimized sprite sheets with JSON atlases.
- * Reduces hundreds of HTTP requests down to a few sprite sheets for better performance.
+ * Packs side-view animation frames into Phaser atlas files.
+ * Players face right ("east" direction); left-facing is handled by sprite.setFlipX().
  *
- * Usage:
- *   node scripts/build-spritesheets.js
- *   npm run build:spritesheets
+ * Frame naming convention: {entity}-{animKey}-{frameNum}
+ *   e.g. player-0-run-3, compy-walk-2
+ *
+ * Source directories:
+ *   assets/characters/{color}-hero-side/animations/{anim}/east/frame_000.png
+ *   assets/enemies/compy-side/animations/{anim}/east/frame_000.png
  *
  * Output:
  *   assets/generated/spritesheets/{color}-hero.png
  *   assets/generated/spritesheets/{color}-hero.json
- *   assets/generated/spritesheets/bartender.png
+ *   assets/generated/spritesheets/compy.png
+ *   assets/generated/spritesheets/compy.json
+ *   assets/generated/spritesheets/bartender.png  (8-dir, unchanged)
  *   assets/generated/spritesheets/bartender.json
+ *
+ * Usage:
+ *   node scripts/build-spritesheets.js
+ *   npm run build:spritesheets
  */
 
 import fs from 'fs';
@@ -27,38 +36,38 @@ const __dirname = path.dirname(__filename);
 
 const ASSETS_DIR = path.join(__dirname, '..', 'assets');
 const CHARACTERS_DIR = path.join(ASSETS_DIR, 'characters');
+const ENEMIES_DIR = path.join(ASSETS_DIR, 'enemies');
 const OUTPUT_DIR = path.join(ASSETS_DIR, 'generated', 'spritesheets');
 
 const PLAYER_COLORS = ['red', 'blue', 'yellow', 'green'];
 
-// Directions for all animations
-const DIRECTIONS = ['south', 'south-east', 'east', 'north-east', 'north', 'north-west', 'west', 'south-west'];
-
-// Player animation configurations
-// Maps animation folder name to a consistent key name used in the game
-const ANIMATIONS = {
-    'breathing-idle': { key: 'idle', frames: 4 },
-    'running-8-frames': { key: 'run', frames: 8 },
-    'fight-stance-idle': { key: 'fight-stance', frames: 8 },
-    'custom-swing-a-club': { key: 'club-swing', frames: 16 },
-    'custom-throw-a-spear': { key: 'spear-throw', frames: null }, // Will auto-detect
-    'custom-throw-a-slingshot': { key: 'slingshot-throw', frames: null },
-    'custom-dodge-roll': { key: 'dodge-roll', frames: null },
-    'custom-victory': { key: 'victory', frames: null },
-    'getting-up': { key: 'get-up', frames: null },
-    'taking-punch': { key: 'take-punch', frames: null },
-    'picking-up': { key: 'pick-up', frames: null },
-    'throw-object': { key: 'throw-object', frames: null },
-    'cross-punch': { key: 'cross-punch', frames: null },
-    'jumping-1': { key: 'jump', frames: null }
+// Sidescroller player animations.
+// Source folder name → animation key used in game code (HuntScene.createPlayerAnimations).
+// Only the "east" direction is used — left-facing handled by sprite.setFlipX().
+const PLAYER_ANIMATIONS = {
+    'breathing-idle':    { key: 'idle' },
+    'running-8-frames':  { key: 'run' },
+    'jumping-1':         { key: 'jump',   alsoKey: 'fall' }, // fall reuses jump frames
+    'cross-punch':       { key: 'attack' },
+    'running-slide':     { key: 'dodge' },
+    'falling-back-death':{ key: 'downed' },
 };
 
-// Bartender-specific animation configurations
+// Compy animations (quadruped cat template)
+const COMPY_ANIMATIONS = {
+    'walk':   { key: 'walk' },
+    'run':    { key: 'run' },
+    'idle':   { key: 'idle' },
+    'attack': { key: 'attack' },
+};
+
+// Bartender uses 8-direction top-down (unchanged from original)
+const BARTENDER_DIRECTIONS = ['south', 'south-east', 'east', 'north-east', 'north', 'north-west', 'west', 'south-west'];
 const BARTENDER_ANIMATIONS = {
-    'custom-idle': { key: 'idle', frames: null },
-    'custom-serving': { key: 'serving', frames: null },
-    'custom-victory': { key: 'victory', frames: null },
-    'custom-disapproval': { key: 'disapproval', frames: null }
+    'custom-idle':        { key: 'idle' },
+    'custom-serving':     { key: 'serving' },
+    'custom-victory':     { key: 'victory' },
+    'custom-disapproval': { key: 'disapproval' },
 };
 
 /**
@@ -72,133 +81,72 @@ function ensureOutputDir() {
 }
 
 /**
- * Get all PNG files from a directory recursively
+ * Collect frames from a single direction folder.
+ * Returns array of { name, contents } objects for the texture packer.
+ *
+ * @param {string} dirPath - Path to direction folder (e.g. .../running-8-frames/east)
+ * @param {string} framePrefix - e.g. "player-0-run"
+ * @param {string} [altPrefix] - Optional second prefix for same frames (e.g. "player-0-fall")
  */
-function getFramesFromDir(dir) {
-    const frames = [];
+function collectFrames(dirPath, framePrefix, altPrefix) {
+    if (!fs.existsSync(dirPath)) return [];
 
-    if (!fs.existsSync(dir)) {
-        return frames;
-    }
+    const frameFiles = fs.readdirSync(dirPath)
+        .filter(f => f.endsWith('.png'))
+        .sort();
 
-    const files = fs.readdirSync(dir);
-
-    for (const file of files) {
-        const fullPath = path.join(dir, file);
-        const stat = fs.statSync(fullPath);
-
-        if (stat.isDirectory()) {
-            frames.push(...getFramesFromDir(fullPath));
-        } else if (file.endsWith('.png')) {
-            frames.push(fullPath);
+    const images = [];
+    frameFiles.forEach((file, i) => {
+        const buffer = fs.readFileSync(path.join(dirPath, file));
+        images.push({ path: `${framePrefix}-${i}`, name: `${framePrefix}-${i}`, contents: buffer });
+        if (altPrefix) {
+            images.push({ path: `${altPrefix}-${i}`, name: `${altPrefix}-${i}`, contents: buffer });
         }
-    }
+    });
 
-    return frames;
+    return images;
 }
 
 /**
- * Build sprite sheet for a single character
+ * Pack images into a sprite sheet and write PNG + JSON.
  */
-async function buildCharacterSpriteSheet(color, playerIndex) {
-    console.log(`\nBuilding sprite sheet for ${color} hero (player ${playerIndex})...`);
-
-    const characterDir = path.join(CHARACTERS_DIR, `${color}-hero`);
-    const animationsDir = path.join(characterDir, 'animations');
-
-    if (!fs.existsSync(animationsDir)) {
-        console.warn(`  ⚠️  No animations directory found for ${color} hero`);
-        return;
-    }
-
-    // Collect all frames with metadata
-    const images = [];
-    let totalFrames = 0;
-
-    // Iterate through each animation type
-    for (const [folderName, config] of Object.entries(ANIMATIONS)) {
-        const animDir = path.join(animationsDir, folderName);
-
-        if (!fs.existsSync(animDir)) {
-            continue; // Skip if animation doesn't exist
-        }
-
-        console.log(`  Processing animation: ${config.key}`);
-
-        // Iterate through each direction
-        for (const direction of DIRECTIONS) {
-            const dirPath = path.join(animDir, direction);
-
-            if (!fs.existsSync(dirPath)) {
-                continue;
-            }
-
-            // Get all frames for this direction
-            const frameFiles = fs.readdirSync(dirPath)
-                .filter(f => f.endsWith('.png'))
-                .sort(); // Ensure consistent ordering
-
-            frameFiles.forEach((frameFile, frameIndex) => {
-                const framePath = path.join(dirPath, frameFile);
-                const buffer = fs.readFileSync(framePath);
-
-                // Frame name format: player-{index}-{animKey}-{direction}-{frameNum}
-                // This matches the existing pattern in TestScene.js
-                const frameName = `player-${playerIndex}-${config.key}-${direction}-${frameIndex}`;
-
-                images.push({
-                    path: frameName,
-                    name: frameName,
-                    contents: buffer
-                });
-
-                totalFrames++;
-            });
-        }
-    }
-
+async function packSpriteSheet(images, textureName, outputName) {
     if (images.length === 0) {
-        console.warn(`  ⚠️  No frames found for ${color} hero`);
+        console.warn(`  ⚠️  No frames collected for ${outputName}, skipping`);
         return;
     }
 
-    console.log(`  Total frames collected: ${totalFrames}`);
-    console.log(`  Packing sprite sheet...`);
+    console.log(`  Packing ${images.length} frames into ${outputName}...`);
 
-    // Pack into sprite sheet
     return new Promise((resolve, reject) => {
         texturePacker(images, {
-            textureName: `${color}-hero`,
+            textureName: outputName,
             width: 4096,
             height: 4096,
             fixedSize: false,
             padding: 2,
             allowRotation: false,
-            detectIdentical: true,
+            detectIdentical: false,  // Don't deduplicate: fall/jump share frames intentionally
             allowTrim: true,
             exporter: 'JsonHash',
-            removeFileExtension: false
+            removeFileExtension: false,
         }, (files, error) => {
             if (error) {
-                console.error(`  ❌ Error packing ${color} hero:`, error);
+                console.error(`  ❌ Error packing ${outputName}:`, error);
                 reject(error);
                 return;
             }
 
-            // Write sprite sheet PNG
             const pngFile = files.find(f => f.name.endsWith('.png'));
-            if (pngFile) {
-                const pngPath = path.join(OUTPUT_DIR, `${color}-hero.png`);
-                fs.writeFileSync(pngPath, pngFile.buffer);
-                console.log(`  ✅ Wrote sprite sheet: ${pngPath}`);
-            }
-
-            // Write JSON atlas
             const jsonFile = files.find(f => f.name.endsWith('.json'));
+
+            if (pngFile) {
+                fs.writeFileSync(path.join(OUTPUT_DIR, `${outputName}.png`), pngFile.buffer);
+                console.log(`  ✅ ${outputName}.png`);
+            }
             if (jsonFile) {
-                const jsonPath = path.join(OUTPUT_DIR, `${color}-hero.json`);
-                fs.writeFileSync(jsonPath, jsonFile.buffer);
-                console.log(`  ✅ Wrote atlas: ${jsonPath}`);
+                fs.writeFileSync(path.join(OUTPUT_DIR, `${outputName}.json`), jsonFile.buffer);
+                console.log(`  ✅ ${outputName}.json`);
             }
 
             resolve();
@@ -207,145 +155,112 @@ async function buildCharacterSpriteSheet(color, playerIndex) {
 }
 
 /**
- * Build sprite sheet for the bartender NPC
+ * Build sprite sheet for a single player color.
+ * Uses only the "east" direction (right-facing).
+ */
+async function buildPlayerSpriteSheet(color, playerIndex) {
+    console.log(`\nBuilding ${color} hero (player ${playerIndex})...`);
+
+    const animationsDir = path.join(CHARACTERS_DIR, `${color}-hero-side`, 'animations');
+    if (!fs.existsSync(animationsDir)) {
+        console.warn(`  ⚠️  ${color}-hero-side/animations not found — run download-assets.js first`);
+        return;
+    }
+
+    const images = [];
+
+    for (const [folder, config] of Object.entries(PLAYER_ANIMATIONS)) {
+        const eastDir = path.join(animationsDir, folder, 'east');
+        const prefix = `player-${playerIndex}-${config.key}`;
+        const altPrefix = config.alsoKey ? `player-${playerIndex}-${config.alsoKey}` : undefined;
+        const frames = collectFrames(eastDir, prefix, altPrefix);
+        if (frames.length > 0) {
+            console.log(`  ${config.key}: ${frames.length / (altPrefix ? 2 : 1)} frames`);
+        }
+        images.push(...frames);
+    }
+
+    await packSpriteSheet(images, `${color}-hero`, `${color}-hero`);
+}
+
+/**
+ * Build sprite sheet for the Compy enemy.
+ * Uses "east" direction (right-facing), named compy-{anim}-{frame}.
+ */
+async function buildCompySpriteSheet() {
+    console.log(`\nBuilding compy...`);
+
+    const animationsDir = path.join(ENEMIES_DIR, 'compy-side', 'animations');
+    if (!fs.existsSync(animationsDir)) {
+        console.warn(`  ⚠️  compy-side/animations not found — run download-assets.js first`);
+        return;
+    }
+
+    const images = [];
+
+    for (const [folder, config] of Object.entries(COMPY_ANIMATIONS)) {
+        const eastDir = path.join(animationsDir, folder, 'east');
+        const frames = collectFrames(eastDir, `compy-${config.key}`);
+        if (frames.length > 0) {
+            console.log(`  ${config.key}: ${frames.length} frames`);
+        }
+        images.push(...frames);
+    }
+
+    await packSpriteSheet(images, 'compy', 'compy');
+}
+
+/**
+ * Build sprite sheet for the bartender NPC.
+ * Still uses 8-direction top-down (unchanged from Phase 2).
  */
 async function buildBartenderSpriteSheet() {
-    console.log(`\nBuilding sprite sheet for bartender...`);
+    console.log(`\nBuilding bartender...`);
 
-    const bartenderDir = path.join(CHARACTERS_DIR, 'bartender');
-    const animationsDir = path.join(bartenderDir, 'animations');
-
+    const animationsDir = path.join(CHARACTERS_DIR, 'bartender', 'animations');
     if (!fs.existsSync(animationsDir)) {
-        console.warn(`  ⚠️  No animations directory found for bartender`);
+        console.warn(`  ⚠️  bartender/animations not found`);
         return;
     }
 
-    // Collect all frames with metadata
     const images = [];
-    let totalFrames = 0;
 
-    // Iterate through each bartender animation type
-    for (const [folderName, config] of Object.entries(BARTENDER_ANIMATIONS)) {
-        const animDir = path.join(animationsDir, folderName);
+    for (const [folder, config] of Object.entries(BARTENDER_ANIMATIONS)) {
+        for (const dir of BARTENDER_DIRECTIONS) {
+            const dirPath = path.join(animationsDir, folder, dir);
+            if (!fs.existsSync(dirPath)) continue;
 
-        if (!fs.existsSync(animDir)) {
-            console.warn(`  ⚠️  Animation not found: ${folderName}`);
-            continue; // Skip if animation doesn't exist
-        }
-
-        console.log(`  Processing animation: ${config.key}`);
-
-        // Iterate through each direction
-        for (const direction of DIRECTIONS) {
-            const dirPath = path.join(animDir, direction);
-
-            if (!fs.existsSync(dirPath)) {
-                console.warn(`    ⚠️  Direction not found: ${direction}`);
-                continue;
-            }
-
-            // Get all frames for this direction
-            const frameFiles = fs.readdirSync(dirPath)
-                .filter(f => f.endsWith('.png'))
-                .sort(); // Ensure consistent ordering
-
-            frameFiles.forEach((frameFile, frameIndex) => {
-                const framePath = path.join(dirPath, frameFile);
-                const buffer = fs.readFileSync(framePath);
-
-                // Frame name format: bartender-{animKey}-{direction}-{frameNum}
-                const frameName = `bartender-${config.key}-${direction}-${frameIndex}`;
-
-                images.push({
-                    path: frameName,
-                    name: frameName,
-                    contents: buffer
-                });
-
-                totalFrames++;
+            const frameFiles = fs.readdirSync(dirPath).filter(f => f.endsWith('.png')).sort();
+            frameFiles.forEach((file, i) => {
+                const name = `bartender-${config.key}-${dir}-${i}`;
+                images.push({ path: name, name, contents: fs.readFileSync(path.join(dirPath, file)) });
             });
         }
     }
 
-    if (images.length === 0) {
-        console.warn(`  ⚠️  No frames found for bartender`);
-        return;
-    }
-
-    console.log(`  Total frames collected: ${totalFrames}`);
-    console.log(`  Packing sprite sheet...`);
-
-    // Pack into sprite sheet
-    return new Promise((resolve, reject) => {
-        texturePacker(images, {
-            textureName: 'bartender',
-            width: 4096,
-            height: 4096,
-            fixedSize: false,
-            padding: 2,
-            allowRotation: false,
-            detectIdentical: true,
-            allowTrim: true,
-            exporter: 'JsonHash',
-            removeFileExtension: false
-        }, (files, error) => {
-            if (error) {
-                console.error(`  ❌ Error packing bartender:`, error);
-                reject(error);
-                return;
-            }
-
-            // Write sprite sheet PNG
-            const pngFile = files.find(f => f.name.endsWith('.png'));
-            if (pngFile) {
-                const pngPath = path.join(OUTPUT_DIR, 'bartender.png');
-                fs.writeFileSync(pngPath, pngFile.buffer);
-                console.log(`  ✅ Wrote sprite sheet: ${pngPath}`);
-            }
-
-            // Write JSON atlas
-            const jsonFile = files.find(f => f.name.endsWith('.json'));
-            if (jsonFile) {
-                const jsonPath = path.join(OUTPUT_DIR, 'bartender.json');
-                fs.writeFileSync(jsonPath, jsonFile.buffer);
-                console.log(`  ✅ Wrote atlas: ${jsonPath}`);
-            }
-
-            resolve();
-        });
-    });
+    await packSpriteSheet(images, 'bartender', 'bartender');
 }
 
 /**
  * Main build process
  */
 async function main() {
-    console.log('🎨 Prehistoric Hunter - Sprite Sheet Builder\n');
-    console.log('=========================================\n');
+    console.log('🎨 Prehistoric Hunter - Sprite Sheet Builder (Sidescroller)\n');
+    console.log('============================================================\n');
 
     ensureOutputDir();
 
-    // Build sprite sheet for each player character color
     for (let i = 0; i < PLAYER_COLORS.length; i++) {
-        const color = PLAYER_COLORS[i];
-        await buildCharacterSpriteSheet(color, i);
+        await buildPlayerSpriteSheet(PLAYER_COLORS[i], i);
     }
 
-    // Build sprite sheet for bartender NPC
+    await buildCompySpriteSheet();
     await buildBartenderSpriteSheet();
 
-    console.log('\n✨ Sprite sheet generation complete!\n');
-    console.log(`Output location: ${OUTPUT_DIR}`);
-    console.log('\nGenerated files:');
-    console.log('  - 4 player hero sprite sheets (red, blue, yellow, green)');
-    console.log('  - 1 bartender sprite sheet');
-    console.log('\nNext steps:');
-    console.log('  1. Update scene preload() to use this.load.atlas()');
-    console.log('  2. Remove individual frame loading code');
-    console.log('  3. Test in game to verify animations work correctly\n');
+    console.log('\n✨ Done!\n');
+    console.log(`Output: ${OUTPUT_DIR}`);
 }
 
-// Run the build
 main().catch(error => {
     console.error('❌ Build failed:', error);
     process.exit(1);

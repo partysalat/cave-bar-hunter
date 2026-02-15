@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { worldToScreen, calculateDepth, screenToWorldDirection } from '../systems/CoordinateSystem.js';
+import { worldToScreen, calculateDepth } from '../systems/CoordinateSystem.js';
 import { updatePlayerAnimation } from '../systems/SpriteDirectionSystem.js';
 import Bartender from '../entities/Bartender.js';
 import Player from '../entities/Player.js';
