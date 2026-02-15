@@ -18,6 +18,11 @@ export function createMockScene() {
                 strokeCircle: () => ({}),
                 setDepth: () => ({})
             }),
+            rectangle: vi.fn((x, y, w, h, color) => ({
+                x, y,
+                setDepth: vi.fn().mockReturnThis(),
+                setOrigin: vi.fn().mockReturnThis()
+            })),
             sprite: (x, y, texture) => ({
                 x, y, texture,
                 setOrigin: vi.fn().mockReturnThis(),
@@ -72,7 +77,11 @@ export function createMockScene() {
                 zoom: 1,
                 centerOn: vi.fn(),
                 fadeOut: vi.fn(),
-                once: vi.fn()
+                once: vi.fn(),
+                setScroll: vi.fn(function(x, y) {
+                    this.scrollX = x;
+                    this.scrollY = y;
+                })
             }
         }
     };
@@ -125,7 +134,13 @@ export function createMockPlayer(playerNumber = 0, worldX = 15, worldY = 12, wor
         },
         update(delta) {
             // Mock update logic
-        }
+        },
+        updateScreenPosition() {
+            // Mock - no-op
+        },
+        move: vi.fn(),
+        stop: vi.fn(),
+        jump: vi.fn()
     };
 }
 

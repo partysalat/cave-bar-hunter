@@ -1,7 +1,8 @@
-import { worldToScreen, SCREEN_WIDTH, SCREEN_HEIGHT } from './CoordinateSystem.js';
+import { worldToScreen, PIXELS_PER_UNIT, SCREEN_WIDTH } from './CoordinateSystem.js';
 
 /**
- * Controls camera to follow players with smooth movement
+ * Controls camera to follow players with smooth movement.
+ * Sidescroller mode: horizontal-only follow, clamped to arena bounds.
  */
 export default class CameraController {
     constructor(camera) {
@@ -16,7 +17,7 @@ export default class CameraController {
      */
     calculatePlayerCenter(players) {
         if (players.length === 0) {
-            return { worldX: 15, worldY: 12 }; // Arena center fallback
+            return { worldX: 40, worldY: 0 }; // Arena center fallback
         }
 
         let sumX = 0;
@@ -34,25 +35,31 @@ export default class CameraController {
     }
 
     /**
-     * Updates camera to follow players smoothly
+     * Updates camera to follow players horizontally.
+     * Clamps scroll to prevent showing space past arena edges.
+     * Y is fixed at 0 (ground at SCREEN_FLOOR_Y, top of arena visible above).
      * @param {Array} players - Array of player entities
+     * @param {number} arenaWidth - Arena width in world units
      */
-    update(players) {
+    update(players, arenaWidth) {
         const center = this.calculatePlayerCenter(players);
-        const screenPos = worldToScreen(center.worldX, center.worldY, 0);
 
-        // Camera scroll targets the center
-        // Subtract half screen dimensions to center on target
-        const targetX = screenPos.x - SCREEN_WIDTH / 2;
-        const targetY = screenPos.y - SCREEN_HEIGHT / 2;
+        // Convert player center to screen X
+        const centerScreenX = center.worldX * PIXELS_PER_UNIT;
 
-        // Smooth lerp to target
+        // Target scroll: center camera on players
+        // scrollX is the left edge of the visible area
+        const targetScrollX = centerScreenX - SCREEN_WIDTH / 2;
+
+        // Clamp to arena bounds: don't scroll past left or right edge
+        const maxScrollX = arenaWidth * PIXELS_PER_UNIT - SCREEN_WIDTH;
+        const clampedScrollX = Math.max(0, Math.min(maxScrollX, targetScrollX));
+
+        // Smooth lerp to target X
         const currentX = this.camera.scrollX;
-        const currentY = this.camera.scrollY;
+        const newScrollX = currentX + (clampedScrollX - currentX) * this.lerpSpeed;
 
-        this.camera.setScroll(
-            currentX + (targetX - currentX) * this.lerpSpeed,
-            currentY + (targetY - currentY) * this.lerpSpeed
-        );
+        // Y is always 0: floor is at SCREEN_FLOOR_Y (1100px), view starts at y=0
+        this.camera.setScroll(newScrollX, 0);
     }
 }
