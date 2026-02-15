@@ -42,7 +42,6 @@ describe('Bartender', () => {
     it('initializes at world position', () => {
         expect(bartender.worldX).toBe(10);
         expect(bartender.worldY).toBe(5);
-        expect(bartender.worldZ).toBe(0);
     });
 
     it('starts with idle animation', () => {

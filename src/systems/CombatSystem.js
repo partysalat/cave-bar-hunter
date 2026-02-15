@@ -1,4 +1,4 @@
-import { distance3D } from './PhysicsManager.js';
+import { distance2D } from './PhysicsManager.js';
 
 // Club attack constants
 const CLUB_ATTACK_RANGE = 2.5; // World units
@@ -24,9 +24,9 @@ export default class CombatSystem {
             return { hit: false, damage: 0 };
         }
 
-        const dist = distance3D(
-            projectile.worldX, projectile.worldY, projectile.worldZ,
-            weakPoint.worldX, weakPoint.worldY, weakPoint.worldZ
+        const dist = distance2D(
+            projectile.worldX, projectile.worldY,
+            weakPoint.worldX, weakPoint.worldY
         );
 
         const hit = dist < (projectile.radius + weakPoint.radius);
@@ -47,9 +47,9 @@ export default class CombatSystem {
      * @returns {Object} {hit: boolean, damage: number}
      */
     checkProjectileHitDinosaur(projectile, dinosaur) {
-        const dist = distance3D(
-            projectile.worldX, projectile.worldY, projectile.worldZ,
-            dinosaur.worldX, dinosaur.worldY, dinosaur.worldZ
+        const dist = distance2D(
+            projectile.worldX, projectile.worldY,
+            dinosaur.worldX, dinosaur.worldY
         );
 
         const hit = dist < (projectile.radius + dinosaur.radius);

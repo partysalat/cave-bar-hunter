@@ -17,14 +17,19 @@ describe('Entity', () => {
     });
 
     it('initializes with world position', () => {
-        const entity = new Entity(mockScene, 10, 15, 0);
+        const entity = new Entity(mockScene, 10, 5);
         expect(entity.worldX).toBe(10);
-        expect(entity.worldY).toBe(15);
-        expect(entity.worldZ).toBe(0);
+        expect(entity.worldY).toBe(5);
+        expect(entity.onGround).toBe(false);
+    });
+
+    it('sets onGround true when initialized at ground level', () => {
+        const entity = new Entity(mockScene, 10, 0);
+        expect(entity.onGround).toBe(true);
     });
 
     it('updates screen position from world position', () => {
-        const entity = new Entity(mockScene, 10, 5, 0);
+        const entity = new Entity(mockScene, 10, 5);
         entity.updateScreenPosition();
 
         // Sidescroller: screenX = worldX * PIXELS_PER_UNIT, screenY = SCREEN_FLOOR_Y - worldY * PIXELS_PER_UNIT
@@ -33,7 +38,7 @@ describe('Entity', () => {
     });
 
     it('updates depth based on world position', () => {
-        const entity = new Entity(mockScene, 0, 10, 2);
+        const entity = new Entity(mockScene, 0, 10);
         const depth = entity.getDepth();
         // Sidescroller: all entities share the same depth layer
         expect(depth).toBe(DEPTH_LAYERS.ENTITIES);
