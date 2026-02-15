@@ -222,6 +222,8 @@ M3: Player movement   →  playable in browser (basic movement + jump)
 M4: Arena             →  first arena visible with platforms
 M5: Compy AI          →  first hunt playable end-to-end
 M6: Assets            →  visual polish
+M7: Liana System      →  swing traversal + hunt opener working
+M8: Hazards           →  arena hazards spawning and damaging
 ```
 
 ## Test Strategy
@@ -246,6 +248,79 @@ Lines added:
 
 **Net: ~360 lines removed, ~150 lines added.**
 
+### Phase M7: Liana System
+
+**New system:** `src/systems/LianaSystem.js`
+
+**Data:** Each arena defines lianas as anchor points with a rope length:
+```javascript
+const JUNGLE_ARENA = {
+  lianas: [
+    { anchorX: 15, anchorY: 18, length: 8 },
+    { anchorX: 35, anchorY: 20, length: 10 },
+    { anchorX: 60, anchorY: 18, length: 8 },
+  ]
+};
+```
+
+**Physics model:**
+- Player on liana: position = anchor + (sin(angle) * length, -cos(angle) * length)
+- Angular velocity affected by gravity each frame: `angularVelocity += (-GRAVITY / length) * sin(angle) * dt`
+- Player inherits linear velocity on release: `velocityX = angularVelocity * length * cos(angle)`
+
+**Grab detection:** On A press, check if any liana's rope is within 1.5 world units of player. Grab nearest.
+
+**Perfect release detection:** Track `Math.abs(angularVelocity)` - peak is at apex. Window: ±0.1 seconds around true apex. Same pattern as perfect dodge timing.
+
+**Hunt opener sequence:**
+- New scene state: `INTRO_SWING` before `FIGHTING`
+- Players auto-placed on intro platform
+- Lianas pre-highlighted
+- After countdown, players control their own swing and release
+- Transition to `FIGHTING` when all players have released (or 5-second timeout)
+
+---
+
+### Phase M8: Physics Hazards
+
+**New system:** `src/systems/HazardSystem.js`
+
+**HazardSystem responsibilities:**
+- Spawn hazards on arena-specific timers
+- Apply physics (velocity, gravity for falling hazards, bounce for ice blocks)
+- Collision detection vs players and boss
+- Apply damage + knockback on contact
+
+**Base hazard data structure:**
+```javascript
+{
+  type: 'log' | 'boulder' | 'ice_block' | 'rib_bone',
+  worldX, worldY,
+  velocityX, velocityY,
+  width, height,
+  playerDamage: 1,     // HP cost on player contact
+  bossDamage: 15,      // damage on boss contact (0 = no effect)
+  bossEffect: 'stumble' | 'stagger' | 'slow' | 'block' | null,
+  lifetime: 8,         // seconds before despawn
+}
+```
+
+**Per-arena spawn configs:**
+```javascript
+const JUNGLE_HAZARDS = {
+  log: { interval: [12, 18], spawnX: 'edge', velocityX: 8, bossDamage: 15, bossEffect: 'stumble' }
+};
+const VOLCANIC_HAZARDS = {
+  boulder: { interval: [8, 14], spawnX: 'random', velocityY: -20, bossDamage: 30, bossEffect: 'stagger' }
+};
+```
+
+**Shadow indicators:** Falling hazards (boulders, ribs) spawn a shadow sprite at the projected landing X when they appear. Shadow scales up as hazard approaches ground.
+
+**Rib bone platforms:** After landing, rib bones register as temporary platforms in `PhysicsManager`. Removed from platform list when they shatter (lifetime expires).
+
+---
+
 ## Risks
 
 | Risk | Mitigation |
@@ -254,3 +329,7 @@ Lines added:
 | 4-player screen crowding | Players pass through each other (no collision) |
 | Boss turn direction causes AI confusion | Boss facing is a simple state flag, AI targets by worldX comparison |
 | PixelLab asset style inconsistency | Use same prompts/settings for all characters |
+| Liana physics feels floaty | Tune rope length and gravity scale independently from jump gravity |
+| Perfect liana release window too hard | Widen the apex window (±0.15s) - can tighten later based on playtesting |
+| Hazard spam overwhelming new players | Cap concurrent hazards at 1 per arena, enforce minimum gap between spawns |
+| Rib bone platforms blocking boss movement too heavily | Ribs shatter immediately on boss contact (only block players) |

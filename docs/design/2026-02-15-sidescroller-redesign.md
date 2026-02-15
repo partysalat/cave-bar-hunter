@@ -249,6 +249,79 @@ Use `create_sidescroller_tileset` MCP tool to generate platform tilesets:
 
 ---
 
+## Liana System
+
+### Mechanics
+
+**Grabbing:** When a liana is within reach, an icon pulses above it. Press A to grab. Player latches on and immediately begins swinging based on current momentum - running into a grab starts with more arc than standing still.
+
+**Physics:** Lianas behave as a pendulum from a fixed anchor point. Gravity drives the arc naturally. Multiple lianas can chain: release at the apex of one, grab the start of the next.
+
+**Release timing determines outcome:**
+
+| Release point | Result |
+|---|---|
+| Downswing | Drop to ground - pure traversal |
+| Mid-arc | Forward horizontal launch - reach distance/platforms |
+| Near apex | Maximum height + distance - reach high weak points |
+| Exact apex (perfect) | Bonus velocity - aerial boss strike deals 2× damage, "LIANA STRIKE!" callout |
+
+**Evasion:** A player on a liana is immune to ground-level attacks (sweeps, stomps, rolling logs). Bite attacks and projectiles still hit. Successfully grabbing a liana mid-sweep awards 5pts, same as a perfect dodge.
+
+### Hunt Opener (Liana Arenas Only)
+
+Applies to: **Jungle** and **Bone Graveyard**.
+
+1. Boss roars, camera pans to show its full scale
+2. Camera cuts to players on a raised left-edge platform, lianas highlighted and pulsing
+3. "3... 2... 1... HUNT!" countdown
+4. Players swing in toward the boss simultaneously
+5. Perfect apex release = **LIANA STRIKE** - free damage + 20 bonus points before fight starts
+
+Players who miss the timing just land and run in. No penalty, just missed bonus.
+
+**Other arena openers (non-liana):**
+- Volcanic: players rappel down a rock face
+- Tundra: players slide in from an ice ledge
+- Savanna: players sprint from the treeline
+
+---
+
+## Physics Hazards
+
+Environmental hazards on timers that affect both players and (selectively) the boss. Contact costs 1 HP and causes brief knockback with 0.5s invincibility frames.
+
+### Arena Assignments
+
+**Jungle - Rolling Logs**
+- Spawn at left or right edge every 12-18 seconds (randomized)
+- Roll full arena width at medium speed
+- Tell: cracking sound + rustling at arena edge 1 second before appearance
+- **Players/small enemies:** Must jump to avoid
+- **Boss:** Moderate damage + 2-second stumble (not full stagger, but an opening)
+
+**Volcanic - Falling Boulders**
+- Drop from top of screen at semi-random X positions
+- Shadow indicator on ground shows landing zone
+- AOE shockwave on impact (small radius) - the real danger
+- **Players:** Easy to dodge by watching shadow
+- **Boss:** Direct hit = heavy damage + full stagger. Creates "lure boss under boulder" strategy
+
+**Tundra - Ice Blocks**
+- Break from ceiling and slide on ground impact
+- Ricochet off walls unpredictably
+- Small chunks: player hazard only
+- Large blocks (rare): hit boss → slows it 40% for 3 seconds (ice coating legs)
+
+**Bone Graveyard - Falling Ribs**
+- Break loose from ceiling structures, fall in fixed positions
+- Heavily telegraphed: creak + shake before falling
+- Remain on ground 8 seconds as obstacles, then shatter
+- Players can jump onto fallen ribs as temporary platforms
+- **Boss:** Cannot pass through fallen ribs - creates brief separation window
+
+---
+
 ## Technical Architecture Changes
 
 See migration plan: `docs/plans/2026-02-15-sidescroller-migration-plan.md`
