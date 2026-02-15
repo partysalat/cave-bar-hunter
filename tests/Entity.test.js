@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import Entity from '../src/entities/Entity.js';
+import { PIXELS_PER_UNIT, SCREEN_FLOOR_Y, DEPTH_LAYERS } from '../src/systems/CoordinateSystem.js';
 
 describe('Entity', () => {
     let mockScene;
@@ -26,14 +27,15 @@ describe('Entity', () => {
         const entity = new Entity(mockScene, 10, 5, 0);
         entity.updateScreenPosition();
 
-        // Should convert (10, 5, 0) to screen coords (2K resolution)
-        expect(entity.sprite.x).toBe(1280 + (10 - 5) * 64); // TILE_WIDTH/2 = 64
-        expect(entity.sprite.y).toBe(720 + (10 + 5) * 32);  // TILE_HEIGHT/2 = 32
+        // Sidescroller: screenX = worldX * PIXELS_PER_UNIT, screenY = SCREEN_FLOOR_Y - worldY * PIXELS_PER_UNIT
+        expect(entity.sprite.x).toBe(10 * PIXELS_PER_UNIT);
+        expect(entity.sprite.y).toBe(SCREEN_FLOOR_Y - 5 * PIXELS_PER_UNIT);
     });
 
     it('updates depth based on world position', () => {
         const entity = new Entity(mockScene, 0, 10, 2);
         const depth = entity.getDepth();
-        expect(depth).toBe(10 * 1000 + 2 * 10);
+        // Sidescroller: all entities share the same depth layer
+        expect(depth).toBe(DEPTH_LAYERS.ENTITIES);
     });
 });

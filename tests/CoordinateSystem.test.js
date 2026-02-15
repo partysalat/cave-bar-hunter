@@ -1,98 +1,66 @@
 import { describe, it, expect } from 'vitest';
-import { worldToScreen, screenToWorld, calculateDepth, screenToWorldDirection, worldToScreenDirection } from '../src/systems/CoordinateSystem.js';
+import {
+    worldToScreen, screenToWorld, calculateDepth,
+    PIXELS_PER_UNIT, SCREEN_FLOOR_Y, DEPTH_LAYERS
+} from '../src/systems/CoordinateSystem.js';
 
 describe('CoordinateSystem', () => {
-    it('converts world origin to screen center', () => {
-        const result = worldToScreen(0, 0, 0);
-        expect(result.x).toBe(1280); // SCREEN_CENTER_X (2K resolution)
-        expect(result.y).toBe(720); // SCREEN_CENTER_Y (2K resolution)
-    });
-
-    it('converts world position to isometric screen position', () => {
-        const result = worldToScreen(10, 5, 0);
-        expect(result.x).toBe(1280 + (10 - 5) * 64); // (worldX - worldY) * (TILE_WIDTH/2)
-        expect(result.y).toBe(720 + (10 + 5) * 32); // (worldX + worldY) * (TILE_HEIGHT/2)
-    });
-
-    it('applies Z height offset to screen Y', () => {
-        const result = worldToScreen(0, 0, 2);
-        expect(result.x).toBe(1280);
-        expect(result.y).toBe(720 - 2 * 100); // Z * HEIGHT_SCALE
-    });
-
-    describe('screenToWorldDirection', () => {
-        it('converts screen up (W) to world direction that moves straight up on screen', () => {
-            const result = screenToWorldDirection(0, -1);
-            expect(result.x).toBe(-1);
-            expect(result.y).toBe(-1);
+    describe('worldToScreen', () => {
+        it('places ground origin at SCREEN_FLOOR_Y', () => {
+            const result = worldToScreen(0, 0);
+            expect(result.x).toBe(0);
+            expect(result.y).toBe(SCREEN_FLOOR_Y);
         });
 
-        it('converts screen down (S) to world direction that moves straight down on screen', () => {
-            const result = screenToWorldDirection(0, 1);
-            expect(result.x).toBe(1);
-            expect(result.y).toBe(1);
+        it('maps worldX linearly to screenX', () => {
+            const result = worldToScreen(10, 0);
+            expect(result.x).toBe(10 * PIXELS_PER_UNIT);
+            expect(result.y).toBe(SCREEN_FLOOR_Y);
         });
 
-        it('converts screen left (A) to world direction that moves straight left on screen', () => {
-            const result = screenToWorldDirection(-1, 0);
-            expect(result.x).toBe(-1);
-            expect(result.y).toBe(1);
+        it('higher worldY produces lower screenY (up is up)', () => {
+            const ground = worldToScreen(0, 0);
+            const elevated = worldToScreen(0, 5);
+            expect(elevated.y).toBeLessThan(ground.y);
+            expect(elevated.y).toBe(SCREEN_FLOOR_Y - 5 * PIXELS_PER_UNIT);
         });
 
-        it('converts screen right (D) to world direction that moves straight right on screen', () => {
-            const result = screenToWorldDirection(1, 0);
-            expect(result.x).toBe(1);
-            expect(result.y).toBe(-1);
+        it('maps worldX and worldY independently', () => {
+            const result = worldToScreen(3, 4);
+            expect(result.x).toBe(3 * PIXELS_PER_UNIT);
+            expect(result.y).toBe(SCREEN_FLOOR_Y - 4 * PIXELS_PER_UNIT);
         });
     });
 
-    describe('worldToScreenDirection', () => {
-        it('converts world direction back to screen up (W)', () => {
-            const world = screenToWorldDirection(0, -1);
-            const screen = worldToScreenDirection(world.x, world.y);
-            expect(screen.x).toBeCloseTo(0);
-            expect(screen.y).toBeCloseTo(-1);
-        });
-
-        it('converts world direction back to screen down (S)', () => {
-            const world = screenToWorldDirection(0, 1);
-            const screen = worldToScreenDirection(world.x, world.y);
-            expect(screen.x).toBeCloseTo(0);
-            expect(screen.y).toBeCloseTo(1);
-        });
-
-        it('converts world direction back to screen left (A)', () => {
-            const world = screenToWorldDirection(-1, 0);
-            const screen = worldToScreenDirection(world.x, world.y);
-            expect(screen.x).toBeCloseTo(-1);
-            expect(screen.y).toBeCloseTo(0);
-        });
-
-        it('converts world direction back to screen right (D)', () => {
-            const world = screenToWorldDirection(1, 0);
-            const screen = worldToScreenDirection(world.x, world.y);
-            expect(screen.x).toBeCloseTo(1);
-            expect(screen.y).toBeCloseTo(0);
-        });
-
-        it('is the inverse of screenToWorldDirection for all directions', () => {
-            const screenDirections = [
-                { x: 0, y: -1 },   // North
-                { x: 1, y: -1 },   // North-East
-                { x: 1, y: 0 },    // East
-                { x: 1, y: 1 },    // South-East
-                { x: 0, y: 1 },    // South
-                { x: -1, y: 1 },   // South-West
-                { x: -1, y: 0 },   // West
-                { x: -1, y: -1 }   // North-West
+    describe('screenToWorld', () => {
+        it('is the inverse of worldToScreen', () => {
+            const positions = [
+                { worldX: 0, worldY: 0 },
+                { worldX: 10, worldY: 5 },
+                { worldX: 15, worldY: 0 },
+                { worldX: 5, worldY: 8 },
             ];
-
-            screenDirections.forEach(screenDir => {
-                const world = screenToWorldDirection(screenDir.x, screenDir.y);
-                const backToScreen = worldToScreenDirection(world.x, world.y);
-                expect(backToScreen.x).toBeCloseTo(screenDir.x);
-                expect(backToScreen.y).toBeCloseTo(screenDir.y);
+            positions.forEach(({ worldX, worldY }) => {
+                const screen = worldToScreen(worldX, worldY);
+                const back = screenToWorld(screen.x, screen.y);
+                expect(back.worldX).toBeCloseTo(worldX);
+                expect(back.worldY).toBeCloseTo(worldY);
             });
+        });
+    });
+
+    describe('calculateDepth', () => {
+        it('returns the ENTITIES layer depth', () => {
+            expect(calculateDepth()).toBe(DEPTH_LAYERS.ENTITIES);
+        });
+    });
+
+    describe('DEPTH_LAYERS', () => {
+        it('layers are ordered correctly', () => {
+            expect(DEPTH_LAYERS.BACKGROUND).toBeLessThan(DEPTH_LAYERS.PLATFORMS);
+            expect(DEPTH_LAYERS.PLATFORMS).toBeLessThan(DEPTH_LAYERS.ENTITIES);
+            expect(DEPTH_LAYERS.ENTITIES).toBeLessThan(DEPTH_LAYERS.FOREGROUND);
+            expect(DEPTH_LAYERS.FOREGROUND).toBeLessThan(DEPTH_LAYERS.UI);
         });
     });
 });
