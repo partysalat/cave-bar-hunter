@@ -10,7 +10,7 @@
  *   e.g. player-0-run-3, compy-walk-2
  *
  * Source directories:
- *   assets/characters/{color}-hero-side/animations/{anim}/east/frame_000.png
+ *   assets/characters/{color}-hero/animations/{anim}/east/frame_000.png
  *   assets/enemies/compy-side/animations/{anim}/east/frame_000.png
  *
  * Output:
@@ -41,16 +41,32 @@ const OUTPUT_DIR = path.join(ASSETS_DIR, 'generated', 'spritesheets');
 
 const PLAYER_COLORS = ['red', 'blue', 'yellow', 'green'];
 
-// Sidescroller player animations.
-// Source folder name → animation key used in game code (HuntScene.createPlayerAnimations).
+// Sidescroller player animations — folder names match game keys after rename.
 // Only the "east" direction is used — left-facing handled by sprite.setFlipX().
 const PLAYER_ANIMATIONS = {
-    'breathing-idle':    { key: 'idle' },
-    'running-8-frames':  { key: 'run' },
-    'jumping-1':         { key: 'jump',   alsoKey: 'fall' }, // fall reuses jump frames
-    'cross-punch':       { key: 'attack' },
-    'running-slide':     { key: 'dodge' },
-    'falling-back-death':{ key: 'downed' },
+    'idle':         { key: 'idle' },
+    'run':          { key: 'run' },
+    'jump':         { key: 'jump', alsoKey: 'fall' }, // fall reuses jump frames
+    'attack':       { key: 'attack' },
+    'dodge':        { key: 'dodge' },
+    'downed':       { key: 'downed' },
+    'get-up':       { key: 'get-up' },
+    'idle-club':    { key: 'idle-club' },
+    'run-club':     { key: 'run-club' },
+    'jump-club':    { key: 'jump-club' },
+    'attack-club':  { key: 'attack-club' },
+    'idle-spear':   { key: 'idle-spear' },
+    'run-spear':    { key: 'run-spear' },
+    'jump-spear':   { key: 'jump-spear' },
+    'attack-spear': { key: 'attack-spear' },
+    'idle-bow':     { key: 'idle-bow' },
+    'run-bow':      { key: 'run-bow' },
+    'jump-bow':     { key: 'jump-bow' },
+    'attack-bow':   { key: 'attack-bow' },
+    'idle-net':     { key: 'idle-net' },
+    'run-net':      { key: 'run-net' },
+    'jump-net':     { key: 'jump-net' },
+    'attack-net':   { key: 'attack-net' },
 };
 
 // Compy animations (quadruped cat template)
@@ -161,9 +177,9 @@ async function packSpriteSheet(images, textureName, outputName) {
 async function buildPlayerSpriteSheet(color, playerIndex) {
     console.log(`\nBuilding ${color} hero (player ${playerIndex})...`);
 
-    const animationsDir = path.join(CHARACTERS_DIR, `${color}-hero-side`, 'animations');
+    const animationsDir = path.join(CHARACTERS_DIR, `${color}-hero`, 'animations');
     if (!fs.existsSync(animationsDir)) {
-        console.warn(`  ⚠️  ${color}-hero-side/animations not found — run download-assets.js first`);
+        console.warn(`  ⚠️  ${color}-hero/animations not found`);
         return;
     }
 
