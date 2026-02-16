@@ -68,12 +68,12 @@ Apply to **all 4 hero characters**. Use the `east` direction frames only.
 
 ### With Spear
 
-| Game Key | Template ID | Action Description                                                                                                                                                                                                                                                                                                   |
-|---|---|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Game Key | Template ID | Action Description |
+|---|---|---|
 | `idle-spear` | `fight-stance-idle-8-frames` | muscular prehistoric caveman hunter standing in ready stance, holding stone spear vertically at shoulder height with right hand gripping shaft mid-way, left hand resting near hip, weight balanced on both feet, chest rising and falling with steady breathing, eyes alert and scanning, confident warrior posture |
-| `run-spear` | `running-8-frames` | prehistoric hunter running at full sprint, stone spear held horizontally at chest level with throwing hand back near head and front hand extended forward for balance, athletic running gait with knees pumping high, leaning slightly forward, aggressive pursuit run like chasing prey                             |
-| `jump-spear` | `jumping-1` | caveman warrior leaping upward with both hands gripping a stone spear held diagonally across the body at chest level, spear angled forward and upward, knees driving high, body coiled and ready to thrust on landing, aggressive offensive leap                                                                     |
-| `attack-spear` | `throw-object` | c                                                                                                                                                                                                                                                                                                                    |
+| `run-spear` | `running-8-frames` | prehistoric hunter running at full sprint, stone spear held horizontally at chest level with throwing hand back near head and front hand extended forward for balance, athletic running gait with knees pumping high, leaning slightly forward, aggressive pursuit run like chasing prey |
+| `jump-spear` | `jumping-1` | caveman warrior leaping upward with both hands gripping a stone spear held diagonally across the body at chest level, spear angled forward and upward, knees driving high, body coiled and ready to thrust on landing, aggressive offensive leap |
+| `attack-spear` | `throw-object` | prehistoric hunter executing throwing motion: wind-up with spear pulled back behind head, torso rotating, weight shifting to back foot, then explosive forward thrust with full body extension, spear launching from hand with follow-through, powerful javelin throw technique |
 
 ### With Bow
 
