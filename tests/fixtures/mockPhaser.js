@@ -19,22 +19,27 @@ export function createMockScene() {
                 setDepth: () => ({})
             }),
             rectangle: vi.fn((x, y, w, h, color) => ({
-                x, y,
-                setDepth: vi.fn().mockReturnThis(),
-                setOrigin: vi.fn().mockReturnThis()
+                x, y, width: w, height: h,
+                setDepth:        vi.fn().mockReturnThis(),
+                setOrigin:       vi.fn().mockReturnThis(),
+                setScrollFactor: vi.fn().mockReturnThis(),
+                setVisible:      vi.fn().mockReturnThis(),
+                setFillStyle:    vi.fn().mockReturnThis(),
+                setStrokeStyle:  vi.fn().mockReturnThis(),
             })),
             sprite: (x, y, texture) => ({
                 x, y, texture,
-                setOrigin: vi.fn().mockReturnThis(),
-                setDepth: vi.fn().mockReturnThis(),
-                setTint: vi.fn().mockReturnThis(),
-                setAlpha: vi.fn().mockReturnThis(),
-                setScale: vi.fn().mockReturnThis(),
-                setTexture: vi.fn().mockReturnThis(),
-                play: vi.fn().mockReturnThis(),
-                anims: {
-                    currentAnim: null
-                }
+                setOrigin:       vi.fn().mockReturnThis(),
+                setDepth:        vi.fn().mockReturnThis(),
+                setTint:         vi.fn().mockReturnThis(),
+                setAlpha:        vi.fn().mockReturnThis(),
+                setScale:        vi.fn().mockReturnThis(),
+                setTexture:      vi.fn().mockReturnThis(),
+                setFlipX:        vi.fn().mockReturnThis(),
+                setScrollFactor: vi.fn().mockReturnThis(),
+                setVisible:      vi.fn().mockReturnThis(),
+                play:            vi.fn().mockReturnThis(),
+                anims: { currentAnim: null }
             }),
             image: (x, y, texture) => ({
                 x, y, texture,
@@ -49,15 +54,20 @@ export function createMockScene() {
                 setOrigin: () => ({}),
                 setDepth: () => ({})
             }),
-            text: (x, y, text, style) => ({
+            text: vi.fn((x, y, text, style) => ({
                 x, y, text, style,
-                setOrigin: () => ({}),
-                setDepth: () => ({})
-            })
+                setOrigin:       vi.fn().mockReturnThis(),
+                setDepth:        vi.fn().mockReturnThis(),
+                setScrollFactor: vi.fn().mockReturnThis(),
+                setVisible:      vi.fn().mockReturnThis(),
+                setColor:        vi.fn().mockReturnThis(),
+                setText:         vi.fn().mockReturnThis(),
+            }))
         },
         anims: {
-            create: () => ({}),
-            generateFrameNames: () => []
+            create: vi.fn().mockReturnValue({}),
+            generateFrameNames: vi.fn().mockReturnValue([]),
+            exists: vi.fn().mockReturnValue(false),
         },
         load: {
             atlas: vi.fn(),

@@ -69,6 +69,7 @@ export default class Player extends Entity {
         this.spearCooldown = 0; // ms until can throw again
         this.spearCooldownTime = 2000; // 2 seconds (from design doc)
         this.facingX = 1; // Direction player is facing (positive = right)
+        this.facingY = 0; // Always 0 in sidescroller (no vertical facing)
 
         // Jump state
         this.jumpVelocity = 15; // world units/second upward

@@ -34,12 +34,11 @@ export default class Dinosaur extends Entity {
 
         // Set type-specific sprite
         if (type === 'compy') {
-            this.sprite.setTexture('compy-south');
+            // Atlas loaded as 'compy'; animation 'compy-idle' created in HuntScene
+            this.sprite.setTexture('compy', 'compy-idle-0');
             this.sprite.setScale(1.5);
         } else {
-            // Color tint based on type (temporary visualization)
-            const color = type === 'compy' ? 0xff00ff : 0x00ffff;
-            this.sprite.setTint(color);
+            this.sprite.setTint(0x00ffff);
         }
     }
 
@@ -139,40 +138,14 @@ export default class Dinosaur extends Entity {
     }
 
     /**
-     * Update sprite direction based on velocity
-     * Updates facing direction and sets appropriate texture
+     * Update sprite direction based on velocity (sidescroller: flip X only)
      */
     updateSpriteDirection() {
-        // Only update for compy type
         if (this.type !== 'compy') return;
-
-        // Only update if moving
-        if (this.velocityX === 0 && this.velocityY === 0) return;
-
-        // Update facing direction from velocity
-        this.facingX = this.velocityX;
-        this.facingY = this.velocityY;
-
-        // Map facing vector to direction string (same logic as Player.getCurrentDirection)
-        const angle = Math.atan2(this.facingY, this.facingX);
-        const degrees = angle * (180 / Math.PI);
-
-        // Normalize to 0-360
-        const normalizedDegrees = (degrees + 360) % 360;
-
-        // Map to 8 directions (45 degree segments)
-        let direction;
-        if (normalizedDegrees < 22.5 || normalizedDegrees >= 337.5) direction = 'east';
-        else if (normalizedDegrees < 67.5) direction = 'south-east';
-        else if (normalizedDegrees < 112.5) direction = 'south';
-        else if (normalizedDegrees < 157.5) direction = 'south-west';
-        else if (normalizedDegrees < 202.5) direction = 'west';
-        else if (normalizedDegrees < 247.5) direction = 'north-west';
-        else if (normalizedDegrees < 292.5) direction = 'north';
-        else direction = 'north-east';
-
-        // Update sprite texture
-        this.sprite.setTexture(`compy-${direction}`);
+        if (this.velocityX !== 0) {
+            this.facingX = this.velocityX;
+            this.sprite.setFlipX(this.velocityX < 0);
+        }
     }
 
     /**
@@ -200,41 +173,48 @@ export default class Dinosaur extends Entity {
     }
 
     /**
-     * Update visual effects based on AI state
+     * Update animation and visual tint based on AI state
      */
     updateVisualState() {
-        // If no AI, return early
         if (!this.ai) return;
 
-        // Reset to default appearance
         this.sprite.setTint(0xffffff);
         this.sprite.setAlpha(1.0);
 
-        // Apply state-specific visual effects
         switch (this.ai.state) {
+            case 'CIRCLING':
+                this._playAnim('compy-walk');
+                break;
             case 'LUNGING':
+                this._playAnim('compy-run');
                 if (this.ai.stateTimer < 0.5) {
-                    // Telegraph phase: red tint with pulsing alpha
                     this.sprite.setTint(0xff0000);
-                    const pulseAlpha = 0.7 + Math.sin(this.ai.stateTimer * 20) * 0.3;
-                    this.sprite.setAlpha(pulseAlpha);
+                    this.sprite.setAlpha(0.7 + Math.sin(this.ai.stateTimer * 20) * 0.3);
                 } else {
-                    // Charge phase: brighter red
                     this.sprite.setTint(0xffaaaa);
                 }
                 break;
-
             case 'BITING':
-                if (this.ai.stateTimer < 0.1) {
-                    // White flash on bite impact
-                    this.sprite.setTint(0xffffff);
-                }
+                this._playAnim('compy-attack');
                 break;
-
             case 'RETREATING':
-                // Faded during retreat
+                this._playAnim('compy-walk');
                 this.sprite.setAlpha(0.8);
                 break;
+            default:
+                this._playAnim('compy-idle');
+        }
+    }
+
+    /**
+     * Play animation only if not already playing
+     * @param {string} key
+     */
+    _playAnim(key) {
+        if (this.sprite.anims.currentAnim?.key !== key) {
+            if (this.scene.anims?.exists?.(key)) {
+                this.sprite.play(key);
+            }
         }
     }
 }

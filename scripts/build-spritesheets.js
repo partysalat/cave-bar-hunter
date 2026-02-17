@@ -36,7 +36,7 @@ const __dirname = path.dirname(__filename);
 
 const ASSETS_DIR = path.join(__dirname, '..', 'assets');
 const CHARACTERS_DIR = path.join(ASSETS_DIR, 'characters');
-const ENEMIES_DIR = path.join(ASSETS_DIR, 'enemies');
+const DINOS_DIR = path.join(ASSETS_DIR, 'dinos');
 const OUTPUT_DIR = path.join(ASSETS_DIR, 'generated', 'spritesheets');
 
 const PLAYER_COLORS = ['red', 'blue', 'yellow', 'green'];
@@ -206,9 +206,9 @@ async function buildPlayerSpriteSheet(color, playerIndex) {
 async function buildCompySpriteSheet() {
     console.log(`\nBuilding compy...`);
 
-    const animationsDir = path.join(ENEMIES_DIR, 'compy-side', 'animations');
+    const animationsDir = path.join(DINOS_DIR, 'compy', 'animations');
     if (!fs.existsSync(animationsDir)) {
-        console.warn(`  ⚠️  compy-side/animations not found — run download-assets.js first`);
+        console.warn(`  ⚠️  dinos/compy/animations not found`);
         return;
     }
 

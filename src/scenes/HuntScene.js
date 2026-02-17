@@ -1,13 +1,16 @@
 import Phaser from 'phaser';
-import { worldToScreen, PIXELS_PER_UNIT, SCREEN_WIDTH, DEPTH_LAYERS } from '../systems/CoordinateSystem.js';
-import { updatePlayerAnimation, getPlayerAnimationKey } from '../systems/SpriteDirectionSystem.js';
+import { worldToScreen, PIXELS_PER_UNIT, SCREEN_WIDTH, SCREEN_HEIGHT, DEPTH_LAYERS } from '../systems/CoordinateSystem.js';
+import { updatePlayerAnimation } from '../systems/SpriteDirectionSystem.js';
 import { applyGravity, checkPlatform } from '../systems/PhysicsManager.js';
+import CombatSystem from '../systems/CombatSystem.js';
 import Player from '../entities/Player.js';
 import Dinosaur from '../entities/Dinosaur.js';
+import Projectile from '../entities/Projectile.js';
 import InputManager from '../systems/InputManager.js';
 import CameraController from '../systems/CameraController.js';
 import PackCoordinator from '../ai/PackCoordinator.js';
 import CompyAI from '../ai/CompyAI.js';
+import HUD from '../ui/HUD.js';
 import { gameSession } from '../systems/SessionManager.js';
 
 /**
@@ -15,37 +18,32 @@ import { gameSession } from '../systems/SessionManager.js';
  * worldX = horizontal, worldY = vertical height (0 = ground level)
  */
 export const JUNGLE_ARENA = {
-    width: 80,           // world units wide
+    width: 80,
     platforms: [
-        { x: 10, y: 5, width: 8 },   // left mid platform
-        { x: 35, y: 8, width: 6 },   // center high platform
-        { x: 60, y: 5, width: 8 },   // right mid platform
+        { x: 10, y: 5, width: 8 },
+        { x: 35, y: 8, width: 6 },
+        { x: 60, y: 5, width: 8 },
     ],
     spawnPoints: [
-        { x: 15, y: 0 },  // player 1
-        { x: 20, y: 0 },  // player 2
-        { x: 25, y: 0 },  // player 3
-        { x: 30, y: 0 },  // player 4
+        { x: 15, y: 0 },
+        { x: 20, y: 0 },
+        { x: 25, y: 0 },
+        { x: 30, y: 0 },
     ],
     enemySpawnPoints: [
-        { x: 5,  y: 0 },  // left edge
-        { x: 75, y: 0 },  // right edge
+        { x: 5,  y: 0 },
+        { x: 75, y: 0 },
     ],
 };
 
-/**
- * HuntScene - Compy Pack Hunt (sidescroller)
- *
- * Players fight 5 Compys in a jungle sidescroller arena.
- * Features pack AI coordination, gravity, and platform traversal.
- */
+const REVIVE_RADIUS = 1.5; // world units to trigger revive
+
 export default class HuntScene extends Phaser.Scene {
     constructor() {
         super({ key: 'HuntScene' });
     }
 
     preload() {
-        // Load player spritesheets
         const colors = ['red', 'blue', 'yellow', 'green'];
         colors.forEach((color, index) => {
             this.load.atlas(
@@ -55,172 +53,106 @@ export default class HuntScene extends Phaser.Scene {
             );
         });
 
-        // Load Compy sprite (temporary - M6 will replace with proper side-view sprites)
-        this.load.image('compy-south', '/assets/enemies/compy-dino/rotations/south.png');
+        this.load.atlas('compy', '/assets/generated/spritesheets/compy.png',
+                                 '/assets/generated/spritesheets/compy.json');
     }
 
     create() {
-        // Hunt state machine: active → victory/failure
-        this.huntState = 'active';
+        this.huntState       = 'active';
+        this.huntEndTriggered = false;
+        this.huntTimer       = 0;
+        this.totalHuntTime   = 0;
 
-        // Timers
-        this.huntTimer = 0;
-        this.totalHuntTime = 0;
-
-        // Entity arrays
-        this.players = [];
-        this.compys = [];
+        this.players     = [];
+        this.compys      = [];
         this.projectiles = [];
 
-        // Initialize input manager
-        this.inputManager = new InputManager(this);
+        this.inputManager  = new InputManager(this);
         this.inputManager.setupKeyboard();
+        this.combatSystem  = new CombatSystem();
 
-        // Build arena background and platforms
         this.buildArena();
-
-        // Spawn players and create animations
         this.spawnPlayers();
         this.createPlayerAnimations();
-
-        // Spawn enemies
+        this.createCompyAnimations();
         this.spawnCompys();
 
-        // Initialize camera controller
+        this.hud = new HUD(this);
         this.cameraController = new CameraController(this.cameras.main);
-
-        console.log('HuntScene ready: sidescroller jungle arena');
     }
 
-    /**
-     * Draw background color fill and platform rectangles.
-     * Platforms are defined in JUNGLE_ARENA and rendered as colored rects.
-     * Placeholder visuals - M6 will replace with tileset sprites.
-     */
+    // ─── Arena ───────────────────────────────────────────────────────────────
+
     buildArena() {
-        // Dark jungle background (full arena width)
         const arenaScreenWidth = JUNGLE_ARENA.width * PIXELS_PER_UNIT;
 
-        // Background - deep green fill
-        const bg = this.add.rectangle(
-            arenaScreenWidth / 2, 0,
-            arenaScreenWidth, 2000,
-            0x1a3d1a
-        );
-        bg.setDepth(DEPTH_LAYERS.BACKGROUND);
-        bg.setOrigin(0.5, 0);
+        const bg = this.add.rectangle(arenaScreenWidth / 2, 0, arenaScreenWidth, 2000, 0x1a3d1a);
+        bg.setDepth(DEPTH_LAYERS.BACKGROUND).setOrigin(0.5, 0);
 
-        // Ground platform - full width of arena, at screen Y for worldY=0
         const groundScreenY = worldToScreen(0, 0).y;
-        const ground = this.add.rectangle(
-            arenaScreenWidth / 2, groundScreenY,
-            arenaScreenWidth, 40,
-            0x5c3d1a
-        );
-        ground.setDepth(DEPTH_LAYERS.PLATFORMS);
-        ground.setOrigin(0.5, 0);
+        const ground = this.add.rectangle(arenaScreenWidth / 2, groundScreenY, arenaScreenWidth, 40, 0x5c3d1a);
+        ground.setDepth(DEPTH_LAYERS.PLATFORMS).setOrigin(0.5, 0);
 
-        // Elevated platforms
         for (const platform of JUNGLE_ARENA.platforms) {
-            const leftX  = (platform.x - platform.width / 2) * PIXELS_PER_UNIT;
-            const topY   = worldToScreen(0, platform.y).y;
-            const pxWidth  = platform.width * PIXELS_PER_UNIT;
-            const pxHeight = 20;
-
-            const rect = this.add.rectangle(leftX, topY, pxWidth, pxHeight, 0x5c3d1a);
-            rect.setDepth(DEPTH_LAYERS.PLATFORMS);
-            rect.setOrigin(0, 0.5);
+            const leftX   = (platform.x - platform.width / 2) * PIXELS_PER_UNIT;
+            const topY    = worldToScreen(0, platform.y).y;
+            const pxWidth = platform.width * PIXELS_PER_UNIT;
+            const rect = this.add.rectangle(leftX, topY, pxWidth, 20, 0x5c3d1a);
+            rect.setDepth(DEPTH_LAYERS.PLATFORMS).setOrigin(0, 0.5);
         }
     }
 
-    /**
-     * Spawn 4 players at arena spawn points
-     */
+    // ─── Spawning ─────────────────────────────────────────────────────────────
+
     spawnPlayers() {
-        JUNGLE_ARENA.spawnPoints.forEach((spawnPoint, index) => {
-            const player = new Player(this, index, spawnPoint.x, spawnPoint.y);
+        JUNGLE_ARENA.spawnPoints.forEach((sp, index) => {
+            const player = new Player(this, index, sp.x, sp.y);
             player.moveSpeed = 8;
             this.players.push(player);
         });
-
-        console.log(`Spawned ${this.players.length} players`);
+        gameSession.loadPlayerState?.(this.players);
     }
 
-    /**
-     * Create sidescroller animations for all 4 players.
-     * Keys: player-{n}-idle, player-{n}-run, player-{n}-jump, player-{n}-fall, player-{n}-attack
-     * Direction handled via sprite.setFlipX() in SpriteDirectionSystem.
-     * Uses existing south-facing spritesheet frames as placeholders until M6 assets arrive.
-     */
     createPlayerAnimations() {
-        for (let playerIndex = 0; playerIndex < 4; playerIndex++) {
-            // Idle — breathing-idle east frames: player-N-idle-0 ... player-N-idle-3
-            this.anims.create({
-                key: `player-${playerIndex}-idle`,
-                frames: this.anims.generateFrameNames(`player-${playerIndex}`, {
-                    prefix: `player-${playerIndex}-idle-`,
-                    start: 0,
-                    end: 3
-                }),
-                frameRate: 6,
-                repeat: -1
-            });
-
-            // Run — running-8-frames east: player-N-run-0 ... player-N-run-7
-            this.anims.create({
-                key: `player-${playerIndex}-run`,
-                frames: this.anims.generateFrameNames(`player-${playerIndex}`, {
-                    prefix: `player-${playerIndex}-run-`,
-                    start: 0,
-                    end: 7
-                }),
-                frameRate: 12,
-                repeat: -1
-            });
-
-            // Jump — jumping-1 east: player-N-jump-0 ...
-            this.anims.create({
-                key: `player-${playerIndex}-jump`,
-                frames: this.anims.generateFrameNames(`player-${playerIndex}`, {
-                    prefix: `player-${playerIndex}-jump-`,
-                    start: 0,
-                    end: 3
-                }),
-                frameRate: 8,
-                repeat: 0
-            });
-
-            // Fall — same source frames as jump (build script copies them as player-N-fall-N)
-            this.anims.create({
-                key: `player-${playerIndex}-fall`,
-                frames: this.anims.generateFrameNames(`player-${playerIndex}`, {
-                    prefix: `player-${playerIndex}-fall-`,
-                    start: 0,
-                    end: 3
-                }),
-                frameRate: 8,
-                repeat: 0
-            });
-
-            // Attack — cross-punch east: player-N-attack-0 ...
-            this.anims.create({
-                key: `player-${playerIndex}-attack`,
-                frames: this.anims.generateFrameNames(`player-${playerIndex}`, {
-                    prefix: `player-${playerIndex}-attack-`,
-                    start: 0,
-                    end: 7
-                }),
-                frameRate: 12,
-                repeat: 0
+        for (let i = 0; i < 4; i++) {
+            const defs = [
+                { key: `player-${i}-idle`,   prefix: `player-${i}-idle-`,   end: 3,  fps: 6,  repeat: -1 },
+                { key: `player-${i}-run`,    prefix: `player-${i}-run-`,    end: 7,  fps: 12, repeat: -1 },
+                { key: `player-${i}-jump`,   prefix: `player-${i}-jump-`,   end: 3,  fps: 8,  repeat: 0  },
+                { key: `player-${i}-fall`,   prefix: `player-${i}-fall-`,   end: 3,  fps: 8,  repeat: 0  },
+                { key: `player-${i}-attack`, prefix: `player-${i}-attack-`, end: 7,  fps: 12, repeat: 0  },
+            ];
+            defs.forEach(({ key, prefix, end, fps, repeat }) => {
+                if (!this.anims.exists(key)) {
+                    this.anims.create({
+                        key,
+                        frames: this.anims.generateFrameNames(`player-${i}`, { prefix, start: 0, end }),
+                        frameRate: fps,
+                        repeat,
+                    });
+                }
             });
         }
-
-        console.log('Created player animations for 4 players (side-view)');
     }
 
-    /**
-     * Spawn 5 Compys distributed across the arena
-     */
+    createCompyAnimations() {
+        [
+            { key: 'compy-idle',   prefix: 'compy-idle-',   end: 3, fps: 6,  repeat: -1 },
+            { key: 'compy-walk',   prefix: 'compy-walk-',   end: 3, fps: 8,  repeat: -1 },
+            { key: 'compy-run',    prefix: 'compy-run-',    end: 3, fps: 12, repeat: -1 },
+            { key: 'compy-attack', prefix: 'compy-attack-', end: 3, fps: 10, repeat: 0  },
+        ].forEach(({ key, prefix, end, fps, repeat }) => {
+            if (!this.anims.exists(key)) {
+                this.anims.create({
+                    key,
+                    frames: this.anims.generateFrameNames('compy', { prefix, start: 0, end }),
+                    frameRate: fps,
+                    repeat,
+                });
+            }
+        });
+    }
+
     spawnCompys() {
         const spawnPositions = [
             { x: 8,  y: 0 },
@@ -230,13 +162,12 @@ export default class HuntScene extends Phaser.Scene {
             { x: 72, y: 0 },
         ];
 
-        const alivePlayerCount = this.players.filter(p => !p.isDowned).length;
-        const healthScales = [1.0, 1.2, 1.3, 1.4];
-        const healthScale = healthScales[alivePlayerCount - 1] || 1.0;
+        const aliveCount  = this.players.filter(p => !p.isDowned).length;
+        const healthScale = [1.0, 1.2, 1.3, 1.4][aliveCount - 1] ?? 1.0;
 
         spawnPositions.forEach(pos => {
             const compy = new Dinosaur(this, 'compy', pos.x, pos.y, 0);
-            compy.health = Math.floor(compy.health * healthScale);
+            compy.health    = Math.floor(compy.health * healthScale);
             compy.maxHealth = compy.health;
             this.compys.push(compy);
         });
@@ -246,96 +177,215 @@ export default class HuntScene extends Phaser.Scene {
         });
 
         this.packCoordinator = new PackCoordinator(this.compys, this.players);
-
-        console.log(`Spawned ${this.compys.length} Compys`);
     }
 
-    /**
-     * Check if hunt has ended (victory or failure)
-     */
-    checkHuntCompletion() {
-        if (this.compys.every(c => c.isDead)) {
-            this.huntState = 'victory';
-            console.log('VICTORY! All Compys defeated!');
-            return;
-        }
+    // ─── Update ──────────────────────────────────────────────────────────────
 
-        if (this.players.every(p => p.isDowned)) {
-            this.huntState = 'failure';
-            console.log('FAILURE! All players downed!');
-        }
-    }
-
-    update(time, delta) {
-        this.huntTimer += delta;
+    update(_time, delta) {
+        this.huntTimer     += delta;
         this.totalHuntTime += delta;
 
-        if (this.huntState !== 'active') {
-            return;
-        }
+        if (this.huntState !== 'active') return;
 
-        // Update pack coordinator
-        if (this.packCoordinator) {
-            this.packCoordinator.update(delta);
-        }
+        this.packCoordinator?.update(delta);
 
-        // Update players: input → movement → physics → position sync
+        this.updatePlayers(delta);
+        this.updateCompys(delta);
+        this.updateProjectiles(delta);
+        this.updateHUD();
+        this.checkHuntCompletion();
+        this.cameraController?.update(this.players, JUNGLE_ARENA.width);
+    }
+
+    updatePlayers(delta) {
         this.players.forEach(player => {
-            if (player.isDowned) return;
-
             const input = this.inputManager.getPlayerInputWithKeyboard(player.playerNumber);
 
             if (input) {
-                // Horizontal movement: left = -1, right = +1
-                const horizontal = (input.dpad.right ? 1 : 0) - (input.dpad.left ? 1 : 0);
-
-                if (horizontal !== 0) {
-                    player.move(horizontal);
+                if (player.isDowned) {
+                    // Downed players can only crawl and be revived
+                    const h = (input.dpad.right ? 1 : 0) - (input.dpad.left ? 1 : 0);
+                    if (h !== 0) player.move(h);
+                    else         player.stop();
                 } else {
-                    player.stop();
-                }
-
-                // Jump: D-pad up
-                if (input.dpad.up) {
-                    player.jump();
+                    this.handlePlayerInput(player, input, delta);
                 }
             }
 
-            // Capture Y before physics for platform one-way landing detection
             const prevY = player.worldY;
-
-            // Apply X movement and player-specific timers
             player.update(delta);
-
-            // Apply gravity and ground collision
             applyGravity(player, delta);
 
-            // Resolve platform collisions (one-way: can jump through from below)
             for (const platform of JUNGLE_ARENA.platforms) {
                 checkPlatform(player, platform, prevY);
             }
 
-            // Clamp to arena horizontal bounds
             player.worldX = Math.max(0, Math.min(JUNGLE_ARENA.width, player.worldX));
-
-            // Sync screen position after physics moved worldY
             player.updateScreenPosition();
         });
+    }
 
-        // Update compys
-        this.compys.forEach(compy => {
-            if (!compy.isDead) {
-                compy.update(delta);
-                // Clamp to arena
-                compy.worldX = Math.max(0, Math.min(JUNGLE_ARENA.width, compy.worldX));
+    handlePlayerInput(player, input, _delta) {
+        // Horizontal movement
+        const h = (input.dpad.right ? 1 : 0) - (input.dpad.left ? 1 : 0);
+        if (h !== 0) player.move(h);
+        else         player.stop();
+
+        // Jump (D-pad up)
+        if (input.dpad.up) player.jump();
+
+        // Spear throw (RT / mouse): edge-trigger
+        const rtDown = input.buttons.rt;
+        if (rtDown && !player._lastRt) this.throwSpear(player);
+        player._lastRt = rtDown;
+
+        // Club attack (B / Q): edge-trigger
+        const bDown = input.buttons.b;
+        if (bDown && !player._lastB) player.startAttack();
+        player._lastB = bDown;
+
+        // Dodge roll (LT / Shift): edge-trigger
+        const ltDown = input.buttons.lt;
+        if (ltDown && !player._lastLt) player.startDodge(player.facingX);
+        player._lastLt = ltDown;
+
+        // Revive (X / Space): edge-trigger
+        const xDown = input.buttons.x;
+            if (xDown && !player._lastX) this.tryRevive(player);
+        player._lastX = xDown;
+
+        // Club hit detection during swing
+        if (player.isAttacking && player.attackPhase === 'swing') {
+            this.checkClubHits(player);
+        }
+    }
+
+    // ─── Combat ──────────────────────────────────────────────────────────────
+
+    throwSpear(player) {
+        if (!player.canThrowSpear()) return;
+
+        const spearData = player.throwSpear(player.facingX, 0);
+        if (!spearData) return;
+
+        const proj = new Projectile(
+            this,
+            player.playerNumber,
+            spearData.worldX, spearData.worldY, 0,
+            spearData.dirX, 0, 0,
+            spearData.damageMultiplier
+        );
+        this.projectiles.push(proj);
+    }
+
+    checkClubHits(player) {
+        for (const compy of this.compys) {
+            if (compy.isDead) continue;
+            const result = this.combatSystem.checkClubHit(player, compy);
+            if (result.hit) {
+                compy.takeDamage(result.damage);
+                player.hitEnemiesThisSwing.push(compy.id);
+                player.addScore(1);
             }
-        });
+        }
+    }
 
-        // Camera: horizontal follow, clamped to arena
-        if (this.cameraController) {
-            this.cameraController.update(this.players, JUNGLE_ARENA.width);
+    tryRevive(reviver) {
+        for (const other of this.players) {
+            if (!other.isDowned || other === reviver) continue;
+            const dx = Math.abs(other.worldX - reviver.worldX);
+            const dy = Math.abs(other.worldY - reviver.worldY);
+            if (Math.sqrt(dx * dx + dy * dy) <= REVIVE_RADIUS) {
+                other.revive();
+                reviver.addScore(10);
+                console.log(`Player ${reviver.playerNumber} revived Player ${other.playerNumber}`);
+                return;
+            }
+        }
+    }
+
+    updateProjectiles(delta) {
+        this.projectiles = this.projectiles.filter(proj => {
+            if (proj.isExpired) {
+                proj.destroy();
+                return false;
+            }
+
+            proj.update(delta);
+
+            for (const compy of this.compys) {
+                if (compy.isDead) continue;
+                const result = this.combatSystem.checkProjectileHitDinosaur(proj, compy);
+                if (result.hit) {
+                    compy.takeDamage(result.damage);
+                    const shooter = this.players[proj.ownerPlayerNumber];
+                    shooter?.addScore(1);
+                    proj.onHit();
+                    proj.destroy();
+                    return false;
+                }
+            }
+
+            return true;
+        });
+    }
+
+    // ─── Compys ──────────────────────────────────────────────────────────────
+
+    updateCompys(delta) {
+        this.compys.forEach(compy => {
+            if (compy.isDead) return;
+            compy.update(delta);
+            applyGravity(compy, delta);
+            compy.worldX = Math.max(0, Math.min(JUNGLE_ARENA.width, compy.worldX));
+            compy.updateScreenPosition();
+        });
+    }
+
+    // ─── HUD ─────────────────────────────────────────────────────────────────
+
+    updateHUD() {
+        if (!this.hud) return;
+        const p0      = this.players[0];
+        const firstLive = this.compys.find(c => !c.isDead);
+        this.hud.update(p0, p0.score, firstLive ?? null);
+    }
+
+    // ─── Completion ──────────────────────────────────────────────────────────
+
+    checkHuntCompletion() {
+        if (this.huntEndTriggered) return;
+
+        if (this.compys.every(c => c.isDead)) {
+            this.huntState = 'victory';
+        } else if (this.players.every(p => p.isDowned)) {
+            this.huntState = 'failure';
+            console.log('FAILURE! All players downed!');
         }
 
-        this.checkHuntCompletion();
+        if (this.huntState !== 'active') {
+            this.huntEndTriggered = true;
+            this.showHuntEnd(this.huntState === 'victory');
+        }
+    }
+
+    showHuntEnd(isVictory) {
+        const msg    = isVictory ? 'HUNT COMPLETE!' : 'HUNT FAILED!';
+        const color  = isVictory ? '#ffcc00' : '#ff4444';
+
+        gameSession.savePlayerState?.(this.players);
+        if (isVictory) gameSession.advanceHunt?.();
+
+        this.add.text(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, msg, {
+            fontSize: '72px', fontFamily: 'Arial', color,
+            fontStyle: 'bold', stroke: '#000000', strokeThickness: 10,
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(DEPTH_LAYERS.UI + 100);
+
+        this.time.delayedCall(3000, () => {
+            this.cameras.main.fadeOut(800, 0, 0, 0);
+            this.cameras.main.once('camerafadeoutcomplete', () => {
+                this.scene.start('CaveBarScene');
+            });
+        });
     }
 }

@@ -221,12 +221,12 @@ describe('HuntScene', () => {
     });
 
     describe('preload', () => {
-        it('preload() loads 4 player atlases', () => {
+        it('preload() loads 4 player atlases and the compy atlas', () => {
             const atlasSpy = vi.spyOn(scene.load, 'atlas');
 
             scene.preload();
 
-            expect(atlasSpy).toHaveBeenCalledTimes(4);
+            expect(atlasSpy).toHaveBeenCalledTimes(5); // 4 players + compy
 
             const colors = ['red', 'blue', 'yellow', 'green'];
             colors.forEach((color, index) => {
@@ -236,6 +236,11 @@ describe('HuntScene', () => {
                     `/assets/generated/spritesheets/${color}-hero.json`
                 );
             });
+            expect(atlasSpy).toHaveBeenCalledWith(
+                'compy',
+                '/assets/generated/spritesheets/compy.png',
+                '/assets/generated/spritesheets/compy.json'
+            );
         });
     });
 
