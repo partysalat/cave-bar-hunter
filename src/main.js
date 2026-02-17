@@ -13,7 +13,7 @@ const config = {
         mode: Phaser.Scale.ENVELOP,
         autoCenter: Phaser.Scale.CENTER_BOTH
     },
-    scene: [HuntScene, CaveBarScene]
+    scene: [CaveBarScene, HuntScene]
 };
 
 const game = new Phaser.Game(config);
