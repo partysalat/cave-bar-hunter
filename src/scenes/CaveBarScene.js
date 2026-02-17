@@ -140,14 +140,23 @@ export default class CaveBarScene extends Phaser.Scene {
     buildPaintings() {
         this.paintingObjects = CAVE_BAR.paintings.map((pd, i) => {
             const sx = worldToScreen(pd.x, 0).x;
+            const baseColor = PAINTING_COLORS[i];
 
-            this.add.rectangle(sx, PROP_Y, 46, 76, PAINTING_COLORS[i])
+            const rect = this.add.rectangle(sx, PROP_Y, 46, 76, baseColor)
                 .setScrollFactor(0).setDepth(DEPTH_LAYERS.ENTITIES);
             this.add.text(sx, LABEL_Y, pd.ability.name, {
                 fontSize: '15px', fontFamily: 'Arial', color: '#ffcc88',
             }).setOrigin(0.5).setScrollFactor(0).setDepth(DEPTH_LAYERS.UI);
 
+            // AbilityPaintingUI calls sprite.getCenter() and sprite.setTint().
+            // Rectangle doesn't support setTint, so provide a thin adapter.
+            const sprite = {
+                getCenter: () => ({ x: rect.x, y: rect.y }),
+                setTint: (color) => rect.setFillStyle(color === 0xffffff ? baseColor : color),
+            };
+
             return {
+                sprite,
                 worldX: pd.x,
                 worldY: 0,
                 interactionRadius: pd.interactionRadius,
