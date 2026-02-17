@@ -97,7 +97,6 @@ Apply to **all 4 hero characters**. Use the `east` direction frames only.
 
 ## Compy Animations
 
-**ID:** `377b6fd7-cfc8-441c-88f7-bf4a5c3a664b` — quadruped, 64×64, side view
 
 | Game Key | Template ID | Action Description |
 |---|---|---|
