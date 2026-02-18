@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import CaveBarScene from './scenes/CaveBarScene.js';
 import HuntScene from './scenes/HuntScene.js';
+import GameOverScene from './scenes/GameOverScene.js';
 import { SCREEN_WIDTH, SCREEN_HEIGHT } from './systems/CoordinateSystem.js';
 
 const config = {
@@ -13,7 +14,7 @@ const config = {
         mode: Phaser.Scale.ENVELOP,
         autoCenter: Phaser.Scale.CENTER_BOTH
     },
-    scene: [CaveBarScene, HuntScene]
+    scene: [CaveBarScene, HuntScene, GameOverScene]
 };
 
 const game = new Phaser.Game(config);
