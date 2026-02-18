@@ -370,21 +370,23 @@ export default class HuntScene extends Phaser.Scene {
     }
 
     showHuntEnd(isVictory) {
-        const msg    = isVictory ? 'HUNT COMPLETE!' : 'HUNT FAILED!';
-        const color  = isVictory ? '#ffcc00' : '#ff4444';
+        const msg   = isVictory ? 'HUNT COMPLETE!' : 'HUNT FAILED!';
+        const color = isVictory ? '#ffcc00' : '#ff4444';
 
-        gameSession.savePlayerState?.(this.players);
-        if (isVictory) gameSession.advanceHunt?.();
+        gameSession.savePlayerState(this.players);
+        if (isVictory) gameSession.advanceHunt('compy-pack');
 
         this.add.text(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, msg, {
             fontSize: '72px', fontFamily: 'Arial', color,
             fontStyle: 'bold', stroke: '#000000', strokeThickness: 10,
         }).setOrigin(0.5).setScrollFactor(0).setDepth(DEPTH_LAYERS.UI + 100);
 
+        const nextScene = isVictory ? 'CaveBarScene' : 'GameOverScene';
+
         this.time.delayedCall(3000, () => {
             this.cameras.main.fadeOut(800, 0, 0, 0);
             this.cameras.main.once('camerafadeoutcomplete', () => {
-                this.scene.start('CaveBarScene');
+                this.scene.start(nextScene);
             });
         });
     }
