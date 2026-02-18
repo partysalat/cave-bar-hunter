@@ -161,6 +161,22 @@ export default class SessionManager {
     }
 
     /**
+     * Called at the start of each hunt (for logging / future setup hooks).
+     */
+    startHunt() {
+        console.log(`🎯 Hunt ${this.currentHunt}/${this.totalHunts} starting`);
+    }
+
+    /**
+     * Called on hunt victory. Records defeat and advances to next hunt.
+     * @param {string} [dinosaurId] - ID of the defeated dinosaur
+     */
+    advanceHunt(dinosaurId) {
+        if (dinosaurId) this.completeHunt(dinosaurId);
+        this.nextHunt();
+    }
+
+    /**
      * Advance to next hunt
      */
     nextHunt() {
