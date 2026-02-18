@@ -28,7 +28,9 @@ vi.mock('../../src/systems/SessionManager.js', () => ({
             { playerIndex: 1, score: 0, weapon: 'stone-spear' },
             { playerIndex: 2, score: 0, weapon: 'stone-spear' },
             { playerIndex: 3, score: 0, weapon: 'stone-spear' }
-        ]
+        ],
+        savePlayerState: vi.fn(),
+        advanceHunt: vi.fn(),
     }
 }));
 
