@@ -250,6 +250,12 @@ export default class CaveBarScene extends Phaser.Scene {
         this.add.text(cx, 112, 'NEXT HUNT IN', {
             fontSize: '18px', fontFamily: 'Arial', color: '#aaaaaa',
         }).setOrigin(0.5).setScrollFactor(0).setDepth(DEPTH_LAYERS.UI);
+
+        const hunt = gameSession.getCurrentHunt();
+        const total = gameSession.totalHunts;
+        this.add.text(cx, 155, `Hunt ${hunt} of ${total}`, {
+            fontSize: '22px', fontFamily: 'Arial', color: '#ffcc88',
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(DEPTH_LAYERS.UI);
     }
 
     // ─── Update ──────────────────────────────────────────────────────────────
