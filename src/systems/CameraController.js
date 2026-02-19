@@ -1,103 +1,71 @@
 import { PIXELS_PER_UNIT, SCREEN_WIDTH } from './CoordinateSystem.js';
 
 /**
- * Controls camera to follow players with smooth movement and dynamic zoom.
- * Sidescroller mode: horizontal-only follow, clamped to arena bounds.
- * Zoom adjusts so all alive players are always visible.
+ * Dynamic camera: keeps all players visible at all times.
+ * Computes the bounding box (min/max worldX) of all players,
+ * centers on the midpoint, and zooms to fit — instantly on zoom-out,
+ * smoothly on zoom-in.
  */
 export default class CameraController {
     constructor(camera) {
         this.camera = camera;
-        this.lerpSpeed     = 0.08; // Smooth pan speed (0-1)
-        this.zoomLerpSpeed = 0.06; // Smooth zoom speed (0-1)
+        this.lerpSpeed     = 0.08; // Smooth pan speed
+        this.zoomLerpSpeed = 0.06; // Smooth zoom-in speed (zoom-out is instant)
 
-        // Zoom bounds
         this.minZoom = 0.5;  // Max zoom-out: shows full 80-unit arena
-        this.maxZoom = 1.2;  // Max zoom-in: slightly tighter than 1:1
+        this.maxZoom = 1.2;  // Max zoom-in
 
-        // Minimum visible world width at max zoom-in (world units)
-        this.minVisibleWidth = 40;
+        this.padding         = 8;  // World units of padding around player group
+        this.minVisibleWidth = 40; // Never zoom in tighter than this (world units)
 
-        // Padding around player group (world units)
-        this.zoomPadding = 8;
-
-        // Current visible world bounds (world units) — updated each frame
+        // Exposed bounds (world units), updated each frame
         this.leftBound  = 0;
         this.rightBound = 80;
     }
 
     /**
-     * Calculates center point of a set of players.
-     */
-    calculatePlayerCenter(players) {
-        if (players.length === 0) return { worldX: 40, worldY: 0 };
-
-        let sumX = 0;
-        let sumY = 0;
-        for (const player of players) {
-            sumX += player.worldX;
-            sumY += player.worldY;
-        }
-        return { worldX: sumX / players.length, worldY: sumY / players.length };
-    }
-
-    /**
-     * Calculates the horizontal spread of a set of players in world units.
-     */
-    calculateSpread(players) {
-        if (players.length <= 1) return 0;
-        let minX = Infinity;
-        let maxX = -Infinity;
-        for (const player of players) {
-            if (player.worldX < minX) minX = player.worldX;
-            if (player.worldX > maxX) maxX = player.worldX;
-        }
-        return maxX - minX;
-    }
-
-    /**
-     * Updates camera position and zoom to keep all alive players in frame.
-     * @param {Array} players - Array of player entities
-     * @param {number} arenaWidth - Arena width in world units
+     * Updates camera to keep all players in frame.
+     * @param {Array} players
+     * @param {number} arenaWidth - World units
      */
     update(players, arenaWidth) {
-        // Use alive players for zoom; fall back to all players if all downed
-        const alive = players.filter(p => !p.isDowned);
-        const activePlayers = alive.length > 0 ? alive : players;
+        if (players.length === 0) return;
 
-        const center = this.calculatePlayerCenter(activePlayers);
-        const spread = this.calculateSpread(activePlayers);
+        // Bounding box of all players
+        let minX = Infinity;
+        let maxX = -Infinity;
+        for (const p of players) {
+            if (p.worldX < minX) minX = p.worldX;
+            if (p.worldX > maxX) maxX = p.worldX;
+        }
 
-        // Target visible world width: at least minVisibleWidth, plus padding around spread
-        const targetVisibleWidth = Math.max(
-            this.minVisibleWidth,
-            spread + this.zoomPadding
-        );
+        // Padded range, clamped to arena
+        const paddedLeft  = Math.max(0, minX - this.padding);
+        const paddedRight = Math.min(arenaWidth * PIXELS_PER_UNIT / PIXELS_PER_UNIT, maxX + this.padding);
+        const targetVisibleWidth = Math.max(this.minVisibleWidth, paddedRight - paddedLeft);
+        const centerWorldX = (paddedLeft + paddedRight) / 2;
 
-        // zoom = screen pixels / target world pixels
-        const targetZoom = SCREEN_WIDTH / (targetVisibleWidth * PIXELS_PER_UNIT);
+        // Zoom to fit
+        const targetZoom  = SCREEN_WIDTH / (targetVisibleWidth * PIXELS_PER_UNIT);
         const clampedZoom = Math.max(this.minZoom, Math.min(this.maxZoom, targetZoom));
 
-        // Lerp zoom
+        // Zoom out instantly, zoom in smoothly
         const currentZoom = this.camera.zoom || 1;
-        const newZoom = currentZoom + (clampedZoom - currentZoom) * this.zoomLerpSpeed;
+        const newZoom = clampedZoom < currentZoom
+            ? clampedZoom
+            : currentZoom + (clampedZoom - currentZoom) * this.zoomLerpSpeed;
         this.camera.setZoom(newZoom);
 
-        // Scroll: center on player group, accounting for current zoom
-        // visiblePixelWidth = SCREEN_WIDTH / newZoom (world pixels visible at this zoom)
+        // Scroll to center on midpoint, respecting arena bounds
         const visiblePixels = SCREEN_WIDTH / newZoom;
-        const centerPixelX = center.worldX * PIXELS_PER_UNIT;
-        const targetScrollX = centerPixelX - visiblePixels / 2;
+        const targetScrollX = centerWorldX * PIXELS_PER_UNIT - visiblePixels / 2;
+        const maxScrollX    = arenaWidth * PIXELS_PER_UNIT - visiblePixels;
+        const clampedScrollX = Math.max(0, Math.min(Math.max(0, maxScrollX), targetScrollX));
 
-        const maxScrollX = arenaWidth * PIXELS_PER_UNIT - visiblePixels;
-        const clampedScrollX = Math.max(0, Math.min(maxScrollX, targetScrollX));
-
-        const currentX = this.camera.scrollX;
-        const newScrollX = currentX + (clampedScrollX - currentX) * this.lerpSpeed;
-
+        const newScrollX = this.camera.scrollX + (clampedScrollX - this.camera.scrollX) * this.lerpSpeed;
         this.camera.setScroll(newScrollX, 0);
 
-        // Expose current visible world bounds for player clamping (world units)
+        // Expose visible bounds for external use
         this.leftBound  = newScrollX / PIXELS_PER_UNIT;
         this.rightBound = (newScrollX + visiblePixels) / PIXELS_PER_UNIT;
     }
