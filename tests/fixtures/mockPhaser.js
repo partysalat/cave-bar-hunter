@@ -89,6 +89,7 @@ export function createMockScene() {
                 centerOn: vi.fn(),
                 fadeOut: vi.fn(),
                 once: vi.fn(),
+                setZoom: vi.fn(function(z) { this.zoom = z; }),
                 setScroll: vi.fn(function(x, y) {
                     this.scrollX = x;
                     this.scrollY = y;

@@ -156,11 +156,11 @@ export default class HuntScene extends Phaser.Scene {
 
     spawnCompys() {
         const spawnPositions = [
-            { x: 8,  y: 0 },
-            { x: 25, y: 0 },
+            { x: 5,  y: 0 },
+            { x: 15, y: 0 },
             { x: 40, y: 0 },
-            { x: 58, y: 0 },
-            { x: 72, y: 0 },
+            { x: 55, y: 0 },
+            { x: 70, y: 0 },
         ];
 
         const aliveCount  = this.players.filter(p => !p.isDowned).length;
