@@ -8,8 +8,8 @@ import { PIXELS_PER_UNIT, SCREEN_WIDTH } from './CoordinateSystem.js';
 export default class CameraController {
     constructor(camera) {
         this.camera = camera;
-        this.lerpSpeed     = 0.05; // Smooth pan speed (0-1)
-        this.zoomLerpSpeed = 0.03; // Smooth zoom speed (0-1)
+        this.lerpSpeed     = 0.08; // Smooth pan speed (0-1)
+        this.zoomLerpSpeed = 0.06; // Smooth zoom speed (0-1)
 
         // Zoom bounds
         this.minZoom = 0.5;  // Max zoom-out: shows full 80-unit arena
@@ -20,6 +20,10 @@ export default class CameraController {
 
         // Padding around player group (world units)
         this.zoomPadding = 8;
+
+        // Current visible world bounds (world units) — updated each frame
+        this.leftBound  = 0;
+        this.rightBound = 80;
     }
 
     /**
@@ -92,5 +96,9 @@ export default class CameraController {
         const newScrollX = currentX + (clampedScrollX - currentX) * this.lerpSpeed;
 
         this.camera.setScroll(newScrollX, 0);
+
+        // Expose current visible world bounds for player clamping (world units)
+        this.leftBound  = newScrollX / PIXELS_PER_UNIT;
+        this.rightBound = (newScrollX + visiblePixels) / PIXELS_PER_UNIT;
     }
 }

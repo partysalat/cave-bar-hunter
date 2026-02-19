@@ -221,7 +221,15 @@ export default class HuntScene extends Phaser.Scene {
                 checkPlatform(player, platform, prevY);
             }
 
+            // Clamp to arena hard bounds first, then to camera visible bounds
             player.worldX = Math.max(0, Math.min(JUNGLE_ARENA.width, player.worldX));
+            if (this.cameraController) {
+                const margin = 0.5;
+                player.worldX = Math.max(
+                    this.cameraController.leftBound  + margin,
+                    Math.min(this.cameraController.rightBound - margin, player.worldX)
+                );
+            }
             player.updateScreenPosition();
         });
     }
