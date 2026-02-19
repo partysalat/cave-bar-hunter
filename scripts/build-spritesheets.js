@@ -75,6 +75,7 @@ const COMPY_ANIMATIONS = {
     'run':    { key: 'run' },
     'idle':   { key: 'idle' },
     'attack': { key: 'attack' },
+    'downed': { key: 'downed' },
 };
 
 // Bartender uses 8-direction top-down (unchanged from original)

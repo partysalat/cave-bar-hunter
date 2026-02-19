@@ -141,6 +141,7 @@ export default class HuntScene extends Phaser.Scene {
             { key: 'compy-walk',   prefix: 'compy-walk-',   end: 3, fps: 8,  repeat: -1 },
             { key: 'compy-run',    prefix: 'compy-run-',    end: 3, fps: 12, repeat: -1 },
             { key: 'compy-attack', prefix: 'compy-attack-', end: 3, fps: 10, repeat: 0  },
+            { key: 'compy-downed', prefix: 'compy-downed-', end: 3, fps: 8,  repeat: 0  },
         ].forEach(({ key, prefix, end, fps, repeat }) => {
             if (!this.anims.exists(key)) {
                 this.anims.create({

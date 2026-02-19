@@ -39,6 +39,7 @@ export function createMockScene() {
                 setScrollFactor: vi.fn().mockReturnThis(),
                 setVisible:      vi.fn().mockReturnThis(),
                 play:            vi.fn().mockReturnThis(),
+                once:            vi.fn().mockReturnThis(),
                 anims: { currentAnim: null }
             }),
             image: (x, y, texture) => ({

@@ -112,9 +112,11 @@ export default class Dinosaur extends Entity {
      * Called when health reaches 0
      */
     onDeath() {
-        // Phase 1: Just mark as dead
-        // Later: death animation, score awards, etc.
         console.log(`${this.type} defeated!`);
+        this._playAnim('compy-downed');
+        this.sprite.once('animationcomplete', () => {
+            this.sprite.setVisible(false);
+        });
     }
 
     /**
