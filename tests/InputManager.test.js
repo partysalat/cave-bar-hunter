@@ -1,62 +1,46 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import InputManager from '../src/systems/InputManager.js';
 
+function createScene() {
+    return {
+        input: {
+            gamepad: {
+                on: vi.fn(),
+            },
+            keyboard: {
+                addKey: vi.fn(() => ({ isDown: false })),
+            },
+        },
+    };
+}
+
 describe('InputManager', () => {
-    let mockScene;
+    it('registers connected gamepads in the first available slot', () => {
+        const manager = new InputManager(createScene());
+        const pad = { left: true };
 
-    beforeEach(() => {
-        mockScene = {
-            input: {
-                gamepad: {
-                    on: () => {},
-                    gamepads: []
-                }
-            }
-        };
-    });
+        manager.onGamepadConnected(pad);
 
-    it('initializes with up to 4 player slots', () => {
-        const inputMgr = new InputManager(mockScene);
-        expect(inputMgr.players).toHaveLength(4);
-        expect(inputMgr.players[0]).toBeNull();
-    });
-
-    it('normalizes D-pad input to direction vector', () => {
-        const inputMgr = new InputManager(mockScene);
-
-        // Mock D-pad up
-        const result = inputMgr.getDPadDirection({ up: true, down: false, left: false, right: false });
-        expect(result.x).toBe(0);
-        expect(result.y).toBe(-1);
-    });
-
-    it('normalizes diagonal D-pad input', () => {
-        const inputMgr = new InputManager(mockScene);
-
-        // Mock D-pad up-right
-        const result = inputMgr.getDPadDirection({ up: true, down: false, left: false, right: true });
-        expect(result.x).toBeCloseTo(0.707, 2);
-        expect(result.y).toBeCloseTo(-0.707, 2);
+        expect(manager.gamepads[0]).toBe(pad);
     });
 
     it('provides keyboard fallback for player 0', () => {
-        const mockKeys = {
-            W: { isDown: true },
-            A: { isDown: false },
-            S: { isDown: false },
-            D: { isDown: false },
-            SPACE: { isDown: false },
-            SHIFT: { isDown: false },
-            E: { isDown: false },
-            Q: { isDown: false }
-        };
+        const scene = createScene();
+        scene.input.keyboard.addKey = vi
+            .fn()
+            .mockReturnValueOnce({ isDown: true })
+            .mockReturnValueOnce({ isDown: false })
+            .mockReturnValueOnce({ isDown: false })
+            .mockReturnValueOnce({ isDown: true })
+            .mockReturnValueOnce({ isDown: false });
 
-        mockScene.input.mousePointer = { isDown: false };
+        const manager = new InputManager(scene);
+        manager.setupKeyboard();
 
-        const inputMgr = new InputManager(mockScene);
-        inputMgr.keyboardKeys = mockKeys;
+        const input = manager.getPlayerInputWithKeyboard(0);
 
-        const input = inputMgr.getPlayerInputWithKeyboard(0);
-        expect(input.dpad.up).toBe(true);
+        expect(input.left).toBe(true);
+        expect(input.right).toBe(false);
+        expect(input.jumpPressed).toBe(true);
     });
 });

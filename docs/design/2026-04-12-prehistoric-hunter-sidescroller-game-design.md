@@ -565,6 +565,12 @@ Player interaction:
 - swing based on current momentum
 - release at the desired point in the arc
 
+Implementation direction:
+
+- use Phaser's built-in Matter physics support for the swinging liana bodies and constraints
+- keep release timing, scoring, and special strike logic in custom gameplay code
+- tune the swing for readability and consistency rather than strict simulation realism
+
 ### Release Outcomes
 
 - downswing release: quick ground drop
@@ -609,6 +615,8 @@ Climbing creates a second layer of combat readability: one player may bait on th
 
 Environmental hazards are timed events that threaten players and sometimes the boss.
 
+These hazards are strong candidates for a hybrid physics approach. Their motion should feel physical and reactive, but their spawn timing, telegraphing, damage windows, and boss-specific outcomes should remain under designer control.
+
 ### Jungle: Rolling Logs
 
 - enter from screen edges
@@ -634,6 +642,25 @@ Environmental hazards are timed events that threaten players and sometimes the b
 - can separate players and bosses for a short window
 
 Hazards should create tactical opportunities, not random frustration.
+
+### Hybrid Physics Rule
+
+Use Phaser's built-in Matter physics support where the physical motion is the fun:
+
+- falling objects
+- rolling hazards
+- swinging traversal objects
+- breakable arena pieces
+- projectile arcs and knockback-heavy interactions
+
+Keep the game’s core combat loop in custom systems:
+
+- telegraphs
+- dodge windows
+- revive logic
+- score rules
+- stagger thresholds
+- hunt scripting
 
 ## Cave Bar Hub
 
@@ -897,9 +924,35 @@ Every critical audio cue must have an equally strong visual counterpart so the g
 ### Technology Stack
 
 - Phaser 3
+- Phaser's built-in Matter physics support for selected simulation inside a hybrid architecture
 - browser deployment
 - gamepad-first input
 - remote-friendly update model
+
+### Hybrid Physics Architecture
+
+The project should use a hybrid model rather than a full physics-first design.
+
+Phaser's built-in Matter support should handle:
+
+- environmental hazards such as logs, boulders, ice blocks, and falling ribs
+- lianas, ropes, and other swinging traversal elements
+- projectile arcs and selected impact reactions
+- destructible props and moving arena pieces
+- multi-part boss hit zones or body sensors where physical interaction improves readability
+
+Custom gameplay code should still own:
+
+- player input feel
+- dodge timing and invincibility windows
+- revive flow
+- scoring
+- telegraph sequencing
+- stagger logic
+- encounter scripting
+- boss attack state machines
+
+This keeps the game expressive and spectacular without sacrificing tight control over feel and spectator readability.
 
 ### Core Systems
 
@@ -911,9 +964,11 @@ Every critical audio cue must have an equally strong visual counterpart so the g
 
 #### `PhysicsManager`
 
-- 2D movement and jump physics
-- platform collision
-- hazard interaction
+- wraps hybrid physics behavior
+- handles player movement rules and jump tuning
+- owns platform interaction rules and collision filtering
+- coordinates Phaser Matter bodies, sensors, and constraints for hazards and traversal
+- translates raw physics events into readable gameplay outcomes
 
 #### `CombatSystem`
 
@@ -922,6 +977,7 @@ Every critical audio cue must have an equally strong visual counterpart so the g
 - dodge and perfect dodge timing
 - stagger tracking
 - status effects
+- interprets collisions and sensors from the physics layer without surrendering combat pacing to simulation
 
 #### `DinosaurAI`
 
@@ -929,6 +985,7 @@ Every critical audio cue must have an equally strong visual counterpart so the g
 - target selection
 - telegraph and attack scripting
 - phase logic
+- decides when bosses use physics-backed moves, hazards, or collapses
 
 #### `SessionManager`
 
@@ -944,6 +1001,13 @@ Every critical audio cue must have an equally strong visual counterpart so the g
 - stat awards
 - leaderboard formatting
 
+#### `PhysicsBridge` or equivalent integration layer
+
+- maps Phaser Matter collision events to gameplay concepts
+- separates simulation details from combat and scoring systems
+- allows hazards and boss parts to be physically simulated without coupling every rule to the engine
+- provides a clean place for collision categories, sensors, constraints, and scripted overrides
+
 ### World Model
 
 The canonical gameplay space is:
@@ -952,6 +1016,8 @@ The canonical gameplay space is:
 - `worldY`: vertical height
 
 There is no extra depth axis in the core design. The camera is side-on, the arenas are built for left-right combat, and every system should treat this sidescroller view as the default reality of the game.
+
+Within that 2D model, Phaser's built-in Matter support should be treated as a supporting simulation layer, not the source of truth for every gameplay rule. Physics should enhance spectacle, traversal, and hazards while custom logic remains the authority for combat readability and pacing.
 
 ### Performance Targets
 

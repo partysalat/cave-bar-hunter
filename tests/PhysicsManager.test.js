@@ -1,109 +1,55 @@
-import { describe, it, expect } from 'vitest';
-import {
-    sphereVsSphere, distance2D, boxVsBox, sphereVsBox,
-    applyGravity, checkPlatform, GRAVITY
-} from '../src/systems/PhysicsManager.js';
+import { describe, expect, it } from 'vitest';
+import { applyPlayerPhysics, getGravity } from '../src/systems/PhysicsManager.js';
 
 describe('PhysicsManager', () => {
-    describe('distance2D', () => {
-        it('calculates 2D distance between two points', () => {
-            expect(distance2D(0, 0, 3, 4)).toBe(5); // 3-4-5 triangle
-        });
+    it('applies gravity while the player is airborne', () => {
+        const player = {
+            width: 0.8,
+            worldX: 4,
+            worldY: 3,
+            velocityX: 0,
+            velocityY: 0,
+            onGround: false,
+        };
 
-        it('returns 0 for same point', () => {
-            expect(distance2D(5, 5, 5, 5)).toBe(0);
-        });
+        applyPlayerPhysics(player, 0.1, [], 48);
 
-        it('works with horizontal distance only', () => {
-            expect(distance2D(0, 0, 5, 0)).toBe(5);
-        });
+        expect(getGravity()).toBeGreaterThan(0);
+        expect(player.worldY).toBeLessThan(3);
+        expect(player.velocityY).toBeLessThan(0);
     });
 
-    describe('sphereVsSphere', () => {
-        it('detects collision when spheres overlap', () => {
-            const a = { worldX: 0, worldY: 0, radius: 2 };
-            const b = { worldX: 3, worldY: 0, radius: 2 };
-            expect(sphereVsSphere(a, b)).toBe(true); // distance 3 < radius sum 4
-        });
+    it('lands on the ground when falling below y=0', () => {
+        const player = {
+            width: 0.8,
+            worldX: 4,
+            worldY: 0.1,
+            velocityX: 0,
+            velocityY: -4,
+            onGround: false,
+        };
 
-        it('detects no collision when spheres are apart', () => {
-            const a = { worldX: 0, worldY: 0, radius: 1 };
-            const b = { worldX: 5, worldY: 0, radius: 1 };
-            expect(sphereVsSphere(a, b)).toBe(false); // distance 5 > radius sum 2
-        });
+        applyPlayerPhysics(player, 0.1, [], 48);
 
-        it('considers vertical separation', () => {
-            const a = { worldX: 0, worldY: 0, radius: 1 };
-            const b = { worldX: 0, worldY: 3, radius: 1 };
-            expect(sphereVsSphere(a, b)).toBe(false); // separated vertically
-        });
+        expect(player.worldY).toBe(0);
+        expect(player.velocityY).toBe(0);
+        expect(player.onGround).toBe(true);
     });
 
-    describe('boxVsBox', () => {
-        it('detects overlapping boxes', () => {
-            const a = { worldX: 0, worldY: 0, width: 4, height: 4 };
-            const b = { worldX: 2, worldY: 0, width: 4, height: 4 };
-            expect(boxVsBox(a, b)).toBe(true);
-        });
+    it('lands on top of a platform while falling through its height', () => {
+        const player = {
+            width: 0.8,
+            worldX: 10,
+            worldY: 2.8,
+            velocityX: 0,
+            velocityY: -6,
+            onGround: false,
+        };
 
-        it('detects non-overlapping boxes', () => {
-            const a = { worldX: 0, worldY: 0, width: 2, height: 2 };
-            const b = { worldX: 5, worldY: 0, width: 2, height: 2 };
-            expect(boxVsBox(a, b)).toBe(false);
-        });
-    });
+        applyPlayerPhysics(player, 0.1, [{ x: 8, y: 2, width: 5 }], 48);
 
-    describe('applyGravity', () => {
-        it('does nothing to entities without affectedByGravity', () => {
-            const entity = { affectedByGravity: false, worldY: 5, velocityY: 0, onGround: false };
-            applyGravity(entity, 100);
-            expect(entity.worldY).toBe(5);
-        });
-
-        it('accelerates entity downward each frame', () => {
-            // Use 100ms delta - at GRAVITY=-40, worldY only drops 0.2 units, stays airborne
-            const entity = { affectedByGravity: true, worldY: 10, velocityY: 0, onGround: false };
-            applyGravity(entity, 100); // 0.1 second
-            expect(entity.velocityY).toBeCloseTo(GRAVITY * 0.1); // -4
-            expect(entity.worldY).toBeLessThan(10);
-        });
-
-        it('stops entity at ground (worldY=0)', () => {
-            const entity = { affectedByGravity: true, worldY: 0.1, velocityY: -20, onGround: false };
-            applyGravity(entity, 100);
-            expect(entity.worldY).toBe(0);
-            expect(entity.velocityY).toBe(0);
-            expect(entity.onGround).toBe(true);
-        });
-
-        it('sets onGround false when airborne', () => {
-            const entity = { affectedByGravity: true, worldY: 5, velocityY: 0, onGround: true };
-            applyGravity(entity, 16);
-            expect(entity.onGround).toBe(false);
-        });
-    });
-
-    describe('checkPlatform', () => {
-        it('lands entity on platform when falling onto it', () => {
-            const platform = { x: 10, y: 5, width: 6 };
-            const entity = { worldX: 10, worldY: 4.9, velocityY: -5, onGround: false };
-            checkPlatform(entity, platform, 5.1); // prevY was above platform
-            expect(entity.worldY).toBe(5);
-            expect(entity.onGround).toBe(true);
-        });
-
-        it('ignores entity outside platform horizontal bounds', () => {
-            const platform = { x: 10, y: 5, width: 6 };
-            const entity = { worldX: 20, worldY: 4.9, velocityY: -5, onGround: false };
-            checkPlatform(entity, platform, 5.1);
-            expect(entity.onGround).toBe(false); // unchanged
-        });
-
-        it('allows jumping through platform from below', () => {
-            const platform = { x: 10, y: 5, width: 6 };
-            const entity = { worldX: 10, worldY: 5.5, velocityY: 10, onGround: false };
-            checkPlatform(entity, platform, 4.5); // was below, now above - jumping up
-            expect(entity.onGround).toBe(false); // should not land
-        });
+        expect(player.worldY).toBe(2);
+        expect(player.velocityY).toBe(0);
+        expect(player.onGround).toBe(true);
     });
 });

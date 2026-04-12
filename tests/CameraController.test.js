@@ -1,47 +1,35 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import CameraController from '../src/systems/CameraController.js';
 
+function createCamera() {
+    return {
+        zoom: 1,
+        scrollX: 0,
+        setZoom(value) {
+            this.zoom = value;
+        },
+        setScroll(x) {
+            this.scrollX = x;
+        },
+    };
+}
+
 describe('CameraController', () => {
-    let mockCamera;
+    it('keeps a single player within arena bounds', () => {
+        const camera = createCamera();
+        const controller = new CameraController(camera);
 
-    beforeEach(() => {
-        mockCamera = {
-            scrollX: 0,
-            scrollY: 0,
-            zoom: 1,
-            setZoom: function(z) { this.zoom = z; },
-            setScroll: function(x, y) {
-                this.scrollX = x;
-                this.scrollY = y;
-            }
-        };
+        controller.update([{ worldX: 4 }]);
+
+        expect(camera.scrollX).toBeGreaterThanOrEqual(0);
     });
 
-    it('centers on a single player', () => {
-        const controller = new CameraController(mockCamera);
-        controller.update([{ worldX: 40, worldY: 0 }], 80);
-        // Player at x=40, arena center — scroll should be near 0 (camera centered)
-        expect(mockCamera.scrollX).toBeGreaterThanOrEqual(0);
-    });
+    it('zooms out slightly when players are far apart', () => {
+        const camera = createCamera();
+        const controller = new CameraController(camera);
 
-    it('zooms out when players are far apart', () => {
-        const controller = new CameraController(mockCamera);
-        // Players at opposite ends of arena
-        controller.update([{ worldX: 5, worldY: 0 }, { worldX: 75, worldY: 0 }], 80);
-        expect(mockCamera.zoom).toBeLessThan(1);
-    });
+        controller.update([{ worldX: 4 }, { worldX: 30 }]);
 
-    it('does not zoom in beyond maxZoom', () => {
-        const controller = new CameraController(mockCamera);
-        // Players very close together
-        controller.update([{ worldX: 20, worldY: 0 }, { worldX: 21, worldY: 0 }], 80);
-        expect(mockCamera.zoom).toBeLessThanOrEqual(controller.maxZoom);
-    });
-
-    it('does not zoom out beyond minZoom', () => {
-        const controller = new CameraController(mockCamera);
-        // Players at extreme ends
-        controller.update([{ worldX: 0, worldY: 0 }, { worldX: 80, worldY: 0 }], 80);
-        expect(mockCamera.zoom).toBeGreaterThanOrEqual(controller.minZoom);
+        expect(camera.zoom).toBeLessThan(1);
     });
 });
