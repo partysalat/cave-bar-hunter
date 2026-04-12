@@ -32,6 +32,8 @@ describe('InputManager', () => {
             .mockReturnValueOnce({ isDown: false })
             .mockReturnValueOnce({ isDown: false })
             .mockReturnValueOnce({ isDown: true })
+            .mockReturnValueOnce({ isDown: false })
+            .mockReturnValueOnce({ isDown: true })
             .mockReturnValueOnce({ isDown: false });
 
         const manager = new InputManager(scene);
@@ -42,5 +44,7 @@ describe('InputManager', () => {
         expect(input.left).toBe(true);
         expect(input.right).toBe(false);
         expect(input.jumpPressed).toBe(true);
+        expect(input.meleePressed).toBe(true);
+        expect(input.throwPressed).toBe(false);
     });
 });

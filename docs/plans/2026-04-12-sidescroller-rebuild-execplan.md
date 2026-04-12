@@ -17,7 +17,8 @@ The most important rule for this rebuild is that every slice must produce someth
 - [x] (2026-04-12 20:45Z) Authored this ExecPlan with delivery slices, dependencies, and acceptance criteria.
 - [x] (2026-04-12 20:25Z) Created the corresponding beads issue hierarchy under epic `cave-bar-hunter-hep`, with child slices `cave-bar-hunter-hep.1` through `cave-bar-hunter-hep.12`.
 - [x] (2026-04-12 20:28Z) Completed Slice 1 by creating a new Phaser app shell, a playable movement sandbox, and baseline movement tests.
-- [ ] Start implementation for Slice 2 and keep this document updated as later slices are completed.
+- [x] (2026-04-12 20:39Z) Completed Slice 2 by extending the sandbox with melee, projectile throws, player damage, invincibility windows, a training dummy, HUD feedback, and combat tests.
+- [ ] Start implementation for Slice 3 and keep this document updated as later slices are completed.
 
 ## Surprises & Discoveries
 
@@ -32,6 +33,9 @@ The most important rule for this rebuild is that every slice must produce someth
 
 - Observation: Vite build succeeds against the new Slice 1 source tree, but the bundled Phaser chunk is large enough to trigger Vite's default chunk-size warning.
   Evidence: `npm run build` completed successfully and reported a warning for `dist/assets/index-*.js` being larger than 500 kB.
+
+- Observation: Slice 2 did not require introducing a full enemy AI system yet; a stationary training dummy with a simple touch attack was enough to validate combat rules honestly.
+  Evidence: `MovementSandboxScene` now supports melee, projectile hits, dummy damage, and player damage while remaining a single-scene sandbox.
 
 ## Decision Log
 
@@ -49,7 +53,7 @@ The most important rule for this rebuild is that every slice must produce someth
 
 ## Outcomes & Retrospective
 
-Slice 1 is complete. The repo now has a runnable Phaser application again, centered on a movement sandbox with left-right motion, jump, dodge, platforms, camera follow, and a small test suite aligned with the rebuild. This is a good first checkpoint because it confirms the new architecture can compile and run without inheriting the removed codebase. The next retrospective entry should evaluate whether Slice 2 should stay as one task or be split into “combat input/attacks” and “combat damage/HUD” once implementation begins.
+Slices 1 and 2 are complete. The repo now has a runnable Phaser application with a movement-and-combat sandbox: left-right motion, jump, dodge, melee, spear throws, player damage, invincibility windows, a target dummy, HUD feedback, and a baseline test suite that matches the rebuild instead of the removed implementation. This is a strong checkpoint because it proves the new codebase can already support the core verbs of the final game before any hunt-specific flow or AI complexity is added. The next retrospective entry should examine whether Slice 3 should remain a single “Compy hunt loop” task or be split once encounter setup, session state, and win/loss routing start interacting.
 
 ## Context and Orientation
 

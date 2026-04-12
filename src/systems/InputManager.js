@@ -21,6 +21,8 @@ export default class InputManager {
             UP: keyboard.addKey('UP'),
             SPACE: keyboard.addKey('SPACE'),
             SHIFT: keyboard.addKey('SHIFT'),
+            Z: keyboard.addKey('Z'),
+            X: keyboard.addKey('X'),
         };
     }
 
@@ -47,6 +49,8 @@ export default class InputManager {
             right: Boolean(pad.right),
             jumpPressed: Boolean(pad.up || pad.A || pad.B),
             dodgePressed: Boolean(pad.R2 || pad.L2 || pad.X),
+            meleePressed: Boolean(pad.B || pad.Y),
+            throwPressed: Boolean(pad.R1 || pad.R2 || pad.A),
         };
     }
 
@@ -61,6 +65,8 @@ export default class InputManager {
             right: Boolean(this.keyboardKeys.RIGHT.isDown),
             jumpPressed: Boolean(this.keyboardKeys.UP.isDown || this.keyboardKeys.SPACE.isDown),
             dodgePressed: Boolean(this.keyboardKeys.SHIFT.isDown),
+            meleePressed: Boolean(this.keyboardKeys.Z.isDown),
+            throwPressed: Boolean(this.keyboardKeys.X.isDown),
         };
     }
 }

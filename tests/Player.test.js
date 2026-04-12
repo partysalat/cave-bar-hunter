@@ -6,6 +6,7 @@ function createScene() {
         add: {
             rectangle: vi.fn(() => ({
                 setOrigin: vi.fn().mockReturnThis(),
+                setAlpha: vi.fn().mockReturnThis(),
             })),
         },
     };
@@ -49,5 +50,29 @@ describe('Player', () => {
 
         expect(player.isDodging).toBe(false);
         expect(player.canDodge()).toBe(false);
+    });
+
+    it('takes damage and gains temporary invincibility', () => {
+        const player = new Player(createScene(), 0, 4, 0);
+
+        expect(player.takeDamage(1)).toBe(true);
+        expect(player.health).toBe(2);
+        expect(player.isInvincible()).toBe(true);
+        expect(player.takeDamage(1)).toBe(false);
+        expect(player.health).toBe(2);
+    });
+
+    it('tracks melee and throw cooldowns', () => {
+        const player = new Player(createScene(), 0, 4, 0);
+
+        expect(player.startMeleeAttack()).toBe(true);
+        expect(player.startThrowAttack()).toBe(true);
+        expect(player.canMelee()).toBe(false);
+        expect(player.canThrow()).toBe(false);
+
+        player.update(1);
+
+        expect(player.canMelee()).toBe(true);
+        expect(player.canThrow()).toBe(true);
     });
 });
