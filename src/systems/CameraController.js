@@ -9,7 +9,7 @@ import { PIXELS_PER_UNIT, SCREEN_WIDTH } from './CoordinateSystem.js';
 export default class CameraController {
     constructor(camera) {
         this.camera = camera;
-        this.lerpSpeed     = 0.08; // Smooth pan speed
+        this.lerpSpeed     = 1.0; // Instant follow — keeps all players visible every frame
         this.zoomLerpSpeed = 0.06; // Smooth zoom-in speed (zoom-out is instant)
 
         this.minZoom = 0.5;  // Max zoom-out: shows full 80-unit arena
@@ -68,5 +68,6 @@ export default class CameraController {
         // Expose visible bounds for external use
         this.leftBound  = newScrollX / PIXELS_PER_UNIT;
         this.rightBound = (newScrollX + visiblePixels) / PIXELS_PER_UNIT;
+
     }
 }

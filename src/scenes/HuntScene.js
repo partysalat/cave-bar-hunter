@@ -191,11 +191,11 @@ export default class HuntScene extends Phaser.Scene {
         this.packCoordinator?.update(delta);
 
         this.updatePlayers(delta);
+        this.cameraController?.update(this.players, JUNGLE_ARENA.width);
         this.updateCompys(delta);
         this.updateProjectiles(delta);
         this.updateHUD();
         this.checkHuntCompletion();
-        this.cameraController?.update(this.players, JUNGLE_ARENA.width);
     }
 
     updatePlayers(delta) {
