@@ -1,14 +1,14 @@
 import { PIXELS_PER_UNIT, worldToScreen } from '../systems/WorldConfig.js';
 
 export default class Projectile {
-    constructor(scene, worldX, worldY, direction) {
+    constructor(scene, worldX, worldY, direction, damage = 2) {
         this.scene = scene;
         this.worldX = worldX;
         this.worldY = worldY;
         this.direction = direction >= 0 ? 1 : -1;
         this.speed = 18;
         this.radius = 0.22;
-        this.damage = 2;
+        this.damage = damage;
         this.active = true;
 
         this.sprite = scene.add.rectangle(0, 0, this.radius * PIXELS_PER_UNIT * 2, this.radius * PIXELS_PER_UNIT * 2, 0xf5f1a9);

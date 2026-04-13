@@ -19,9 +19,10 @@ export default class CombatSystem {
         }
 
         player.startMeleeAttack();
-        target.takeDamage(this.meleeDamage);
-        player.addScore(this.meleeDamage);
-        return { hit: true, damage: this.meleeDamage };
+        const damage = player.meleeDamage ?? this.meleeDamage;
+        target.takeDamage(damage);
+        player.addScore(damage);
+        return { hit: true, damage };
     }
 
     checkProjectileHit(projectile, target) {

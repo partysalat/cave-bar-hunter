@@ -1,4 +1,5 @@
 import { PIXELS_PER_UNIT, PLAYER_COLORS, worldToScreen } from '../systems/WorldConfig.js';
+import { createAtlasSpriteOrFallback, textureExists } from '../systems/AssetLoader.js';
 
 export default class Player {
     constructor(scene, playerNumber, worldX, worldY = 0) {
@@ -27,6 +28,10 @@ export default class Player {
         this.health = 3;
         this.maxHealth = 3;
         this.score = 0;
+        this.meleeDamage = 3;
+        this.throwDamage = 2;
+        this.moveSpeedMultiplier = 1;
+        this.dodgeCooldownMultiplier = 1;
         this.isDodging = false;
         this.dodgeTimeRemaining = 0;
         this.dodgeCooldownRemaining = 0;
@@ -34,14 +39,24 @@ export default class Player {
         this.meleeCooldownRemaining = 0;
         this.throwCooldownRemaining = 0;
 
-        this.sprite = scene.add.rectangle(0, 0, this.width * PIXELS_PER_UNIT, this.height * PIXELS_PER_UNIT, this.color);
-        this.sprite.setOrigin(0.5, 1);
+        this.sprite = createAtlasSpriteOrFallback(
+            scene,
+            0,
+            0,
+            `player-${playerNumber}`,
+            `player-${playerNumber}-idle-bow-0`,
+            this.width * PIXELS_PER_UNIT,
+            this.height * PIXELS_PER_UNIT,
+            this.color
+        );
+        this.sprite.setOrigin?.(0.5, 1);
+        this.sprite.setScale?.(1.6);
         this.updateScreenPosition();
     }
 
     move(direction) {
         if (this.isDodging) return;
-        this.velocityX = direction * this.moveSpeed;
+        this.velocityX = direction * this.moveSpeed * this.moveSpeedMultiplier;
         if (direction !== 0) {
             this.facing = direction > 0 ? 1 : -1;
         }
@@ -75,7 +90,7 @@ export default class Player {
         if (!this.canDodge()) return false;
         this.isDodging = true;
         this.dodgeTimeRemaining = this.dodgeDuration;
-        this.dodgeCooldownRemaining = this.dodgeCooldownDuration;
+        this.dodgeCooldownRemaining = this.dodgeCooldownDuration * this.dodgeCooldownMultiplier;
         this.invincibilityTimeRemaining = Math.max(this.invincibilityTimeRemaining, this.dodgeDuration);
         this.facing = direction >= 0 ? 1 : -1;
         this.velocityX = this.facing * this.dodgeSpeed;
@@ -109,6 +124,12 @@ export default class Player {
         this.score += points;
     }
 
+    spendScore(points) {
+        if (this.score < points) return false;
+        this.score -= points;
+        return true;
+    }
+
     update(deltaSeconds) {
         if (this.dodgeCooldownRemaining > 0) {
             this.dodgeCooldownRemaining = Math.max(0, this.dodgeCooldownRemaining - deltaSeconds);
@@ -131,12 +152,31 @@ export default class Player {
             }
         }
 
-        this.sprite.setAlpha(this.isInvincible() ? 0.65 : 1);
+        this.sprite.setAlpha?.(this.isInvincible() ? 0.65 : 1);
+        this.updateVisualState();
     }
 
     updateScreenPosition() {
         const screen = worldToScreen(this.worldX, this.worldY);
         this.sprite.x = screen.x;
         this.sprite.y = screen.y;
+    }
+
+    updateVisualState() {
+        this.sprite.setFlipX?.(this.facing < 0);
+
+        const atlasKey = `player-${this.playerNumber}`;
+        if (!textureExists(this.scene, atlasKey) || !this.sprite.setTexture) return;
+
+        let frame = `player-${this.playerNumber}-idle-bow-0`;
+        if (!this.onGround) {
+            frame = this.velocityY >= 0 ? `player-${this.playerNumber}-jump-0` : `player-${this.playerNumber}-fall-0`;
+        } else if (this.isDodging) {
+            frame = `player-${this.playerNumber}-attack-net-0`;
+        } else if (Math.abs(this.velocityX) > 0.1) {
+            frame = `player-${this.playerNumber}-run-club-0`;
+        }
+
+        this.sprite.setTexture(atlasKey, frame);
     }
 }

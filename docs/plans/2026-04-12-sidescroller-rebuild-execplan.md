@@ -18,7 +18,9 @@ The most important rule for this rebuild is that every slice must produce someth
 - [x] (2026-04-12 20:25Z) Created the corresponding beads issue hierarchy under epic `cave-bar-hunter-hep`, with child slices `cave-bar-hunter-hep.1` through `cave-bar-hunter-hep.12`.
 - [x] (2026-04-12 20:28Z) Completed Slice 1 by creating a new Phaser app shell, a playable movement sandbox, and baseline movement tests.
 - [x] (2026-04-12 20:39Z) Completed Slice 2 by extending the sandbox with melee, projectile throws, player damage, invincibility windows, a training dummy, HUD feedback, and combat tests.
-- [ ] Start implementation for Slice 3 and keep this document updated as later slices are completed.
+- [x] (2026-04-12 20:42Z) Completed Slice 3 by promoting the sandbox into a real `HuntScene` with Compy enemies, a minimal `SessionManager`, and win/fail routing.
+- [x] (2026-04-12 20:44Z) Completed Slice 4 by adding `CaveBarScene`, a countdown, simple upgrade stations, persistent score spending, and timed return-to-hunt routing.
+- [ ] Start implementation for Slice 5 and keep this document updated as later slices are completed.
 
 ## Surprises & Discoveries
 
@@ -37,6 +39,12 @@ The most important rule for this rebuild is that every slice must produce someth
 - Observation: Slice 2 did not require introducing a full enemy AI system yet; a stationary training dummy with a simple touch attack was enough to validate combat rules honestly.
   Evidence: `MovementSandboxScene` now supports melee, projectile hits, dummy damage, and player damage while remaining a single-scene sandbox.
 
+- Observation: The first real hunt loop could be implemented without building every future scene upfront; a minimal session manager plus scene restart logic was enough to prove progression and failure handling.
+  Evidence: `HuntScene` now uses `SessionManager` to advance hunt state, reset on failure, and display transition overlays while keeping the codebase small.
+
+- Observation: The first cave bar did not need full menu components to prove the pacing reset; station-based purchases with direct interaction were enough to validate the economy and state carry-over.
+  Evidence: `CaveBarScene` now supports timed intermission flow with three upgrade stations, and `CaveBarSession.test.js` verifies the upgraded state persists into the next hunt.
+
 ## Decision Log
 
 - Decision: Rebuild planning will use vertical slices instead of subsystem-first phases.
@@ -53,7 +61,7 @@ The most important rule for this rebuild is that every slice must produce someth
 
 ## Outcomes & Retrospective
 
-Slices 1 and 2 are complete. The repo now has a runnable Phaser application with a movement-and-combat sandbox: left-right motion, jump, dodge, melee, spear throws, player damage, invincibility windows, a target dummy, HUD feedback, and a baseline test suite that matches the rebuild instead of the removed implementation. This is a strong checkpoint because it proves the new codebase can already support the core verbs of the final game before any hunt-specific flow or AI complexity is added. The next retrospective entry should examine whether Slice 3 should remain a single “Compy hunt loop” task or be split once encounter setup, session state, and win/loss routing start interacting.
+Slices 1 through 4 are complete. The repo now has a runnable early session loop: a real hunt, a real cave bar intermission, persistent point spending, and timed routing back into combat. This is the first point where the project begins to resemble the intended venue rhythm rather than a pure prototype. The next retrospective entry should focus on whether Slice 5 can stay as one bundle of public-facing session scenes or whether attract mode and final result scenes should be split once implementation begins.
 
 ## Context and Orientation
 

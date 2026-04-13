@@ -114,7 +114,11 @@ export default class MovementSandboxScene extends Phaser.Scene {
         this.combatSystem.tryEnemyTouchAttack(this.trainingDummy, player);
 
         this.cameraController.update(this.players);
-        this.hud.update(player, this.trainingDummy, this.projectiles.length);
+        this.hud.update([
+            `HP ${player.health}/${player.maxHealth}   SCORE ${player.score}`,
+            `DUMMY ${this.trainingDummy.health}/${this.trainingDummy.maxHealth}   SPEARS ${this.projectiles.length}`,
+            `MELEE CD ${player.meleeCooldownRemaining.toFixed(2)}   THROW CD ${player.throwCooldownRemaining.toFixed(2)}`,
+        ]);
         this.statusText.setText(
             `x=${player.worldX.toFixed(2)}  y=${player.worldY.toFixed(2)}  vy=${player.velocityY.toFixed(2)}\n` +
             `ground=${player.onGround}  dodge=${player.isDodging}  dodgeCD=${player.dodgeCooldownRemaining.toFixed(2)}\n` +

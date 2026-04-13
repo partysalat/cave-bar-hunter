@@ -34,7 +34,8 @@ describe('InputManager', () => {
             .mockReturnValueOnce({ isDown: true })
             .mockReturnValueOnce({ isDown: false })
             .mockReturnValueOnce({ isDown: true })
-            .mockReturnValueOnce({ isDown: false });
+            .mockReturnValueOnce({ isDown: false })
+            .mockReturnValueOnce({ isDown: true });
 
         const manager = new InputManager(scene);
         manager.setupKeyboard();
@@ -46,5 +47,6 @@ describe('InputManager', () => {
         expect(input.jumpPressed).toBe(true);
         expect(input.meleePressed).toBe(true);
         expect(input.throwPressed).toBe(false);
+        expect(input.interactPressed).toBe(true);
     });
 });

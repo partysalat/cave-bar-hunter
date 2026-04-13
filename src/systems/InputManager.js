@@ -23,6 +23,7 @@ export default class InputManager {
             SHIFT: keyboard.addKey('SHIFT'),
             Z: keyboard.addKey('Z'),
             X: keyboard.addKey('X'),
+            C: keyboard.addKey('C'),
         };
     }
 
@@ -51,6 +52,7 @@ export default class InputManager {
             dodgePressed: Boolean(pad.R2 || pad.L2 || pad.X),
             meleePressed: Boolean(pad.B || pad.Y),
             throwPressed: Boolean(pad.R1 || pad.R2 || pad.A),
+            interactPressed: Boolean(pad.X),
         };
     }
 
@@ -67,6 +69,7 @@ export default class InputManager {
             dodgePressed: Boolean(this.keyboardKeys.SHIFT.isDown),
             meleePressed: Boolean(this.keyboardKeys.Z.isDown),
             throwPressed: Boolean(this.keyboardKeys.X.isDown),
+            interactPressed: Boolean(this.keyboardKeys.C.isDown),
         };
     }
 }

@@ -10,11 +10,7 @@ export default class HUD {
         }).setScrollFactor(0);
     }
 
-    update(player, dummy, projectileCount) {
-        this.text.setText(
-            `HP ${player.health}/${player.maxHealth}   SCORE ${player.score}\n` +
-            `DUMMY ${dummy.health}/${dummy.maxHealth}   SPEARS ${projectileCount}\n` +
-            `MELEE CD ${player.meleeCooldownRemaining.toFixed(2)}   THROW CD ${player.throwCooldownRemaining.toFixed(2)}`
-        );
+    update(lines) {
+        this.text.setText(lines.join('\n'));
     }
 }
