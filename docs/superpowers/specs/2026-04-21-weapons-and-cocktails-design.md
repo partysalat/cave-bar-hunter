@@ -6,12 +6,15 @@
 ## Weapons
 
 ### Structure
-- Each player carries one weapon into a hunt
+- Each player carries up to two weapons into a hunt
 - Weapons affect damage profile and which zones actions are effective in
 - Weapons do not change the action menu — all players use the same actions (Attack, Aimed Strike, Reposition, Brace, Use Ability, Revive)
+- Swapping weapons mid-hunt costs the full round action
+- Future Skirmisher upgrade node: reduce or eliminate weapon swap cost
 
 ### Weapon Selection
-- Players pick their weapon in the cave bar before Hunt 1 (no upgrade points available yet)
+- Before Hunt 1: players pick one weapon (second slot locked)
+- Before Hunt 2: second weapon slot unlocks — players can pick a second weapon at the weapon rack
 - Weapons can be swapped at the weapon rack between hunts
 
 ### Weapon Roster
@@ -68,3 +71,4 @@ Hunting dinosaurs yields rare ingredients — the premise of the game is that th
 - Exact damage values, burn duration, and stagger contribution amounts to be tuned during implementation
 - Cocktail roster per boss unlock to be defined alongside dinosaur content creation
 - Weapon unlock progression (starting with a subset, unlocking more) could be added in a future iteration
+- Skirmisher upgrade to reduce weapon swap cost is a natural Tier 2 or Tier 3 node candidate
