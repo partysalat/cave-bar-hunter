@@ -58,17 +58,22 @@ Hunting dinosaurs yields rare ingredients — the premise of the game is that th
 - Fixed menu that expands as bosses are defeated — each defeated dinosaur unlocks new options
 - Cocktails are consumable buffs, purchased from the bartender in the cave bar
 
-### Example Cocktails
-- Bonus damage on perfect dodge
-- Extended dodge window
-- Group-wide stagger assist
-- *(Full roster to be defined per dinosaur unlock — deferred to content creation phase)*
+### Cocktail Roster
+
+All names are in German. 5 cocktails total — one unlocked after each hunt, cumulatively available.
+
+| Unlocks after | Name | Translation | Effect |
+|-|-|-|-|
+| Hunt 1 | **Urzeitblut** | Primeval Blood | Extended dodge window this hunt |
+| Hunt 2 | **Krallentrank** | Claw Brew | Bonus damage on perfect dodge this hunt |
+| Hunt 3 | **Sturmläufer** | Storm Runner | Next repositioning move is free (no action cost) |
+| Hunt 4 | **Herdenschrei** | Pack Roar | Group-wide stagger assist — your hits count double toward stagger threshold this hunt |
+| Hunt 5 | **Tyrannenblut** | Tyrant's Blood | Once per hunt, automatically survive a hit that would down you |
 
 ---
 
 ## Notes for Later Iteration
 
 - Exact damage values, burn duration, and stagger contribution amounts to be tuned during implementation
-- Cocktail roster per boss unlock to be defined alongside dinosaur content creation
 - Weapon unlock progression (starting with a subset, unlocking more) could be added in a future iteration
 - Skirmisher upgrade to reduce weapon swap cost is a natural Tier 2 or Tier 3 node candidate
