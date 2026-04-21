@@ -2,15 +2,27 @@ import { describe, expect, it } from 'vitest';
 import CombatSystem from '../src/systems/CombatSystem.js';
 
 describe('CombatSystem', () => {
+    it('considers a target in front to be in melee range even after the swing has started', () => {
+        const system = new CombatSystem();
+        const player = {
+            worldX: 5,
+            worldY: 0,
+            height: 1.8,
+            facing: 1,
+        };
+        const target = { worldX: 6, worldY: 0 };
+
+        expect(system.isTargetInMeleeRange(player, target)).toBe(true);
+    });
+
     it('lands a melee hit when the target is in range and in front', () => {
         const system = new CombatSystem();
         const player = {
             worldX: 5,
             worldY: 0,
+            height: 1.8,
             facing: 1,
             score: 0,
-            canMelee: () => true,
-            startMeleeAttack: () => true,
             addScore(points) {
                 this.score += points;
             },
@@ -36,9 +48,8 @@ describe('CombatSystem', () => {
         const player = {
             worldX: 5,
             worldY: 0,
+            height: 1.8,
             facing: 1,
-            canMelee: () => true,
-            startMeleeAttack: () => true,
             addScore() {},
         };
         const target = { worldX: 3, worldY: 0, takeDamage() {} };
@@ -69,5 +80,21 @@ describe('CombatSystem', () => {
         expect(system.tryEnemyTouchAttack(enemy, player)).toBe(true);
         expect(player.lastDamage).toBe(1);
         expect(enemy.spent).toBe(true);
+    });
+
+    it('describes a visible melee highlight area in front of the player', () => {
+        const system = new CombatSystem();
+        const player = {
+            worldX: 5,
+            worldY: 0,
+            height: 1.8,
+            facing: -1,
+        };
+
+        const area = system.getMeleeHighlight(player);
+
+        expect(area.centerX).toBeLessThan(player.worldX);
+        expect(area.centerY).toBeGreaterThan(0);
+        expect(area.width).toBe(system.meleeRange);
     });
 });

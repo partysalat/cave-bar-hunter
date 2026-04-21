@@ -7,7 +7,15 @@ function createScene() {
             rectangle: vi.fn(() => ({
                 setOrigin: vi.fn().mockReturnThis(),
                 setAlpha: vi.fn().mockReturnThis(),
+                setScale: vi.fn().mockReturnThis(),
+                setFlipX: vi.fn().mockReturnThis(),
+                setTexture: vi.fn().mockReturnThis(),
+                play: vi.fn().mockReturnThis(),
+                anims: { currentAnim: null },
             })),
+        },
+        textures: {
+            exists: vi.fn(() => false),
         },
     };
 }
@@ -20,6 +28,8 @@ describe('Player', () => {
         expect(player.worldX).toBe(4);
         expect(player.worldY).toBe(0);
         expect(player.onGround).toBe(true);
+        expect(player.health).toBe(4);
+        expect(player.maxHealth).toBe(4);
     });
 
     it('moves horizontally and updates facing', () => {
@@ -56,10 +66,10 @@ describe('Player', () => {
         const player = new Player(createScene(), 0, 4, 0);
 
         expect(player.takeDamage(1)).toBe(true);
-        expect(player.health).toBe(2);
+        expect(player.health).toBe(3);
         expect(player.isInvincible()).toBe(true);
         expect(player.takeDamage(1)).toBe(false);
-        expect(player.health).toBe(2);
+        expect(player.health).toBe(3);
     });
 
     it('tracks melee and throw cooldowns', () => {

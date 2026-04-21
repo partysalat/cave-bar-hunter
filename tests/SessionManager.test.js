@@ -15,6 +15,15 @@ describe('SessionManager', () => {
         expect(restored.maxHealth).toBe(3);
     });
 
+    it('starts a new session with the rebuilt baseline survivability', () => {
+        const session = new SessionManager();
+
+        session.startNewSession();
+
+        expect(session.playerData[0].health).toBe(4);
+        expect(session.playerData[0].maxHealth).toBe(4);
+    });
+
     it('advances the hunt and heals players to max health on victory', () => {
         const session = new SessionManager();
         const player = { score: 8, health: 1, maxHealth: 3 };
