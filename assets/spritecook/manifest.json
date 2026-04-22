@@ -1,0 +1,53 @@
+{
+  "players": {
+    "red": {
+      "base": {
+        "asset_id": "51afba74-798a-4952-b9ae-35feb044acca",
+        "sha12": null,
+        "label": "Red Hero - base still, brown hair, red cape"
+      },
+      "idle": { "asset_id": "477e1a02-8a72-4170-bf07-2b1e8053534c", "file": "animations/red/idle.webp" },
+      "reposition": { "asset_id": "28bd3f73-c3b4-46b1-8066-b30dc0463cd5", "file": "animations/red/reposition.webp" },
+      "brace": { "asset_id": "0804a1c9-090d-49b0-9e20-29006f5efebc", "file": "animations/red/brace.webp" },
+      "revive": { "asset_id": "18a88cf2-9945-4dfd-8460-d3a3c0ae8c27", "file": "animations/red/revive.webp" },
+      "hit": { "asset_id": "b8772a7d-2d21-4ce4-aee6-0f2821359324", "file": "animations/red/hit.webp" },
+      "being-revived": { "asset_id": "28570fea-3573-45f0-8895-b8b9d6d564d7", "file": "animations/red/being-revived.webp" },
+      "downed": { "asset_id": "2e2a2482-7045-4ed0-813b-6a495f7da927", "file": "animations/red/downed.webp" },
+      "victory": { "asset_id": "f3722297-b78d-4c61-920b-be2d15c658e5", "file": "animations/red/victory.webp" },
+      "dodge": { "asset_id": "a25002e0-9ecb-4287-bd42-b34b7f635cdf", "file": "animations/red/dodge.webp" },
+      "brace-idle": { "asset_id": "984efa58-a520-4d01-90d7-c751899f9713", "file": "animations/red/brace-idle.webp" },
+      "downed-idle": { "asset_id": "db92f4cd-19f1-47b7-a8fa-b3e7b82ba96f", "file": "animations/red/downed-idle.webp" },
+      "axe-still": { "asset_id": "6335f55c-6940-4885-a8d3-3788d7955c81", "label": "Red Hero holding stone axe - base still for weapon animations" },
+      "axe-idle": { "asset_id": "f1ee26e7-75e7-4559-a767-f020e4755c11", "file": "animations/red/axe-idle.webp" },
+      "shield-still": { "asset_id": "e5479459-75d4-4cc8-ab99-76012bbc54fd", "label": "Red Hero holding shield+club" },
+      "spear-still": { "asset_id": "bf8c3aa7-6998-43d1-bdc6-c87011e59d5a", "label": "Red Hero holding spear" },
+      "torch-still": { "asset_id": "c385e290-7567-4d54-91fa-bec2b1991d82", "label": "Red Hero holding torch" },
+      "bow-still": { "asset_id": "c24ff60c-4beb-49f0-a552-8ca15ac006bc", "label": "Red Hero holding bow" },
+      "sling-still": { "asset_id": "4504da92-0344-42fe-9067-01f8454f6c6b", "label": "Red Hero holding sling" },
+      "axe-run": { "asset_id": "d2e26d45-1925-425a-a002-2c73f5c2675e", "file": "animations/red/axe-run.webp" },
+      "axe-attack": { "asset_id": "f3a10780-5764-414f-be34-78ab6b8c9890", "file": "animations/red/axe-attack.webp" },
+      "axe-aimed": { "asset_id": "ec2e71b8-b1df-49fc-aec8-baeb40375fc9", "file": "animations/red/axe-aimed.webp" }
+    },
+    "blue": {
+      "base": {
+        "asset_id": "13a4a373-d306-452b-926c-e01342831625",
+        "sha12": null,
+        "label": "Blue Hero - base still, black hair, blue cape"
+      }
+    },
+    "yellow": {
+      "base": {
+        "asset_id": "57fe7b67-f40a-4b5d-a012-d765ca853194",
+        "sha12": null,
+        "label": "Yellow Hero - base still, blond hair, yellow cape"
+      }
+    },
+    "green": {
+      "base": {
+        "asset_id": "620e8955-3ade-4ded-98e5-93e4d6f9dedb",
+        "sha12": null,
+        "label": "Green Hero - base still, red hair, green cape"
+      }
+    }
+  }
+}
