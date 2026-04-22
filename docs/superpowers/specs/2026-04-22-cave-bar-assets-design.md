@@ -24,14 +24,18 @@ Art style: side-profile pixel art, matching the player hero sprites.
 
 ## Asset List
 
-### Background Tiles (2 assets)
+### Background Tiles (4 assets)
 
-| Asset | Size | Description |
-|-|-|-|
-| Cave stone floor | 64×64 | Worn flat stone floor, subtle cracks, earthy brown/grey, tileable |
-| Cave stone wall | 64×64 | Rough cave rock wall, jagged texture, dark grey/brown, faint torch-lit warmth, tileable |
+Three parallax layers, each tiling independently at different scroll speeds:
 
-The wall tile stacks 2–3 rows vertically; floor tile fills the bottom strip. Both tile horizontally to fill the full screen width.
+| Asset | Size | Layer | Scroll speed | Description |
+|-|-|-|-|-|
+| Cave stone floor | 64×64 | Near | 1.0× | Worn flat stone floor, subtle cracks, earthy brown/grey, tileable |
+| Cave stone wall | 64×64 | Mid | 0.6× | Rough cave rock wall, dark grey/brown, faint torch-lit warmth, tileable |
+| Torch sconce | 64×96 | Mid | 0.6× | Wall-mounted stone bracket with wooden torch and orange flame, placed at intervals on mid layer |
+| Far cave depth | 256×128 | Far | 0.3× | Deep cave darkness, stalactites, distant rock formations, blue-grey with faint orange glow, tileable |
+
+The far layer uses a wider tile (256px) so the repeat is not obvious at slow scroll speeds.
 
 ---
 
@@ -83,7 +87,7 @@ Displayed inside the Upgrade Wall's carved frames. Flat primitive art in ochre/r
 
 ## Generation Order
 
-1. **Background tiles** (2) — establish palette and style reference
+1. **Background tiles** (4: floor, wall, torch sconce, far depth) — establish palette and style reference
 2. **Station props** (6) — reference background tile for consistency
 3. **Bartender still** (1) — reference background tile; approve before animating
 4. **Bartender animations** (3) — derived from bartender still
@@ -108,7 +112,7 @@ Apply approval gate before animating the bartender (same rule as weapon stills f
 
 | Category | Count | Credits each | Total |
 |-|-|-|-|
-| Background tiles | 2 | 12 | 24 |
+| Background tiles | 4 | 12 | 48 |
 | Station props | 6 | 12 | 72 |
 | Bartender still | 1 | 12 | 12 |
 | Bartender animations | 3 | 20 | 60 |

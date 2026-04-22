@@ -94,6 +94,35 @@
       "sling-attack": { "asset_id": "709f7bac-fee4-4a2d-8128-ca29aa883d14", "file": "animations/blue/sling-attack.webp", "edge_margin": 25 },
       "sling-aimed": { "asset_id": "01f188e7-88cd-4589-9fa6-1e44e040dde7", "file": "animations/blue/sling-aimed.webp", "edge_margin": 25 }
     },
+    "cavebar": {
+      "tiles": {
+        "floor": { "asset_id": "7477bf9b-6570-4eb7-9093-964412876f2a", "file": "cavebar/tiles/floor.png" },
+        "wall": { "asset_id": "1a4a6985-64d9-4347-87eb-954013cb77f4", "file": "cavebar/tiles/wall.png" },
+        "torch-sconce": { "asset_id": "484ae43e-54e2-45ff-8d86-737acddb4a84", "file": "cavebar/tiles/torch-sconce.png" },
+        "wall-far": { "asset_id": "cb335e39-f27f-4aa3-89f5-87355d4a3263", "file": "cavebar/tiles/wall-far.png", "note": "far parallax layer, 256px wide" }
+      },
+      "props": {
+        "trophy-wall": { "asset_id": "00128633-f998-46a3-a3c7-d36e94049f80", "file": "cavebar/props/trophy-wall.png" },
+        "scoreboard": { "asset_id": "92b2e3e5-7c18-4aaf-906e-1f5678643115", "file": "cavebar/props/scoreboard.png" },
+        "bar-counter": { "asset_id": "98e957f4-2ebd-4753-9d8f-68b4a9fbdd79", "file": "cavebar/props/bar-counter.png" },
+        "upgrade-wall": { "asset_id": "cf32cd3f-0324-4a94-b139-6fd975c18e7c", "file": "cavebar/props/upgrade-wall.png" },
+        "weapon-rack": { "asset_id": "ea6e14ad-7abf-4f46-875b-b3350cdaab90", "file": "cavebar/props/weapon-rack.png" },
+        "exit-arch": { "asset_id": "7b48c8a0-3a45-4098-819b-c7594bf9b8b6", "file": "cavebar/props/exit-arch.png" }
+      },
+      "bartender": {
+        "still": { "asset_id": "4197ffad-edaa-4056-92c2-2c4d050d897c", "file": "cavebar/bartender/still.png" },
+        "idle": { "asset_id": "59d1d49d-1331-47cf-84ba-5081ca9867b8", "file": "cavebar/bartender/idle.webp", "frames": 8, "fps": 8, "loop": true },
+        "cheer": { "asset_id": "9f236067-c7c2-4924-9ee4-4d6b1f67587d", "file": "cavebar/bartender/cheer.webp", "frames": 6, "fps": 8, "loop": false },
+        "grunt": { "asset_id": "3e70ce4d-3a78-469b-bedf-02f23bc1d7ae", "file": "cavebar/bartender/grunt.webp", "frames": 6, "fps": 8, "loop": false }
+      },
+      "paintings": {
+        "thick-hide": { "asset_id": "ab42df45-6f87-4bd8-9378-b3c544b2a557", "file": "cavebar/paintings/thick-hide.png" },
+        "swift-feet": { "asset_id": "5a342bc3-746f-42c6-b70c-a0a4ce14fadf", "file": "cavebar/paintings/swift-feet.png" },
+        "hunters-eye": { "asset_id": "5eea0a81-d9f4-435f-a9e2-4b8f3dddde32", "file": "cavebar/paintings/hunters-eye.png" },
+        "pack-leader": { "asset_id": "ed8b0255-5ddf-4059-b6e4-28e389f7b4c1", "file": "cavebar/paintings/pack-leader.png" },
+        "scavenger": { "asset_id": "d2790b82-acb6-45e1-b5fe-80e56aa2867a", "file": "cavebar/paintings/scavenger.png" }
+      }
+    },
     "yellow": {
       "base": {
         "asset_id": "57fe7b67-f40a-4b5d-a012-d765ca853194",
