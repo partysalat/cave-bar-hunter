@@ -36,6 +36,8 @@ All 4 heroes share the same animation set. Animate Red Hero first, then replicat
 
 Each weapon requires a **canonical weapon still** generated first (character holding the weapon in idle pose), then all four animations are derived from that still: **Idle** (holding weapon, planning phase), **Run** (repositioning in combat), **Attack** (fast/standard), and **Aimed Strike** (slower, deliberate).
 
+> **Approval gate:** After generating weapon stills for a new hero, pause and show the stills to the user for approval before generating any weapon animations. Regenerate any that look off before proceeding.
+
 > **Consistency note:** Generating a new still may introduce minor appearance variation. Check one still per weapon before committing to animations.
 
 > **Attack animation notes:**
@@ -104,14 +106,25 @@ Run up to 5 concurrent jobs per batch.
 
 ### Red Hero batches
 
-**Batch 1 (weapon-agnostic, 5 jobs):** idle, reposition, brace, revive, hit  
-**Batch 2 (weapon-agnostic, 4 jobs):** being-revived, downed, victory, dodge  
-**Batch 3 (brawler, 5 jobs):** axe-idle, axe-attack, axe-aimed, shield-idle, shield-attack  
-**Batch 4 (brawler + skirmisher, 5 jobs):** shield-aimed, spear-idle, spear-attack, spear-aimed, torch-idle  
-**Batch 5 (skirmisher + tactician, 5 jobs):** torch-attack, torch-aimed, bow-idle, bow-attack, bow-aimed  
-**Batch 6 (tactician, 3 jobs):** sling-idle, sling-attack, sling-aimed  
+**Batch 1 (weapon-agnostic):** idle ✅, reposition ✅, brace ✅, revive ✅, hit ✅  
+**Batch 2 (weapon-agnostic):** being-revived ✅, downed ✅, victory ✅, dodge ✅  
+**Batch 2b (deferred):** brace-idle ⏸, downed-idle ⏸ — consistency issue (separate still changes character appearance)  
+**Batch 3 (brawler):** axe-idle ✅, axe-run ✅, axe-attack ✅, axe-aimed ✅, shield-idle ✅, shield-run ✅, shield-attack ✅, shield-aimed ✅  
+**Batch 4 (skirmisher):** spear-idle ✅, spear-run ✅, spear-attack ✅, spear-aimed ✅, torch-idle ✅, torch-run ✅  
+**Batch 5 (skirmisher + tactician):** torch-attack ✅, torch-aimed ✅, bow-idle ✅, bow-attack ✅, bow-aimed ✅  
+**Batch 6 (tactician):** sling-idle ✅, sling-attack ✅, sling-aimed ✅
 
-Then repeat batches 1–5 for Blue, Yellow, Green.
+### Blue Hero batches
+
+**Batch 1 (weapon-agnostic):** idle ✅, reposition ✅, brace ✅, revive ✅, hit ✅  
+**Batch 2 (weapon-agnostic):** being-revived ✅, downed ✅, victory ✅, dodge ✅  
+**Batch 2b (deferred):** brace-idle ⏸, downed-idle ⏸  
+**Weapon stills:** axe ✅ (two-handed), shield ✅, spear ✅, torch ✅, bow ✅, sling ✅  
+**Batch 3 (brawler):** axe-idle ✅, axe-run ✅, axe-attack ✅, axe-aimed ✅, shield-idle ✅, shield-run ✅, shield-attack ✅, shield-aimed ✅  
+**Batch 4 (skirmisher):** spear-idle ✅, spear-run ✅, spear-attack ✅, spear-aimed ✅, torch-idle ✅, torch-run ✅, torch-attack ✅, torch-aimed ✅  
+**Batch 5 (tactician):** bow-idle ✅, bow-run ✅, bow-attack ✅, bow-aimed ✅, sling-idle ✅, sling-run ✅, sling-attack ✅, sling-aimed ✅
+
+Then repeat for Yellow, Green.
 
 ---
 
