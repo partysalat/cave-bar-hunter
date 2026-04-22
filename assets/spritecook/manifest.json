@@ -123,6 +123,20 @@
         "scavenger": { "asset_id": "d2790b82-acb6-45e1-b5fe-80e56aa2867a", "file": "cavebar/paintings/scavenger.png" }
       }
     },
+    "arenas": {
+      "dense-jungle": {
+        "tiles": {
+          "floor": { "asset_id": "8f2e6654-be5b-466a-8068-a6118f0ba0e4", "file": "arena/dense-jungle/tiles/floor.png", "size": "64x64", "layer": "near", "scroll": 1.0 },
+          "mid": { "asset_id": "bab6eb8c-9a7a-452d-ba7a-0e55c094805a", "file": "arena/dense-jungle/tiles/mid.png", "size": "64x128", "layer": "mid", "scroll": 0.6 },
+          "canopy": { "asset_id": "caf6d1a0-9bdf-47c0-8664-38d7ef83cc4b", "file": "arena/dense-jungle/tiles/canopy.png", "size": "256x128", "layer": "far", "scroll": 0.3 }
+        },
+        "props": {
+          "tree": { "asset_id": "5367b57f-560a-4926-bebc-0c9f190a37b1", "file": "arena/dense-jungle/props/tree.png" },
+          "liana": { "asset_id": "54ffa176-7ca4-491b-a9df-7781dba494e6", "file": "arena/dense-jungle/props/liana.png" },
+          "bush": { "asset_id": "1179209c-97ee-4ebc-b43c-ec070a1533e9", "file": "arena/dense-jungle/props/bush.png" }
+        }
+      }
+    },
     "yellow": {
       "base": {
         "asset_id": "57fe7b67-f40a-4b5d-a012-d765ca853194",
