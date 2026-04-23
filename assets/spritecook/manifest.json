@@ -123,6 +123,12 @@
         "scavenger": { "asset_id": "d2790b82-acb6-45e1-b5fe-80e56aa2867a", "file": "cavebar/paintings/scavenger.png" }
       }
     },
+    "enemies": {
+      "dilophosaurus": {
+        "still": { "asset_id": "354266ac-37ae-4a09-9695-1fef33b6bb38", "file": "enemies/dilophosaurus/still.png", "size": "320x320" },
+        "idle": { "asset_id": "cedd072f-125e-4577-84ca-104855586474", "file": "enemies/dilophosaurus/idle.webp", "frames": 8, "fps": 8, "loop": true }
+      }
+    },
     "arenas": {
       "dense-jungle": {
         "tiles": {
