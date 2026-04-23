@@ -124,7 +124,44 @@ Run up to 5 concurrent jobs per batch.
 **Batch 4 (skirmisher):** spear-idle ✅, spear-run ✅, spear-attack ✅, spear-aimed ✅, torch-idle ✅, torch-run ✅, torch-attack ✅, torch-aimed ✅  
 **Batch 5 (tactician):** bow-idle ✅, bow-run ✅, bow-attack ✅, bow-aimed ✅, sling-idle ✅, sling-run ✅, sling-attack ✅, sling-aimed ✅
 
-Then repeat for Yellow, Green.
+### Yellow Hero batches
+
+**Weapon stills:** axe ⏳ (pending approval), shield ⏳, spear ⏳, torch ⏳, bow ⏳, sling ⏳  
+**Batch 1 (weapon-agnostic):** not started  
+**Batch 2 (weapon-agnostic):** not started  
+**Batch 2b (deferred):** brace-idle ⏸, downed-idle ⏸  
+**Batch 3 (brawler):** not started  
+**Batch 4 (skirmisher):** not started  
+**Batch 5 (tactician):** not started  
+
+Then repeat for Green.
+
+---
+
+## Weapon Still Generation Prompts
+
+Common parameters: `pixel=true`, `theme="prehistoric stone age caveman dinosaur hunting"`, `width=64`, `height=96`, `model=gemini-3.1-flash-image-preview`, `reference_asset_id=<hero base still>`
+
+Character description tokens per hero:
+| Hero | Cape/paint | Hair | Face paint |
+|-|-|-|-|
+| Red | red fur cape and tribal war paint | thick brown hair and beard | red face paint stripes |
+| Blue | blue fur cape and tribal war paint | thick black hair and beard | blue face paint stripes |
+| Yellow | yellow fur cape and tribal war paint | thick blond hair and blond beard | yellow face paint stripes |
+| Green | green fur cape and tribal war paint | thick red hair and beard | green face paint stripes |
+
+Weapon prompt templates (substitute character tokens above):
+
+| Weapon | Style | Prompt suffix |
+|-|-|-|
+| axe-still | extreme chibi, big head small body | holding a primitive stone axe in one hand with the axe resting on shoulder, side profile view |
+| shield-still | extreme chibi, big head small body | holding a round primitive shield on left arm and a wooden club in right hand, side profile view |
+| spear-still | moderate chibi, slightly large head | holding a long wooden spear upright in right hand, side profile view |
+| torch-still | extreme chibi, big head small body | holding a flaming torch raised in right hand with orange fire at the top, side profile view |
+| bow-still | moderate chibi, slightly large head | holding a primitive short bow in left hand with arrow nocked and ready, side profile view |
+| sling-still | extreme chibi, big head small body | holding a leather sling with a stone in the pouch, ready to swing, side profile view |
+
+Full prompt structure: `Heroic prehistoric champion, {chibi style}, bold heroic stance, {cape/paint}, {hair}, fierce confident grin, bone necklace trophy, {face paint}, {weapon suffix}`
 
 ---
 
