@@ -6,47 +6,207 @@
         "sha12": null,
         "label": "Red Hero - base still, brown hair, red cape"
       },
-      "idle": { "asset_id": "477e1a02-8a72-4170-bf07-2b1e8053534c", "file": "animations/red/idle.webp", "edge_margin": 6 },
-      "reposition": { "asset_id": "28bd3f73-c3b4-46b1-8066-b30dc0463cd5", "file": "animations/red/reposition.webp", "edge_margin": 6 },
-      "brace": { "asset_id": "0804a1c9-090d-49b0-9e20-29006f5efebc", "file": "animations/red/brace.webp", "edge_margin": 6 },
-      "revive": { "asset_id": "18a88cf2-9945-4dfd-8460-d3a3c0ae8c27", "file": "animations/red/revive.webp", "edge_margin": 6 },
-      "hit": { "asset_id": "b8772a7d-2d21-4ce4-aee6-0f2821359324", "file": "animations/red/hit.webp", "edge_margin": 6 },
-      "being-revived": { "asset_id": "28570fea-3573-45f0-8895-b8b9d6d564d7", "file": "animations/red/being-revived.webp", "edge_margin": 6 },
-      "downed": { "asset_id": "2e2a2482-7045-4ed0-813b-6a495f7da927", "file": "animations/red/downed.webp", "edge_margin": 6 },
-      "victory": { "asset_id": "f3722297-b78d-4c61-920b-be2d15c658e5", "file": "animations/red/victory.webp", "edge_margin": 6 },
-      "dodge": { "asset_id": "a25002e0-9ecb-4287-bd42-b34b7f635cdf", "file": "animations/red/dodge.webp", "edge_margin": 6 },
-      "brace-idle": { "asset_id": "984efa58-a520-4d01-90d7-c751899f9713", "file": "animations/red/brace-idle.webp", "edge_margin": 6, "note": "deferred - consistency issue" },
-      "downed-idle": { "asset_id": "db92f4cd-19f1-47b7-a8fa-b3e7b82ba96f", "file": "animations/red/downed-idle.webp", "edge_margin": 6, "note": "deferred - consistency issue" },
-      "axe-still": { "asset_id": "6335f55c-6940-4885-a8d3-3788d7955c81", "label": "Red Hero holding stone axe" },
-      "axe-idle": { "asset_id": "f1ee26e7-75e7-4559-a767-f020e4755c11", "file": "animations/red/axe-idle.webp", "edge_margin": 6 },
-      "axe-run": { "asset_id": "d2e26d45-1925-425a-a002-2c73f5c2675e", "file": "animations/red/axe-run.webp", "edge_margin": 6 },
-      "axe-attack": { "asset_id": "f3a10780-5764-414f-be34-78ab6b8c9890", "file": "animations/red/axe-attack.webp", "edge_margin": 25 },
-      "axe-aimed": { "asset_id": "ec2e71b8-b1df-49fc-aec8-baeb40375fc9", "file": "animations/red/axe-aimed.webp", "edge_margin": 25 },
-      "shield-still": { "asset_id": "e5479459-75d4-4cc8-ab99-76012bbc54fd", "label": "Red Hero holding shield+club" },
-      "shield-idle": { "asset_id": "b7e61d97-75bf-4829-945c-386f8c843560", "file": "animations/red/shield-idle.webp", "edge_margin": 6 },
-      "shield-run": { "asset_id": "6f7be303-18dd-45ff-9962-0a6acbc64927", "file": "animations/red/shield-run.webp", "edge_margin": 6 },
-      "shield-attack": { "asset_id": "923dee28-d91f-4172-9d94-6db5004d04ea", "file": "animations/red/shield-attack.webp", "edge_margin": 25 },
-      "shield-aimed": { "asset_id": "299b42ab-39d1-4b9d-8ee4-9f5b9eede2ad", "file": "animations/red/shield-aimed.webp", "edge_margin": 25 },
-      "spear-still": { "asset_id": "bf8c3aa7-6998-43d1-bdc6-c87011e59d5a", "label": "Red Hero holding spear" },
-      "spear-idle": { "asset_id": "8a4c4df5-9075-499e-809d-92904aeb5eae", "file": "animations/red/spear-idle.webp", "edge_margin": 6 },
-      "spear-run": { "asset_id": "9e0a7cba-563c-422c-a813-9ee5b4c143aa", "file": "animations/red/spear-run.webp", "edge_margin": 6 },
-      "spear-attack": { "asset_id": "4b5be583-c270-428a-ae76-6298b0fd46f8", "file": "animations/red/spear-attack.webp", "edge_margin": 25 },
-      "spear-aimed": { "asset_id": "20b0e23b-94ab-442b-b80e-5915c7ff8bf5", "file": "animations/red/spear-aimed.webp", "edge_margin": 25 },
-      "torch-still": { "asset_id": "c385e290-7567-4d54-91fa-bec2b1991d82", "label": "Red Hero holding torch" },
-      "torch-idle": { "asset_id": "91f54a05-0a25-4548-96e1-fa7a24d3c729", "file": "animations/red/torch-idle.webp", "edge_margin": 6 },
-      "torch-run": { "asset_id": "1c786cb3-5b21-4a43-812d-f8371c8d83c0", "file": "animations/red/torch-run.webp", "edge_margin": 6 },
-      "torch-attack": { "asset_id": "293edc34-d3d0-45a9-815d-3431d43a6e48", "file": "animations/red/torch-attack.webp", "edge_margin": 25 },
-      "torch-aimed": { "asset_id": "12c9a69a-bb3e-4143-a206-231fe9ad4cb4", "file": "animations/red/torch-aimed.webp", "edge_margin": 25 },
-      "bow-still": { "asset_id": "c24ff60c-4beb-49f0-a552-8ca15ac006bc", "label": "Red Hero holding bow" },
-      "bow-idle": { "asset_id": "41839726-24f6-4648-a384-7d80dac66089", "file": "animations/red/bow-idle.webp", "edge_margin": 6 },
-      "bow-run": { "asset_id": "681c7e22-d4c7-4fc9-837e-2f0043593741", "file": "animations/red/bow-run.webp", "edge_margin": 6 },
-      "bow-attack": { "asset_id": "0aa3413c-69bd-40b9-9504-b56558b127de", "file": "animations/red/bow-attack.webp", "edge_margin": 25 },
-      "bow-aimed": { "asset_id": "d5abb370-2cc5-4435-91a1-b07d5a229825", "file": "animations/red/bow-aimed.webp", "edge_margin": 25 },
-      "sling-still": { "asset_id": "4504da92-0344-42fe-9067-01f8454f6c6b", "label": "Red Hero holding sling" },
-      "sling-idle": { "asset_id": "7785e934-f5c4-4ed0-8ef4-8dfceda94ff3", "file": "animations/red/sling-idle.webp", "edge_margin": 6 },
-      "sling-run": { "asset_id": "9cd6eed2-d09d-4cbb-931b-bdbabb1c56a3", "file": "animations/red/sling-run.webp", "edge_margin": 6 },
-      "sling-attack": { "asset_id": "f29444e9-5423-4bfc-bdf4-eddd78be9804", "file": "animations/red/sling-attack.webp", "edge_margin": 25 },
-      "sling-aimed": { "asset_id": "89ae0d77-605d-4e9c-9c2b-75dab813c6c8", "file": "animations/red/sling-aimed.webp", "edge_margin": 25 }
+      "idle": {
+        "asset_id": "477e1a02-8a72-4170-bf07-2b1e8053534c",
+        "file": "animations/red/idle.webp",
+        "edge_margin": 6
+      },
+      "reposition": {
+        "asset_id": "28bd3f73-c3b4-46b1-8066-b30dc0463cd5",
+        "file": "animations/red/reposition.webp",
+        "edge_margin": 6
+      },
+      "brace": {
+        "asset_id": "0804a1c9-090d-49b0-9e20-29006f5efebc",
+        "file": "animations/red/brace.webp",
+        "edge_margin": 6
+      },
+      "revive": {
+        "asset_id": "18a88cf2-9945-4dfd-8460-d3a3c0ae8c27",
+        "file": "animations/red/revive.webp",
+        "edge_margin": 6
+      },
+      "hit": {
+        "asset_id": "b8772a7d-2d21-4ce4-aee6-0f2821359324",
+        "file": "animations/red/hit.webp",
+        "edge_margin": 6
+      },
+      "being-revived": {
+        "asset_id": "28570fea-3573-45f0-8895-b8b9d6d564d7",
+        "file": "animations/red/being-revived.webp",
+        "edge_margin": 6
+      },
+      "downed": {
+        "asset_id": "2e2a2482-7045-4ed0-813b-6a495f7da927",
+        "file": "animations/red/downed.webp",
+        "edge_margin": 6
+      },
+      "victory": {
+        "asset_id": "f3722297-b78d-4c61-920b-be2d15c658e5",
+        "file": "animations/red/victory.webp",
+        "edge_margin": 6
+      },
+      "dodge": {
+        "asset_id": "a25002e0-9ecb-4287-bd42-b34b7f635cdf",
+        "file": "animations/red/dodge.webp",
+        "edge_margin": 6
+      },
+      "brace-idle": {
+        "asset_id": "984efa58-a520-4d01-90d7-c751899f9713",
+        "file": "animations/red/brace-idle.webp",
+        "edge_margin": 6,
+        "note": "deferred - consistency issue"
+      },
+      "downed-idle": {
+        "asset_id": "db92f4cd-19f1-47b7-a8fa-b3e7b82ba96f",
+        "file": "animations/red/downed-idle.webp",
+        "edge_margin": 6,
+        "note": "deferred - consistency issue"
+      },
+      "axe-still": {
+        "asset_id": "6335f55c-6940-4885-a8d3-3788d7955c81",
+        "label": "Red Hero holding stone axe"
+      },
+      "axe-idle": {
+        "asset_id": "f1ee26e7-75e7-4559-a767-f020e4755c11",
+        "file": "animations/red/axe-idle.webp",
+        "edge_margin": 6
+      },
+      "axe-run": {
+        "asset_id": "d2e26d45-1925-425a-a002-2c73f5c2675e",
+        "file": "animations/red/axe-run.webp",
+        "edge_margin": 6
+      },
+      "axe-attack": {
+        "asset_id": "f3a10780-5764-414f-be34-78ab6b8c9890",
+        "file": "animations/red/axe-attack.webp",
+        "edge_margin": 25
+      },
+      "axe-aimed": {
+        "asset_id": "ec2e71b8-b1df-49fc-aec8-baeb40375fc9",
+        "file": "animations/red/axe-aimed.webp",
+        "edge_margin": 25
+      },
+      "shield-still": {
+        "asset_id": "e5479459-75d4-4cc8-ab99-76012bbc54fd",
+        "label": "Red Hero holding shield+club"
+      },
+      "shield-idle": {
+        "asset_id": "b7e61d97-75bf-4829-945c-386f8c843560",
+        "file": "animations/red/shield-idle.webp",
+        "edge_margin": 6
+      },
+      "shield-run": {
+        "asset_id": "6f7be303-18dd-45ff-9962-0a6acbc64927",
+        "file": "animations/red/shield-run.webp",
+        "edge_margin": 6
+      },
+      "shield-attack": {
+        "asset_id": "923dee28-d91f-4172-9d94-6db5004d04ea",
+        "file": "animations/red/shield-attack.webp",
+        "edge_margin": 25
+      },
+      "shield-aimed": {
+        "asset_id": "299b42ab-39d1-4b9d-8ee4-9f5b9eede2ad",
+        "file": "animations/red/shield-aimed.webp",
+        "edge_margin": 25
+      },
+      "spear-still": {
+        "asset_id": "bf8c3aa7-6998-43d1-bdc6-c87011e59d5a",
+        "label": "Red Hero holding spear"
+      },
+      "spear-idle": {
+        "asset_id": "8a4c4df5-9075-499e-809d-92904aeb5eae",
+        "file": "animations/red/spear-idle.webp",
+        "edge_margin": 6
+      },
+      "spear-run": {
+        "asset_id": "9e0a7cba-563c-422c-a813-9ee5b4c143aa",
+        "file": "animations/red/spear-run.webp",
+        "edge_margin": 6
+      },
+      "spear-attack": {
+        "asset_id": "4b5be583-c270-428a-ae76-6298b0fd46f8",
+        "file": "animations/red/spear-attack.webp",
+        "edge_margin": 25
+      },
+      "spear-aimed": {
+        "asset_id": "20b0e23b-94ab-442b-b80e-5915c7ff8bf5",
+        "file": "animations/red/spear-aimed.webp",
+        "edge_margin": 25
+      },
+      "torch-still": {
+        "asset_id": "c385e290-7567-4d54-91fa-bec2b1991d82",
+        "label": "Red Hero holding torch"
+      },
+      "torch-idle": {
+        "asset_id": "91f54a05-0a25-4548-96e1-fa7a24d3c729",
+        "file": "animations/red/torch-idle.webp",
+        "edge_margin": 6
+      },
+      "torch-run": {
+        "asset_id": "1c786cb3-5b21-4a43-812d-f8371c8d83c0",
+        "file": "animations/red/torch-run.webp",
+        "edge_margin": 6
+      },
+      "torch-attack": {
+        "asset_id": "293edc34-d3d0-45a9-815d-3431d43a6e48",
+        "file": "animations/red/torch-attack.webp",
+        "edge_margin": 25
+      },
+      "torch-aimed": {
+        "asset_id": "12c9a69a-bb3e-4143-a206-231fe9ad4cb4",
+        "file": "animations/red/torch-aimed.webp",
+        "edge_margin": 25
+      },
+      "bow-still": {
+        "asset_id": "c24ff60c-4beb-49f0-a552-8ca15ac006bc",
+        "label": "Red Hero holding bow"
+      },
+      "bow-idle": {
+        "asset_id": "41839726-24f6-4648-a384-7d80dac66089",
+        "file": "animations/red/bow-idle.webp",
+        "edge_margin": 6
+      },
+      "bow-run": {
+        "asset_id": "681c7e22-d4c7-4fc9-837e-2f0043593741",
+        "file": "animations/red/bow-run.webp",
+        "edge_margin": 6
+      },
+      "bow-attack": {
+        "asset_id": "0aa3413c-69bd-40b9-9504-b56558b127de",
+        "file": "animations/red/bow-attack.webp",
+        "edge_margin": 25
+      },
+      "bow-aimed": {
+        "asset_id": "d5abb370-2cc5-4435-91a1-b07d5a229825",
+        "file": "animations/red/bow-aimed.webp",
+        "edge_margin": 25
+      },
+      "sling-still": {
+        "asset_id": "4504da92-0344-42fe-9067-01f8454f6c6b",
+        "label": "Red Hero holding sling"
+      },
+      "sling-idle": {
+        "asset_id": "7785e934-f5c4-4ed0-8ef4-8dfceda94ff3",
+        "file": "animations/red/sling-idle.webp",
+        "edge_margin": 6
+      },
+      "sling-run": {
+        "asset_id": "9cd6eed2-d09d-4cbb-931b-bdbabb1c56a3",
+        "file": "animations/red/sling-run.webp",
+        "edge_margin": 6
+      },
+      "sling-attack": {
+        "asset_id": "f29444e9-5423-4bfc-bdf4-eddd78be9804",
+        "file": "animations/red/sling-attack.webp",
+        "edge_margin": 25
+      },
+      "sling-aimed": {
+        "asset_id": "89ae0d77-605d-4e9c-9c2b-75dab813c6c8",
+        "file": "animations/red/sling-aimed.webp",
+        "edge_margin": 25
+      }
     },
     "blue": {
       "base": {
@@ -54,111 +214,466 @@
         "sha12": null,
         "label": "Blue Hero - base still, black hair, blue cape"
       },
-      "idle": { "asset_id": "75d9fd78-7f36-445a-ac91-f20517fe9e1f", "file": "animations/blue/idle.webp", "edge_margin": 6 },
-      "reposition": { "asset_id": "de4b3577-3429-44b5-8c76-97b510c907e8", "file": "animations/blue/reposition.webp", "edge_margin": 6 },
-      "brace": { "asset_id": "bb083f25-0909-4955-8120-d13c8b68a912", "file": "animations/blue/brace.webp", "edge_margin": 6 },
-      "revive": { "asset_id": "19c3caf4-8ca1-426c-9c10-80680e826e64", "file": "animations/blue/revive.webp", "edge_margin": 6 },
-      "hit": { "asset_id": "27163a32-d1a3-46bf-9698-b96ff8facce4", "file": "animations/blue/hit.webp", "edge_margin": 6 },
-      "being-revived": { "asset_id": "60c98d6b-5a05-4cb4-8bc4-5062da149855", "file": "animations/blue/being-revived.webp", "edge_margin": 6 },
-      "downed": { "asset_id": "4e08b206-6dc3-4ace-97c3-0c85abe32099", "file": "animations/blue/downed.webp", "edge_margin": 6 },
-      "victory": { "asset_id": "8b983c8c-0093-4183-9e8e-ff0c6a107ccc", "file": "animations/blue/victory.webp", "edge_margin": 6 },
-      "dodge": { "asset_id": "36942d55-391f-46ad-9b27-1e385c02e98b", "file": "animations/blue/dodge.webp", "edge_margin": 6 },
-      "axe-still": { "asset_id": "760c83ef-78f5-4ebe-9a21-21edac1b07cd", "label": "Blue Hero holding two-handed stone axe" },
-      "shield-still": { "asset_id": "be53c056-8da7-448b-ab51-9d5f1ee82bf0", "label": "Blue Hero holding shield+club" },
-      "spear-still": { "asset_id": "bf5b7a00-5d81-4dfc-9866-d187ed32809d", "label": "Blue Hero holding spear" },
-      "torch-still": { "asset_id": "7fdafd76-05be-4af7-9c3e-2f2a5e701ebf", "label": "Blue Hero holding torch" },
-      "bow-still": { "asset_id": "92eb3cf4-b5a4-4084-a59f-6297627a5ba5", "label": "Blue Hero holding bow" },
-      "sling-still": { "asset_id": "c14f52dc-a1aa-4d7a-a8f7-a83999b498d4", "label": "Blue Hero holding sling" },
-      "axe-idle": { "asset_id": "49e0a45c-752b-475d-81e6-577cfe4072ac", "file": "animations/blue/axe-idle.webp", "edge_margin": 6 },
-      "axe-run": { "asset_id": "b40807eb-d9dd-4ff5-b053-25953b811f54", "file": "animations/blue/axe-run.webp", "edge_margin": 6 },
-      "axe-attack": { "asset_id": "059a68e1-4f19-4955-97ed-35971b044735", "file": "animations/blue/axe-attack.webp", "edge_margin": 25 },
-      "axe-aimed": { "asset_id": "ecfc8501-54a0-4be8-b06e-04d5f5046823", "file": "animations/blue/axe-aimed.webp", "edge_margin": 25 },
-      "shield-idle": { "asset_id": "55455a9d-8923-482f-9003-06e92103f89e", "file": "animations/blue/shield-idle.webp", "edge_margin": 6 },
-      "shield-run": { "asset_id": "5d447f45-c987-48af-8d11-b27840b42152", "file": "animations/blue/shield-run.webp", "edge_margin": 6 },
-      "shield-attack": { "asset_id": "93974170-0c7d-444f-9ef7-a37bd7ea7cec", "file": "animations/blue/shield-attack.webp", "edge_margin": 25 },
-      "shield-aimed": { "asset_id": "57d9686c-f766-4968-8e9e-51647cb1e099", "file": "animations/blue/shield-aimed.webp", "edge_margin": 25 },
-      "spear-idle": { "asset_id": "c236b92f-c476-4aa7-93f3-b99e6295a194", "file": "animations/blue/spear-idle.webp", "edge_margin": 6 },
-      "spear-run": { "asset_id": "1ed4b529-dfe9-4e17-8ba3-af093a4dff6f", "file": "animations/blue/spear-run.webp", "edge_margin": 6 },
-      "spear-attack": { "asset_id": "091efaeb-5314-4613-be79-93b698ad4a97", "file": "animations/blue/spear-attack.webp", "edge_margin": 25 },
-      "spear-aimed": { "asset_id": "5a9024ee-3acc-475b-9fed-2b1f2c92bcb0", "file": "animations/blue/spear-aimed.webp", "edge_margin": 25 },
-      "torch-idle": { "asset_id": "10db87ab-19a5-4005-bcf2-32cad108ac46", "file": "animations/blue/torch-idle.webp", "edge_margin": 6 },
-      "torch-run": { "asset_id": "0f1f70b0-0a68-4671-8aac-e555f71f7ade", "file": "animations/blue/torch-run.webp", "edge_margin": 6 },
-      "torch-attack": { "asset_id": "e84922ad-c4b9-4115-af02-c5425adae47a", "file": "animations/blue/torch-attack.webp", "edge_margin": 25 },
-      "torch-aimed": { "asset_id": "9251f313-402a-42b2-be3c-ada0261e4041", "file": "animations/blue/torch-aimed.webp", "edge_margin": 25 },
-      "bow-idle": { "asset_id": "8ea04b6a-7951-49db-89b4-6a74d5268b8f", "file": "animations/blue/bow-idle.webp", "edge_margin": 6 },
-      "bow-run": { "asset_id": "a4144527-f8b7-4960-8e4f-4ff15e014588", "file": "animations/blue/bow-run.webp", "edge_margin": 6 },
-      "bow-attack": { "asset_id": "4bc9dec7-8d53-44a6-878e-94caf2afe5c9", "file": "animations/blue/bow-attack.webp", "edge_margin": 25 },
-      "bow-aimed": { "asset_id": "ed7d382d-1cf3-4325-9c2f-1b468092c172", "file": "animations/blue/bow-aimed.webp", "edge_margin": 25 },
-      "sling-idle": { "asset_id": "82c3d146-6ce2-4b04-ad13-5427bd8f3a63", "file": "animations/blue/sling-idle.webp", "edge_margin": 6 },
-      "sling-run": { "asset_id": "0af8cbc4-5cb8-4244-886c-104c7acd663c", "file": "animations/blue/sling-run.webp", "edge_margin": 6 },
-      "sling-attack": { "asset_id": "709f7bac-fee4-4a2d-8128-ca29aa883d14", "file": "animations/blue/sling-attack.webp", "edge_margin": 25 },
-      "sling-aimed": { "asset_id": "01f188e7-88cd-4589-9fa6-1e44e040dde7", "file": "animations/blue/sling-aimed.webp", "edge_margin": 25 }
+      "idle": {
+        "asset_id": "75d9fd78-7f36-445a-ac91-f20517fe9e1f",
+        "file": "animations/blue/idle.webp",
+        "edge_margin": 6
+      },
+      "reposition": {
+        "asset_id": "de4b3577-3429-44b5-8c76-97b510c907e8",
+        "file": "animations/blue/reposition.webp",
+        "edge_margin": 6
+      },
+      "brace": {
+        "asset_id": "bb083f25-0909-4955-8120-d13c8b68a912",
+        "file": "animations/blue/brace.webp",
+        "edge_margin": 6
+      },
+      "revive": {
+        "asset_id": "19c3caf4-8ca1-426c-9c10-80680e826e64",
+        "file": "animations/blue/revive.webp",
+        "edge_margin": 6
+      },
+      "hit": {
+        "asset_id": "27163a32-d1a3-46bf-9698-b96ff8facce4",
+        "file": "animations/blue/hit.webp",
+        "edge_margin": 6
+      },
+      "being-revived": {
+        "asset_id": "60c98d6b-5a05-4cb4-8bc4-5062da149855",
+        "file": "animations/blue/being-revived.webp",
+        "edge_margin": 6
+      },
+      "downed": {
+        "asset_id": "4e08b206-6dc3-4ace-97c3-0c85abe32099",
+        "file": "animations/blue/downed.webp",
+        "edge_margin": 6
+      },
+      "victory": {
+        "asset_id": "8b983c8c-0093-4183-9e8e-ff0c6a107ccc",
+        "file": "animations/blue/victory.webp",
+        "edge_margin": 6
+      },
+      "dodge": {
+        "asset_id": "36942d55-391f-46ad-9b27-1e385c02e98b",
+        "file": "animations/blue/dodge.webp",
+        "edge_margin": 6
+      },
+      "axe-still": {
+        "asset_id": "760c83ef-78f5-4ebe-9a21-21edac1b07cd",
+        "label": "Blue Hero holding two-handed stone axe"
+      },
+      "shield-still": {
+        "asset_id": "be53c056-8da7-448b-ab51-9d5f1ee82bf0",
+        "label": "Blue Hero holding shield+club"
+      },
+      "spear-still": {
+        "asset_id": "bf5b7a00-5d81-4dfc-9866-d187ed32809d",
+        "label": "Blue Hero holding spear"
+      },
+      "torch-still": {
+        "asset_id": "7fdafd76-05be-4af7-9c3e-2f2a5e701ebf",
+        "label": "Blue Hero holding torch"
+      },
+      "bow-still": {
+        "asset_id": "92eb3cf4-b5a4-4084-a59f-6297627a5ba5",
+        "label": "Blue Hero holding bow"
+      },
+      "sling-still": {
+        "asset_id": "c14f52dc-a1aa-4d7a-a8f7-a83999b498d4",
+        "label": "Blue Hero holding sling"
+      },
+      "axe-idle": {
+        "asset_id": "49e0a45c-752b-475d-81e6-577cfe4072ac",
+        "file": "animations/blue/axe-idle.webp",
+        "edge_margin": 6
+      },
+      "axe-run": {
+        "asset_id": "b40807eb-d9dd-4ff5-b053-25953b811f54",
+        "file": "animations/blue/axe-run.webp",
+        "edge_margin": 6
+      },
+      "axe-attack": {
+        "asset_id": "059a68e1-4f19-4955-97ed-35971b044735",
+        "file": "animations/blue/axe-attack.webp",
+        "edge_margin": 25
+      },
+      "axe-aimed": {
+        "asset_id": "ecfc8501-54a0-4be8-b06e-04d5f5046823",
+        "file": "animations/blue/axe-aimed.webp",
+        "edge_margin": 25
+      },
+      "shield-idle": {
+        "asset_id": "55455a9d-8923-482f-9003-06e92103f89e",
+        "file": "animations/blue/shield-idle.webp",
+        "edge_margin": 6
+      },
+      "shield-run": {
+        "asset_id": "5d447f45-c987-48af-8d11-b27840b42152",
+        "file": "animations/blue/shield-run.webp",
+        "edge_margin": 6
+      },
+      "shield-attack": {
+        "asset_id": "93974170-0c7d-444f-9ef7-a37bd7ea7cec",
+        "file": "animations/blue/shield-attack.webp",
+        "edge_margin": 25
+      },
+      "shield-aimed": {
+        "asset_id": "57d9686c-f766-4968-8e9e-51647cb1e099",
+        "file": "animations/blue/shield-aimed.webp",
+        "edge_margin": 25
+      },
+      "spear-idle": {
+        "asset_id": "c236b92f-c476-4aa7-93f3-b99e6295a194",
+        "file": "animations/blue/spear-idle.webp",
+        "edge_margin": 6
+      },
+      "spear-run": {
+        "asset_id": "1ed4b529-dfe9-4e17-8ba3-af093a4dff6f",
+        "file": "animations/blue/spear-run.webp",
+        "edge_margin": 6
+      },
+      "spear-attack": {
+        "asset_id": "091efaeb-5314-4613-be79-93b698ad4a97",
+        "file": "animations/blue/spear-attack.webp",
+        "edge_margin": 25
+      },
+      "spear-aimed": {
+        "asset_id": "5a9024ee-3acc-475b-9fed-2b1f2c92bcb0",
+        "file": "animations/blue/spear-aimed.webp",
+        "edge_margin": 25
+      },
+      "torch-idle": {
+        "asset_id": "10db87ab-19a5-4005-bcf2-32cad108ac46",
+        "file": "animations/blue/torch-idle.webp",
+        "edge_margin": 6
+      },
+      "torch-run": {
+        "asset_id": "0f1f70b0-0a68-4671-8aac-e555f71f7ade",
+        "file": "animations/blue/torch-run.webp",
+        "edge_margin": 6
+      },
+      "torch-attack": {
+        "asset_id": "e84922ad-c4b9-4115-af02-c5425adae47a",
+        "file": "animations/blue/torch-attack.webp",
+        "edge_margin": 25
+      },
+      "torch-aimed": {
+        "asset_id": "9251f313-402a-42b2-be3c-ada0261e4041",
+        "file": "animations/blue/torch-aimed.webp",
+        "edge_margin": 25
+      },
+      "bow-idle": {
+        "asset_id": "8ea04b6a-7951-49db-89b4-6a74d5268b8f",
+        "file": "animations/blue/bow-idle.webp",
+        "edge_margin": 6
+      },
+      "bow-run": {
+        "asset_id": "a4144527-f8b7-4960-8e4f-4ff15e014588",
+        "file": "animations/blue/bow-run.webp",
+        "edge_margin": 6
+      },
+      "bow-attack": {
+        "asset_id": "4bc9dec7-8d53-44a6-878e-94caf2afe5c9",
+        "file": "animations/blue/bow-attack.webp",
+        "edge_margin": 25
+      },
+      "bow-aimed": {
+        "asset_id": "ed7d382d-1cf3-4325-9c2f-1b468092c172",
+        "file": "animations/blue/bow-aimed.webp",
+        "edge_margin": 25
+      },
+      "sling-idle": {
+        "asset_id": "82c3d146-6ce2-4b04-ad13-5427bd8f3a63",
+        "file": "animations/blue/sling-idle.webp",
+        "edge_margin": 6
+      },
+      "sling-run": {
+        "asset_id": "0af8cbc4-5cb8-4244-886c-104c7acd663c",
+        "file": "animations/blue/sling-run.webp",
+        "edge_margin": 6
+      },
+      "sling-attack": {
+        "asset_id": "709f7bac-fee4-4a2d-8128-ca29aa883d14",
+        "file": "animations/blue/sling-attack.webp",
+        "edge_margin": 25
+      },
+      "sling-aimed": {
+        "asset_id": "01f188e7-88cd-4589-9fa6-1e44e040dde7",
+        "file": "animations/blue/sling-aimed.webp",
+        "edge_margin": 25
+      }
     },
     "cavebar": {
       "tiles": {
-        "floor": { "asset_id": "7477bf9b-6570-4eb7-9093-964412876f2a", "file": "cavebar/tiles/floor.png" },
-        "wall": { "asset_id": "1a4a6985-64d9-4347-87eb-954013cb77f4", "file": "cavebar/tiles/wall.png" },
-        "torch-sconce": { "asset_id": "484ae43e-54e2-45ff-8d86-737acddb4a84", "file": "cavebar/tiles/torch-sconce.png" },
-        "wall-far": { "asset_id": "a6dbd9f9-4f3f-48f1-9f2e-f90d70426b02", "file": "cavebar/tiles/wall-far.png", "note": "far parallax layer, 256px wide" }
+        "floor": {
+          "asset_id": "7477bf9b-6570-4eb7-9093-964412876f2a",
+          "file": "cavebar/tiles/floor.png"
+        },
+        "wall": {
+          "asset_id": "1a4a6985-64d9-4347-87eb-954013cb77f4",
+          "file": "cavebar/tiles/wall.png"
+        },
+        "torch-sconce": {
+          "asset_id": "484ae43e-54e2-45ff-8d86-737acddb4a84",
+          "file": "cavebar/tiles/torch-sconce.png"
+        },
+        "wall-far": {
+          "asset_id": "a6dbd9f9-4f3f-48f1-9f2e-f90d70426b02",
+          "file": "cavebar/tiles/wall-far.png",
+          "note": "far parallax layer, 256px wide"
+        }
       },
       "props": {
-        "trophy-wall": { "asset_id": "00128633-f998-46a3-a3c7-d36e94049f80", "file": "cavebar/props/trophy-wall.png" },
-        "scoreboard": { "asset_id": "92b2e3e5-7c18-4aaf-906e-1f5678643115", "file": "cavebar/props/scoreboard.png" },
-        "bar-counter": { "asset_id": "98e957f4-2ebd-4753-9d8f-68b4a9fbdd79", "file": "cavebar/props/bar-counter.png" },
-        "upgrade-wall": { "asset_id": "cf32cd3f-0324-4a94-b139-6fd975c18e7c", "file": "cavebar/props/upgrade-wall.png" },
-        "weapon-rack": { "asset_id": "ea6e14ad-7abf-4f46-875b-b3350cdaab90", "file": "cavebar/props/weapon-rack.png" },
-        "exit-arch": { "asset_id": "7b48c8a0-3a45-4098-819b-c7594bf9b8b6", "file": "cavebar/props/exit-arch.png" }
+        "trophy-wall": {
+          "asset_id": "00128633-f998-46a3-a3c7-d36e94049f80",
+          "file": "cavebar/props/trophy-wall.png"
+        },
+        "scoreboard": {
+          "asset_id": "92b2e3e5-7c18-4aaf-906e-1f5678643115",
+          "file": "cavebar/props/scoreboard.png"
+        },
+        "bar-counter": {
+          "asset_id": "98e957f4-2ebd-4753-9d8f-68b4a9fbdd79",
+          "file": "cavebar/props/bar-counter.png"
+        },
+        "upgrade-wall": {
+          "asset_id": "cf32cd3f-0324-4a94-b139-6fd975c18e7c",
+          "file": "cavebar/props/upgrade-wall.png"
+        },
+        "weapon-rack": {
+          "asset_id": "ea6e14ad-7abf-4f46-875b-b3350cdaab90",
+          "file": "cavebar/props/weapon-rack.png"
+        },
+        "exit-arch": {
+          "asset_id": "7b48c8a0-3a45-4098-819b-c7594bf9b8b6",
+          "file": "cavebar/props/exit-arch.png"
+        }
       },
       "bartender": {
-        "still": { "asset_id": "4197ffad-edaa-4056-92c2-2c4d050d897c", "file": "cavebar/bartender/still.png" },
-        "idle": { "asset_id": "59d1d49d-1331-47cf-84ba-5081ca9867b8", "file": "cavebar/bartender/idle.webp", "frames": 8, "fps": 8, "loop": true },
-        "cheer": { "asset_id": "9f236067-c7c2-4924-9ee4-4d6b1f67587d", "file": "cavebar/bartender/cheer.webp", "frames": 6, "fps": 8, "loop": false },
-        "grunt": { "asset_id": "3e70ce4d-3a78-469b-bedf-02f23bc1d7ae", "file": "cavebar/bartender/grunt.webp", "frames": 6, "fps": 8, "loop": false }
+        "still": {
+          "asset_id": "4197ffad-edaa-4056-92c2-2c4d050d897c",
+          "file": "cavebar/bartender/still.png"
+        },
+        "idle": {
+          "asset_id": "59d1d49d-1331-47cf-84ba-5081ca9867b8",
+          "file": "cavebar/bartender/idle.webp",
+          "frames": 8,
+          "fps": 8,
+          "loop": true
+        },
+        "cheer": {
+          "asset_id": "9f236067-c7c2-4924-9ee4-4d6b1f67587d",
+          "file": "cavebar/bartender/cheer.webp",
+          "frames": 6,
+          "fps": 8,
+          "loop": false
+        },
+        "grunt": {
+          "asset_id": "3e70ce4d-3a78-469b-bedf-02f23bc1d7ae",
+          "file": "cavebar/bartender/grunt.webp",
+          "frames": 6,
+          "fps": 8,
+          "loop": false
+        }
       },
       "paintings": {
-        "thick-hide": { "asset_id": "ab42df45-6f87-4bd8-9378-b3c544b2a557", "file": "cavebar/paintings/thick-hide.png" },
-        "swift-feet": { "asset_id": "5a342bc3-746f-42c6-b70c-a0a4ce14fadf", "file": "cavebar/paintings/swift-feet.png" },
-        "hunters-eye": { "asset_id": "5eea0a81-d9f4-435f-a9e2-4b8f3dddde32", "file": "cavebar/paintings/hunters-eye.png" },
-        "pack-leader": { "asset_id": "ed8b0255-5ddf-4059-b6e4-28e389f7b4c1", "file": "cavebar/paintings/pack-leader.png" },
-        "scavenger": { "asset_id": "d2790b82-acb6-45e1-b5fe-80e56aa2867a", "file": "cavebar/paintings/scavenger.png" }
+        "thick-hide": {
+          "asset_id": "ab42df45-6f87-4bd8-9378-b3c544b2a557",
+          "file": "cavebar/paintings/thick-hide.png"
+        },
+        "swift-feet": {
+          "asset_id": "5a342bc3-746f-42c6-b70c-a0a4ce14fadf",
+          "file": "cavebar/paintings/swift-feet.png"
+        },
+        "hunters-eye": {
+          "asset_id": "5eea0a81-d9f4-435f-a9e2-4b8f3dddde32",
+          "file": "cavebar/paintings/hunters-eye.png"
+        },
+        "pack-leader": {
+          "asset_id": "ed8b0255-5ddf-4059-b6e4-28e389f7b4c1",
+          "file": "cavebar/paintings/pack-leader.png"
+        },
+        "scavenger": {
+          "asset_id": "d2790b82-acb6-45e1-b5fe-80e56aa2867a",
+          "file": "cavebar/paintings/scavenger.png"
+        }
       }
     },
     "enemies": {
       "trex": {
-        "still": { "asset_id": "ef0c17c6-d44f-42ec-82f1-32bfbed1150a", "file": "enemies/trex/still.png", "size": "384x384" },
-        "idle": { "asset_id": "9bda71e9-00e9-477a-bbf2-2985ae1460a6", "file": "enemies/trex/idle.webp", "frames": 8, "fps": 8, "loop": true, "note": "detailed mode — source > 256px" },
-        "walk": { "asset_id": "1fa39700-395b-48f0-831d-6661819f500d", "file": "enemies/trex/walk.webp", "frames": 8, "fps": 8, "loop": true },
-        "bite": { "asset_id": "77ff981f-490f-4322-b3a0-9f4754bb1f7e", "file": "enemies/trex/bite.webp", "frames": 8, "fps": 8, "loop": false },
-        "stomp": { "asset_id": "6ae370c7-7b7c-4a0e-b788-c8de2d7c88bf", "file": "enemies/trex/stomp.webp", "frames": 8, "fps": 8, "loop": false },
-        "tail-sweep": { "asset_id": "ad13c1db-2a8e-4575-b8c6-7763ebf7fbbf", "file": "enemies/trex/tail-sweep.webp", "frames": 8, "fps": 8, "loop": false },
-        "roar": { "asset_id": "7228c1d8-88e2-46e1-adef-573a970785c6", "file": "enemies/trex/roar.webp", "frames": 8, "fps": 8, "loop": false },
-        "stagger": { "asset_id": "161f00cd-7d4a-48d9-b0c6-e0e70c9dca80", "file": "enemies/trex/stagger.webp", "frames": 6, "fps": 8, "loop": false },
-        "death": { "asset_id": "a8a51c9b-4b92-4384-a38b-982499cb6339", "file": "enemies/trex/death.webp", "frames": 8, "fps": 8, "loop": false },
-        "charge": { "asset_id": "fc95cecf-eb0b-4015-8d49-2f6e3238db0d", "file": "enemies/trex/charge.webp", "frames": 8, "fps": 8, "loop": false }
+        "still": {
+          "asset_id": "ef0c17c6-d44f-42ec-82f1-32bfbed1150a",
+          "file": "enemies/trex/still.png",
+          "size": "384x384"
+        },
+        "idle": {
+          "asset_id": "9bda71e9-00e9-477a-bbf2-2985ae1460a6",
+          "file": "enemies/trex/idle.webp",
+          "frames": 8,
+          "fps": 8,
+          "loop": true,
+          "note": "detailed mode \u2014 source > 256px"
+        },
+        "walk": {
+          "asset_id": "1fa39700-395b-48f0-831d-6661819f500d",
+          "file": "enemies/trex/walk.webp",
+          "frames": 8,
+          "fps": 8,
+          "loop": true
+        },
+        "bite": {
+          "asset_id": "77ff981f-490f-4322-b3a0-9f4754bb1f7e",
+          "file": "enemies/trex/bite.webp",
+          "frames": 8,
+          "fps": 8,
+          "loop": false
+        },
+        "stomp": {
+          "asset_id": "6ae370c7-7b7c-4a0e-b788-c8de2d7c88bf",
+          "file": "enemies/trex/stomp.webp",
+          "frames": 8,
+          "fps": 8,
+          "loop": false
+        },
+        "tail-sweep": {
+          "asset_id": "ad13c1db-2a8e-4575-b8c6-7763ebf7fbbf",
+          "file": "enemies/trex/tail-sweep.webp",
+          "frames": 8,
+          "fps": 8,
+          "loop": false
+        },
+        "roar": {
+          "asset_id": "7228c1d8-88e2-46e1-adef-573a970785c6",
+          "file": "enemies/trex/roar.webp",
+          "frames": 8,
+          "fps": 8,
+          "loop": false
+        },
+        "stagger": {
+          "asset_id": "161f00cd-7d4a-48d9-b0c6-e0e70c9dca80",
+          "file": "enemies/trex/stagger.webp",
+          "frames": 6,
+          "fps": 8,
+          "loop": false
+        },
+        "death": {
+          "asset_id": "a8a51c9b-4b92-4384-a38b-982499cb6339",
+          "file": "enemies/trex/death.webp",
+          "frames": 8,
+          "fps": 8,
+          "loop": false
+        },
+        "charge": {
+          "asset_id": "fc95cecf-eb0b-4015-8d49-2f6e3238db0d",
+          "file": "enemies/trex/charge.webp",
+          "frames": 8,
+          "fps": 8,
+          "loop": false
+        }
       },
       "dilophosaurus": {
-        "still": { "asset_id": "354266ac-37ae-4a09-9695-1fef33b6bb38", "file": "enemies/dilophosaurus/still.png", "size": "320x320" },
-        "idle": { "asset_id": "cedd072f-125e-4577-84ca-104855586474", "file": "enemies/dilophosaurus/idle.webp", "frames": 8, "fps": 8, "loop": true },
-        "walk": { "asset_id": "e2db739f-57da-4954-8a76-755867895ee2", "file": "enemies/dilophosaurus/walk.webp", "frames": 8, "fps": 8, "loop": true },
-        "telegraph-spit": { "asset_id": "49739975-999f-4095-a476-2034e80fdde9", "file": "enemies/dilophosaurus/telegraph-spit.webp", "frames": 6, "fps": 8, "loop": false },
-        "telegraph-bite": { "asset_id": "7e9fd040-099c-4733-b18e-fdb5c500babd", "file": "enemies/dilophosaurus/telegraph-bite.webp", "frames": 6, "fps": 8, "loop": false },
-        "spit": { "asset_id": "c4732c7e-b6e6-409f-b465-08c73307b689", "file": "enemies/dilophosaurus/spit.webp", "frames": 8, "fps": 8, "loop": false },
-        "bite": { "asset_id": "a3aab72c-76d3-4a25-91ca-abb996177f3f", "file": "enemies/dilophosaurus/bite.webp", "frames": 8, "fps": 8, "loop": false },
-        "stagger": { "asset_id": "2b677255-f75e-4372-a1dd-6ff523677137", "file": "enemies/dilophosaurus/stagger.webp", "frames": 6, "fps": 8, "loop": false },
-        "death": { "asset_id": "bf920043-a7da-4dda-b231-e7c745152af2", "file": "enemies/dilophosaurus/death.webp", "frames": 8, "fps": 8, "loop": false }
+        "still": {
+          "asset_id": "354266ac-37ae-4a09-9695-1fef33b6bb38",
+          "file": "enemies/dilophosaurus/still.png",
+          "size": "320x320"
+        },
+        "idle": {
+          "asset_id": "cedd072f-125e-4577-84ca-104855586474",
+          "file": "enemies/dilophosaurus/idle.webp",
+          "frames": 8,
+          "fps": 8,
+          "loop": true
+        },
+        "walk": {
+          "asset_id": "e2db739f-57da-4954-8a76-755867895ee2",
+          "file": "enemies/dilophosaurus/walk.webp",
+          "frames": 8,
+          "fps": 8,
+          "loop": true
+        },
+        "telegraph-spit": {
+          "asset_id": "49739975-999f-4095-a476-2034e80fdde9",
+          "file": "enemies/dilophosaurus/telegraph-spit.webp",
+          "frames": 6,
+          "fps": 8,
+          "loop": false
+        },
+        "telegraph-bite": {
+          "asset_id": "7e9fd040-099c-4733-b18e-fdb5c500babd",
+          "file": "enemies/dilophosaurus/telegraph-bite.webp",
+          "frames": 6,
+          "fps": 8,
+          "loop": false
+        },
+        "spit": {
+          "asset_id": "c4732c7e-b6e6-409f-b465-08c73307b689",
+          "file": "enemies/dilophosaurus/spit.webp",
+          "frames": 8,
+          "fps": 8,
+          "loop": false
+        },
+        "bite": {
+          "asset_id": "a3aab72c-76d3-4a25-91ca-abb996177f3f",
+          "file": "enemies/dilophosaurus/bite.webp",
+          "frames": 8,
+          "fps": 8,
+          "loop": false
+        },
+        "stagger": {
+          "asset_id": "2b677255-f75e-4372-a1dd-6ff523677137",
+          "file": "enemies/dilophosaurus/stagger.webp",
+          "frames": 6,
+          "fps": 8,
+          "loop": false
+        },
+        "death": {
+          "asset_id": "bf920043-a7da-4dda-b231-e7c745152af2",
+          "file": "enemies/dilophosaurus/death.webp",
+          "frames": 8,
+          "fps": 8,
+          "loop": false
+        }
       }
     },
     "arenas": {
       "dense-jungle": {
         "tiles": {
-          "floor": { "asset_id": "8f2e6654-be5b-466a-8068-a6118f0ba0e4", "file": "arena/dense-jungle/tiles/floor.png", "size": "64x64", "layer": "near", "scroll": 1.0 },
-          "mid": { "asset_id": "bab6eb8c-9a7a-452d-ba7a-0e55c094805a", "file": "arena/dense-jungle/tiles/mid.png", "size": "64x128", "layer": "mid", "scroll": 0.6 },
-          "canopy": { "asset_id": "15bc2303-a8cb-4ed0-92ec-9506f6e5e4b7", "file": "arena/dense-jungle/tiles/canopy.png", "size": "256x128", "layer": "far", "scroll": 0.3 }
+          "floor": {
+            "asset_id": "8f2e6654-be5b-466a-8068-a6118f0ba0e4",
+            "file": "arena/dense-jungle/tiles/floor.png",
+            "size": "64x64",
+            "layer": "near",
+            "scroll": 1.0
+          },
+          "mid": {
+            "asset_id": "bab6eb8c-9a7a-452d-ba7a-0e55c094805a",
+            "file": "arena/dense-jungle/tiles/mid.png",
+            "size": "64x128",
+            "layer": "mid",
+            "scroll": 0.6
+          },
+          "canopy": {
+            "asset_id": "15bc2303-a8cb-4ed0-92ec-9506f6e5e4b7",
+            "file": "arena/dense-jungle/tiles/canopy.png",
+            "size": "256x128",
+            "layer": "far",
+            "scroll": 0.3
+          }
         },
         "props": {
-          "tree": { "asset_id": "5367b57f-560a-4926-bebc-0c9f190a37b1", "file": "arena/dense-jungle/props/tree.png" },
-          "liana": { "asset_id": "54ffa176-7ca4-491b-a9df-7781dba494e6", "file": "arena/dense-jungle/props/liana.png" },
-          "bush": { "asset_id": "1179209c-97ee-4ebc-b43c-ec070a1533e9", "file": "arena/dense-jungle/props/bush.png" }
+          "tree": {
+            "asset_id": "5367b57f-560a-4926-bebc-0c9f190a37b1",
+            "file": "arena/dense-jungle/props/tree.png"
+          },
+          "liana": {
+            "asset_id": "54ffa176-7ca4-491b-a9df-7781dba494e6",
+            "file": "arena/dense-jungle/props/liana.png"
+          },
+          "bush": {
+            "asset_id": "1179209c-97ee-4ebc-b43c-ec070a1533e9",
+            "file": "arena/dense-jungle/props/bush.png"
+          }
         }
       }
     },
@@ -167,6 +682,155 @@
         "asset_id": "57fe7b67-f40a-4b5d-a012-d765ca853194",
         "sha12": null,
         "label": "Yellow Hero - base still, blond hair, yellow cape"
+      },
+      "axe-still": {
+        "asset_id": "6311e68e-239a-49d3-a277-db3f950df845",
+        "label": "Yellow Hero holding stone axe"
+      },
+      "shield-still": {
+        "asset_id": "1c72ad79-beb7-4d1b-b69b-a7672f90e16e",
+        "label": "Yellow Hero holding shield+club"
+      },
+      "spear-still": {
+        "asset_id": "445fe844-4ee8-45dc-88ca-899a66a0542d",
+        "label": "Yellow Hero holding spear"
+      },
+      "torch-still": {
+        "asset_id": "d57c018d-efc9-4105-8507-b2ea7e60c729",
+        "label": "Yellow Hero holding torch"
+      },
+      "bow-still": {
+        "asset_id": "9e4522a5-6930-4b34-98bc-2575ceb5d396",
+        "label": "Yellow Hero holding bow"
+      },
+      "sling-still": {
+        "asset_id": "a64539e0-b898-4eab-8373-9fb1a292800a",
+        "label": "Yellow Hero holding sling"
+      },
+      "idle": {
+        "asset_id": "bbd1f7b0-043f-4dd6-a6f6-99ffbf71c527",
+        "file": "animations/yellow/idle.webp",
+        "edge_margin": 6
+      },
+      "reposition": {
+        "asset_id": "7de9f612-a134-4777-8e8a-e1412dd3b6c7",
+        "file": "animations/yellow/reposition.webp",
+        "edge_margin": 6
+      },
+      "brace": {
+        "asset_id": "e699cdce-f55d-4dad-b3ba-1396abe2970a",
+        "file": "animations/yellow/brace.webp",
+        "edge_margin": 6
+      },
+      "revive": {
+        "asset_id": "ab28357f-1fa1-478d-b5df-6eb3fec79ee8",
+        "file": "animations/yellow/revive.webp",
+        "edge_margin": 6
+      },
+      "hit": {
+        "asset_id": "666c992e-a1c4-4b91-bead-cb41a7322862",
+        "file": "animations/yellow/hit.webp",
+        "edge_margin": 6
+      },
+      "being-revived": {
+        "asset_id": "ab7c3282-4677-41ae-82b6-3dbd9c69e436",
+        "file": "animations/yellow/being-revived.webp",
+        "edge_margin": 6
+      },
+      "downed": {
+        "asset_id": "c1a405d8-955d-4be1-bb28-5403ce2dad0a",
+        "file": "animations/yellow/downed.webp",
+        "edge_margin": 6
+      },
+      "victory": {
+        "asset_id": "112273db-d128-45cd-b433-bc583f80a527",
+        "file": "animations/yellow/victory.webp",
+        "edge_margin": 6
+      },
+      "dodge": {
+        "asset_id": "72e551cf-f014-44b9-b075-12ade5237d91",
+        "file": "animations/yellow/dodge.webp",
+        "edge_margin": 6
+      },
+      "axe-idle": {
+        "asset_id": "12ebc2a7-0f18-44c4-b283-f04ea60c8cef",
+        "file": "animations/yellow/axe-idle.webp",
+        "edge_margin": 6
+      },
+      "axe-run": {
+        "asset_id": "81281c8c-22f1-4311-8433-d665da523f60",
+        "file": "animations/yellow/axe-run.webp",
+        "edge_margin": 6
+      },
+      "axe-attack": {
+        "asset_id": "9ee518c5-00eb-4f91-a325-0f6f3fdf9b67",
+        "file": "animations/yellow/axe-attack.webp",
+        "edge_margin": 25
+      },
+      "axe-aimed": {
+        "asset_id": "65118e2c-e455-457a-a76e-bbe74e2bdc81",
+        "file": "animations/yellow/axe-aimed.webp",
+        "edge_margin": 25
+      },
+      "shield-idle": {
+        "asset_id": "5aafa089-618c-4257-b5dd-12dcffdf69ad",
+        "file": "animations/yellow/shield-idle.webp",
+        "edge_margin": 6
+      },
+      "shield-attack": {
+        "asset_id": "842e77f7-7c6d-4c1a-bf8e-40a989655d59",
+        "file": "animations/yellow/shield-attack.webp",
+        "edge_margin": 25
+      },
+      "shield-aimed": {
+        "asset_id": "89ea50f9-c67f-433c-8e9a-8871f2c8df09",
+        "file": "animations/yellow/shield-aimed.webp",
+        "edge_margin": 25
+      },
+      "shield-run": {
+        "asset_id": "678de82f-247f-4037-96a4-0e8854950914",
+        "file": "animations/yellow/shield-run.webp",
+        "edge_margin": 6
+      },
+      "spear-idle": {
+        "asset_id": "1ae8791a-8ee5-49a6-bb0d-762dbb27b68e",
+        "file": "animations/yellow/spear-idle.webp",
+        "edge_margin": 6
+      },
+      "spear-run": {
+        "asset_id": "bb1f1ff0-b7fe-46ba-885a-7b0b813a10d1",
+        "file": "animations/yellow/spear-run.webp",
+        "edge_margin": 6
+      },
+      "spear-attack": {
+        "asset_id": "3945562d-ce47-4708-93ed-7cd9ab850811",
+        "file": "animations/yellow/spear-attack.webp",
+        "edge_margin": 25
+      },
+      "spear-aimed": {
+        "asset_id": "4ebc9afb-0302-429b-a535-c39be7d44661",
+        "file": "animations/yellow/spear-aimed.webp",
+        "edge_margin": 25
+      },
+      "torch-idle": {
+        "asset_id": "abd6d943-b2f0-4cc0-b8d7-1448d9cf88b8",
+        "file": "animations/yellow/torch-idle.webp",
+        "edge_margin": 6
+      },
+      "torch-run": {
+        "asset_id": "52ca2647-eb26-4282-8fc7-ff6e37d530f6",
+        "file": "animations/yellow/torch-run.webp",
+        "edge_margin": 6
+      },
+      "torch-attack": {
+        "asset_id": "51c4a36c-9597-4159-a7e9-140f2d3e952b",
+        "file": "animations/yellow/torch-attack.webp",
+        "edge_margin": 25
+      },
+      "torch-aimed": {
+        "asset_id": "0eb47a3f-723d-48c2-b6f8-acf84683a2aa",
+        "file": "animations/yellow/torch-aimed.webp",
+        "edge_margin": 25
       }
     },
     "green": {
@@ -174,6 +838,155 @@
         "asset_id": "620e8955-3ade-4ded-98e5-93e4d6f9dedb",
         "sha12": null,
         "label": "Green Hero - base still, red hair, green cape"
+      },
+      "axe-still": {
+        "asset_id": "345217ab-7efa-4c03-9acf-bdd09987f8d9",
+        "label": "Green Hero holding stone axe"
+      },
+      "shield-still": {
+        "asset_id": "d2333212-3583-4b4d-98f3-e1b6b3a83333",
+        "label": "Green Hero holding shield+club"
+      },
+      "spear-still": {
+        "asset_id": "d1e241c3-6182-419e-a52a-c644ae1f2f48",
+        "label": "Green Hero holding spear"
+      },
+      "torch-still": {
+        "asset_id": "cf713d63-2105-445f-ad38-1b7bc879c508",
+        "label": "Green Hero holding torch"
+      },
+      "bow-still": {
+        "asset_id": "779bb9bc-bea1-4ae8-b570-ec4c7ae0b5a2",
+        "label": "Green Hero holding bow"
+      },
+      "sling-still": {
+        "asset_id": "d3d7191b-b26b-4c82-afd4-3798a452accf",
+        "label": "Green Hero holding sling"
+      },
+      "idle": {
+        "asset_id": "e83d04fb-59cd-478b-b142-a41f1c0d1c36",
+        "file": "animations/green/idle.webp",
+        "edge_margin": 6
+      },
+      "reposition": {
+        "asset_id": "f97d7292-8edf-4608-a30d-357484054868",
+        "file": "animations/green/reposition.webp",
+        "edge_margin": 6
+      },
+      "brace": {
+        "asset_id": "c43b3fa5-c2c6-4b3e-8400-24be2d178ed5",
+        "file": "animations/green/brace.webp",
+        "edge_margin": 6
+      },
+      "revive": {
+        "asset_id": "780d3214-5c5f-4dfd-b375-b65dd36fecc7",
+        "file": "animations/green/revive.webp",
+        "edge_margin": 6
+      },
+      "hit": {
+        "asset_id": "a96cbdda-98e2-449b-9d67-91653aea8e4d",
+        "file": "animations/green/hit.webp",
+        "edge_margin": 6
+      },
+      "being-revived": {
+        "asset_id": "43100006-d448-48e4-b2f0-1c2ca273fbab",
+        "file": "animations/green/being-revived.webp",
+        "edge_margin": 6
+      },
+      "downed": {
+        "asset_id": "343a7d6d-721e-4a19-a6c1-21ed1768df27",
+        "file": "animations/green/downed.webp",
+        "edge_margin": 6
+      },
+      "victory": {
+        "asset_id": "9f11e42a-bc18-4367-8ada-80df5078c495",
+        "file": "animations/green/victory.webp",
+        "edge_margin": 6
+      },
+      "dodge": {
+        "asset_id": "5ece5b82-3246-4aac-9354-780697f2a409",
+        "file": "animations/green/dodge.webp",
+        "edge_margin": 6
+      },
+      "axe-idle": {
+        "asset_id": "ae2ba31f-19dd-48ed-ad00-fc81cbe5f93e",
+        "file": "animations/green/axe-idle.webp",
+        "edge_margin": 6
+      },
+      "axe-run": {
+        "asset_id": "8234aee9-1e62-4e4c-88f0-5ea76bcc92cd",
+        "file": "animations/green/axe-run.webp",
+        "edge_margin": 6
+      },
+      "axe-attack": {
+        "asset_id": "15c935dd-4b08-4158-bdd3-f2e48588b27d",
+        "file": "animations/green/axe-attack.webp",
+        "edge_margin": 25
+      },
+      "axe-aimed": {
+        "asset_id": "042fb657-f9db-4e0e-8db6-fa8293a0a125",
+        "file": "animations/green/axe-aimed.webp",
+        "edge_margin": 25
+      },
+      "shield-idle": {
+        "asset_id": "273c9cf9-567a-4cc0-84d4-d62f0bdd1664",
+        "file": "animations/green/shield-idle.webp",
+        "edge_margin": 6
+      },
+      "shield-run": {
+        "asset_id": "036d384e-2d48-49d1-a880-914d4db79bf6",
+        "file": "animations/green/shield-run.webp",
+        "edge_margin": 6
+      },
+      "shield-attack": {
+        "asset_id": "7623d959-3e23-4f2c-80d2-43a88c63f6c9",
+        "file": "animations/green/shield-attack.webp",
+        "edge_margin": 25
+      },
+      "shield-aimed": {
+        "asset_id": "034210aa-10e1-4283-90ff-1b1573f729f1",
+        "file": "animations/green/shield-aimed.webp",
+        "edge_margin": 25
+      },
+      "spear-idle": {
+        "asset_id": "354c83b0-c910-46cb-8b7e-e7b0ed542682",
+        "file": "animations/green/spear-idle.webp",
+        "edge_margin": 6
+      },
+      "spear-run": {
+        "asset_id": "82456eaa-4a7f-4888-a6cf-d9d6fd476741",
+        "file": "animations/green/spear-run.webp",
+        "edge_margin": 6
+      },
+      "spear-attack": {
+        "asset_id": "faf36b04-db5b-4461-bf0e-c7cc1e99213d",
+        "file": "animations/green/spear-attack.webp",
+        "edge_margin": 25
+      },
+      "spear-aimed": {
+        "asset_id": "364d5705-3471-4da3-a913-4ca16b09b22f",
+        "file": "animations/green/spear-aimed.webp",
+        "edge_margin": 25
+      },
+      "torch-idle": {
+        "asset_id": "e411f604-b1a2-4812-82e3-45b8cedf64c5",
+        "file": "animations/green/torch-idle.webp",
+        "edge_margin": 6
+      },
+      "torch-run": {
+        "asset_id": "c3e5612c-d8b9-4115-bd92-0d2892e84d54",
+        "file": "animations/green/torch-run.webp",
+        "edge_margin": 6
+      },
+      "torch-attack": {
+        "asset_id": "e88bf343-c416-44c3-ad5f-cf64ae9dbf43",
+        "file": "animations/green/torch-attack.webp",
+        "edge_margin": 25
+      },
+      "torch-aimed": {
+        "asset_id": "369025df-0fec-4a12-acfa-572bb955fa12",
+        "file": "animations/green/torch-aimed.webp",
+        "edge_margin": 25
       }
     }
   }
