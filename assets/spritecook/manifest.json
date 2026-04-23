@@ -126,7 +126,15 @@
     "enemies": {
       "trex": {
         "still": { "asset_id": "ef0c17c6-d44f-42ec-82f1-32bfbed1150a", "file": "enemies/trex/still.png", "size": "384x384" },
-        "idle": { "asset_id": "9bda71e9-00e9-477a-bbf2-2985ae1460a6", "file": "enemies/trex/idle.webp", "frames": 8, "fps": 8, "loop": true, "note": "detailed mode — source > 256px" }
+        "idle": { "asset_id": "9bda71e9-00e9-477a-bbf2-2985ae1460a6", "file": "enemies/trex/idle.webp", "frames": 8, "fps": 8, "loop": true, "note": "detailed mode — source > 256px" },
+        "walk": { "asset_id": "1fa39700-395b-48f0-831d-6661819f500d", "file": "enemies/trex/walk.webp", "frames": 8, "fps": 8, "loop": true },
+        "bite": { "asset_id": "77ff981f-490f-4322-b3a0-9f4754bb1f7e", "file": "enemies/trex/bite.webp", "frames": 8, "fps": 8, "loop": false },
+        "stomp": { "asset_id": "6ae370c7-7b7c-4a0e-b788-c8de2d7c88bf", "file": "enemies/trex/stomp.webp", "frames": 8, "fps": 8, "loop": false },
+        "tail-sweep": { "asset_id": "ad13c1db-2a8e-4575-b8c6-7763ebf7fbbf", "file": "enemies/trex/tail-sweep.webp", "frames": 8, "fps": 8, "loop": false },
+        "roar": { "asset_id": "7228c1d8-88e2-46e1-adef-573a970785c6", "file": "enemies/trex/roar.webp", "frames": 8, "fps": 8, "loop": false },
+        "stagger": { "asset_id": "161f00cd-7d4a-48d9-b0c6-e0e70c9dca80", "file": "enemies/trex/stagger.webp", "frames": 6, "fps": 8, "loop": false },
+        "death": { "asset_id": "a8a51c9b-4b92-4384-a38b-982499cb6339", "file": "enemies/trex/death.webp", "frames": 8, "fps": 8, "loop": false },
+        "charge": { "asset_id": "fc95cecf-eb0b-4015-8d49-2f6e3238db0d", "file": "enemies/trex/charge.webp", "frames": 8, "fps": 8, "loop": false }
       },
       "dilophosaurus": {
         "still": { "asset_id": "354266ac-37ae-4a09-9695-1fef33b6bb38", "file": "enemies/dilophosaurus/still.png", "size": "320x320" },
