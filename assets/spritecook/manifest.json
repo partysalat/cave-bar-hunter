@@ -138,7 +138,14 @@
       },
       "dilophosaurus": {
         "still": { "asset_id": "354266ac-37ae-4a09-9695-1fef33b6bb38", "file": "enemies/dilophosaurus/still.png", "size": "320x320" },
-        "idle": { "asset_id": "cedd072f-125e-4577-84ca-104855586474", "file": "enemies/dilophosaurus/idle.webp", "frames": 8, "fps": 8, "loop": true }
+        "idle": { "asset_id": "cedd072f-125e-4577-84ca-104855586474", "file": "enemies/dilophosaurus/idle.webp", "frames": 8, "fps": 8, "loop": true },
+        "walk": { "asset_id": "e2db739f-57da-4954-8a76-755867895ee2", "file": "enemies/dilophosaurus/walk.webp", "frames": 8, "fps": 8, "loop": true },
+        "telegraph-spit": { "asset_id": "49739975-999f-4095-a476-2034e80fdde9", "file": "enemies/dilophosaurus/telegraph-spit.webp", "frames": 6, "fps": 8, "loop": false },
+        "telegraph-bite": { "asset_id": "7e9fd040-099c-4733-b18e-fdb5c500babd", "file": "enemies/dilophosaurus/telegraph-bite.webp", "frames": 6, "fps": 8, "loop": false },
+        "spit": { "asset_id": "c4732c7e-b6e6-409f-b465-08c73307b689", "file": "enemies/dilophosaurus/spit.webp", "frames": 8, "fps": 8, "loop": false },
+        "bite": { "asset_id": "a3aab72c-76d3-4a25-91ca-abb996177f3f", "file": "enemies/dilophosaurus/bite.webp", "frames": 8, "fps": 8, "loop": false },
+        "stagger": { "asset_id": "2b677255-f75e-4372-a1dd-6ff523677137", "file": "enemies/dilophosaurus/stagger.webp", "frames": 6, "fps": 8, "loop": false },
+        "death": { "asset_id": "bf920043-a7da-4dda-b231-e7c745152af2", "file": "enemies/dilophosaurus/death.webp", "frames": 8, "fps": 8, "loop": false }
       }
     },
     "arenas": {
