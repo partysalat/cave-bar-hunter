@@ -124,6 +124,10 @@
       }
     },
     "enemies": {
+      "trex": {
+        "still": { "asset_id": "ef0c17c6-d44f-42ec-82f1-32bfbed1150a", "file": "enemies/trex/still.png", "size": "384x384" },
+        "idle": { "asset_id": "9bda71e9-00e9-477a-bbf2-2985ae1460a6", "file": "enemies/trex/idle.webp", "frames": 8, "fps": 8, "loop": true, "note": "detailed mode — source > 256px" }
+      },
       "dilophosaurus": {
         "still": { "asset_id": "354266ac-37ae-4a09-9695-1fef33b6bb38", "file": "enemies/dilophosaurus/still.png", "size": "320x320" },
         "idle": { "asset_id": "cedd072f-125e-4577-84ca-104855586474", "file": "enemies/dilophosaurus/idle.webp", "frames": 8, "fps": 8, "loop": true }
