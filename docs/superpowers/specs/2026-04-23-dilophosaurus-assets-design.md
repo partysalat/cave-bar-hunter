@@ -9,6 +9,15 @@ Dilophosaurus is the Hunt #1 solo boss. Realistic pixel art proportions — not 
 
 **Full target animation set (C):** still → idle → spit attack → bite → stagger → telegraph → walk/reposition → death. This spec covers phase A only (still + idle). Remaining animations added in follow-up sessions.
 
+**Remaining for C (not yet generated):**
+- `telegraph-spit` — head rears back, frill fans wide, cheeks puff — signals spit is coming
+- `telegraph-bite` — head lowers and locks onto target — signals bite is coming
+- `spit` — projectile launches from mouth, head snaps forward (6–8 frames)
+- `bite` — lunging forward jaw snap, full extension (6–8 frames)
+- `stagger` — recoils from weak point hit, stumbles sideways (4–6 frames)
+- `walk` — slow predatory stalk cycle, looping (8 frames)
+- `death` — collapses forward, frill droops, tail goes limp (8 frames)
+
 ---
 
 ## Visual Design
