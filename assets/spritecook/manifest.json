@@ -99,7 +99,7 @@
         "floor": { "asset_id": "7477bf9b-6570-4eb7-9093-964412876f2a", "file": "cavebar/tiles/floor.png" },
         "wall": { "asset_id": "1a4a6985-64d9-4347-87eb-954013cb77f4", "file": "cavebar/tiles/wall.png" },
         "torch-sconce": { "asset_id": "484ae43e-54e2-45ff-8d86-737acddb4a84", "file": "cavebar/tiles/torch-sconce.png" },
-        "wall-far": { "asset_id": "cb335e39-f27f-4aa3-89f5-87355d4a3263", "file": "cavebar/tiles/wall-far.png", "note": "far parallax layer, 256px wide" }
+        "wall-far": { "asset_id": "a6dbd9f9-4f3f-48f1-9f2e-f90d70426b02", "file": "cavebar/tiles/wall-far.png", "note": "far parallax layer, 256px wide" }
       },
       "props": {
         "trophy-wall": { "asset_id": "00128633-f998-46a3-a3c7-d36e94049f80", "file": "cavebar/props/trophy-wall.png" },
