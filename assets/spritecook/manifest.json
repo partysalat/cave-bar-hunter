@@ -831,6 +831,46 @@
         "asset_id": "0eb47a3f-723d-48c2-b6f8-acf84683a2aa",
         "file": "animations/yellow/torch-aimed.webp",
         "edge_margin": 25
+      },
+      "bow-idle": {
+        "asset_id": "1c10b582-741a-4524-8fd1-150f0b62ad9c",
+        "file": "animations/yellow/bow-idle.webp",
+        "edge_margin": 6
+      },
+      "bow-run": {
+        "asset_id": "217bff9b-b087-4139-9189-ae12aec7b7d1",
+        "file": "animations/yellow/bow-run.webp",
+        "edge_margin": 6
+      },
+      "bow-attack": {
+        "asset_id": "1e33e2f9-0338-4318-9525-86b5a9b7ef41",
+        "file": "animations/yellow/bow-attack.webp",
+        "edge_margin": 25
+      },
+      "bow-aimed": {
+        "asset_id": "04f8ad82-2a6a-4c53-95cf-7d01a57a808d",
+        "file": "animations/yellow/bow-aimed.webp",
+        "edge_margin": 25
+      },
+      "sling-idle": {
+        "asset_id": "2c2c8736-6e19-4ce0-89bf-3fd755c7ef1c",
+        "file": "animations/yellow/sling-idle.webp",
+        "edge_margin": 6
+      },
+      "sling-run": {
+        "asset_id": "b609b347-40d4-4980-9627-19a34abed1ab",
+        "file": "animations/yellow/sling-run.webp",
+        "edge_margin": 6
+      },
+      "sling-attack": {
+        "asset_id": "94446957-9492-4868-b4fc-0ba9830f29f9",
+        "file": "animations/yellow/sling-attack.webp",
+        "edge_margin": 25
+      },
+      "sling-aimed": {
+        "asset_id": "f8b65afe-5768-4cad-a9de-522b7b7b76ab",
+        "file": "animations/yellow/sling-aimed.webp",
+        "edge_margin": 25
       }
     },
     "green": {
@@ -986,6 +1026,46 @@
       "torch-aimed": {
         "asset_id": "369025df-0fec-4a12-acfa-572bb955fa12",
         "file": "animations/green/torch-aimed.webp",
+        "edge_margin": 25
+      },
+      "bow-idle": {
+        "asset_id": "90c19743-313d-4e50-bd0d-20ab2685eb24",
+        "file": "animations/green/bow-idle.webp",
+        "edge_margin": 6
+      },
+      "bow-run": {
+        "asset_id": "53f6411c-c044-4fae-af85-5444055cc871",
+        "file": "animations/green/bow-run.webp",
+        "edge_margin": 6
+      },
+      "bow-attack": {
+        "asset_id": "1477a5a1-26ec-463f-a19c-5773519eddba",
+        "file": "animations/green/bow-attack.webp",
+        "edge_margin": 25
+      },
+      "bow-aimed": {
+        "asset_id": "ba5c26f7-de60-4af9-8d69-87c498cd2d9b",
+        "file": "animations/green/bow-aimed.webp",
+        "edge_margin": 25
+      },
+      "sling-idle": {
+        "asset_id": "61f392a7-4f17-4490-9b3c-4f34f8853187",
+        "file": "animations/green/sling-idle.webp",
+        "edge_margin": 6
+      },
+      "sling-run": {
+        "asset_id": "575a0a82-94ba-4ca7-a7ac-140c9d5f7fbd",
+        "file": "animations/green/sling-run.webp",
+        "edge_margin": 6
+      },
+      "sling-attack": {
+        "asset_id": "dbf89a59-2dad-468e-b459-7ebb76db7f0f",
+        "file": "animations/green/sling-attack.webp",
+        "edge_margin": 25
+      },
+      "sling-aimed": {
+        "asset_id": "a42e9885-6e5c-44bc-8983-c9745bf2fbf6",
+        "file": "animations/green/sling-aimed.webp",
         "edge_margin": 25
       }
     }
