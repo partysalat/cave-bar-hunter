@@ -32,7 +32,7 @@ export interface WeakPointHit {
 }
 
 export interface RoundResult {
-    damageDealt: Map<PlayerId, number>;
+    damageDealt: Record<PlayerId, number>;
     weakPointHits: WeakPointHit[];
     staggerTriggered: boolean;
     playersHit: PlayerId[];

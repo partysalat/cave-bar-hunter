@@ -78,4 +78,15 @@ describe('EventBus', () => {
         const handler = vi.fn();
         expect(() => bus.off(EVENTS.STAGGER_TRIGGERED, handler)).not.toThrow();
     });
+
+    it('clear() removes all listeners for all events', () => {
+        const bus = new EventBus();
+        const handler = vi.fn();
+
+        bus.on(EVENTS.STAGGER_TRIGGERED, handler);
+        bus.clear();
+        bus.emit(EVENTS.STAGGER_TRIGGERED, {});
+
+        expect(handler).not.toHaveBeenCalled();
+    });
 });

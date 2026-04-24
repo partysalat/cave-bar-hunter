@@ -27,4 +27,8 @@ export class EventBus {
         };
         this.on(event, wrapper);
     }
+
+    clear(): void {
+        this.listeners.clear();
+    }
 }
