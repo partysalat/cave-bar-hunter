@@ -30,6 +30,7 @@ const SPRITECOOK_DIR = path.join(PROJECT_ROOT, 'assets', 'spritecook');
 const OUTPUT_DIR = path.join(PROJECT_ROOT, 'assets', 'generated', 'spritecook');
 const ENTITY_OUTPUT_DIR = path.join(OUTPUT_DIR, 'entities');
 const TEMP_DIR_PREFIX = path.join(os.tmpdir(), 'cave-bar-hunter-spritecook-');
+const HERO_ENTITIES = new Set(['red', 'blue', 'yellow', 'green']);
 const spriteCookManifest = JSON.parse(
     fs.readFileSync(path.join(SPRITECOOK_DIR, 'manifest.json'), 'utf8'),
 );
@@ -259,12 +260,55 @@ function makeAnimationMetadata(asset, animatedInfo, metadataNode) {
         sourceFile: asset.file,
         frameWidth: animatedInfo.canvasWidth,
         frameHeight: animatedInfo.canvasHeight,
+        sourceFrameWidth: animatedInfo.canvasWidth,
+        sourceFrameHeight: animatedInfo.canvasHeight,
+        contentWidth: animatedInfo.canvasWidth,
+        contentHeight: animatedInfo.canvasHeight,
+        sourceContentWidth: animatedInfo.canvasWidth,
+        sourceContentHeight: animatedInfo.canvasHeight,
         frameCount: animatedInfo.frames.length,
         frameRate: manifestFps ?? inferredFps,
         durations,
         repeat: loop ? -1 : 0,
         loop,
         loopCount: animatedInfo.loopCount,
+    };
+}
+
+async function measureVisibleBounds(buffer) {
+    const decoded = await sharp(buffer)
+        .ensureAlpha()
+        .raw()
+        .toBuffer({ resolveWithObject: true });
+    const { width, height } = decoded.info;
+    const pixels = decoded.data;
+
+    let minX = width;
+    let minY = height;
+    let maxX = -1;
+    let maxY = -1;
+
+    for (let y = 0; y < height; y += 1) {
+        for (let x = 0; x < width; x += 1) {
+            const alpha = pixels[((y * width) + x) * 4 + 3];
+            if (alpha === 0) {
+                continue;
+            }
+
+            if (x < minX) minX = x;
+            if (y < minY) minY = y;
+            if (x > maxX) maxX = x;
+            if (y > maxY) maxY = y;
+        }
+    }
+
+    if (maxX < minX || maxY < minY) {
+        return { width: 0, height: 0 };
+    }
+
+    return {
+        width: (maxX - minX) + 1,
+        height: (maxY - minY) + 1,
     };
 }
 
@@ -288,15 +332,108 @@ async function decodeAnimatedWebP(asset) {
             return { skipped: true, reason: 'single-frame-webp' };
         }
 
+        const frames = await reconstructFullFrames(sourceFile, animatedInfo, tempDir);
+        const contentBounds = await Promise.all(frames.map((frame) => measureVisibleBounds(frame.buffer)));
+        const contentWidth = Math.max(...contentBounds.map((bounds) => bounds.width));
+        const contentHeight = Math.max(...contentBounds.map((bounds) => bounds.height));
+
         return {
             entity: inferEntityName(asset.path),
             animation: inferAnimationName(asset.path),
-            metadata: makeAnimationMetadata(asset, animatedInfo, asset.metadata),
-            frames: await reconstructFullFrames(sourceFile, animatedInfo, tempDir),
+            metadata: {
+                ...makeAnimationMetadata(asset, animatedInfo, asset.metadata),
+                contentWidth,
+                contentHeight,
+                sourceContentWidth: contentWidth,
+                sourceContentHeight: contentHeight,
+            },
+            frames,
         };
     } finally {
         fs.rmSync(tempDir, { recursive: true, force: true });
     }
+}
+
+async function padFrameBuffer(buffer, targetWidth, targetHeight) {
+    const image = sharp(buffer);
+    const metadata = await image.metadata();
+    const width = metadata.width ?? targetWidth;
+    const height = metadata.height ?? targetHeight;
+    const left = Math.floor((targetWidth - width) / 2);
+    const top = Math.floor((targetHeight - height) / 2);
+
+    return image
+        .extend({
+            top,
+            bottom: targetHeight - height - top,
+            left,
+            right: targetWidth - width - left,
+            background: { r: 0, g: 0, b: 0, alpha: 0 },
+        })
+        .png()
+        .toBuffer();
+}
+
+function median(values) {
+    const sorted = [...values].sort((a, b) => a - b);
+    const middle = Math.floor(sorted.length / 2);
+    if (sorted.length % 2 === 0) {
+        return Math.round((sorted[middle - 1] + sorted[middle]) / 2);
+    }
+
+    return sorted[middle];
+}
+
+async function scaleFrameBuffer(buffer, targetWidth, targetHeight) {
+    return sharp(buffer)
+        .resize(targetWidth, targetHeight, {
+            fit: 'fill',
+            kernel: sharp.kernel.nearest,
+        })
+        .png()
+        .toBuffer();
+}
+
+async function normalizeAnimationEntries(entries, targetWidth, targetHeight, targetContentHeight) {
+    const normalized = [];
+
+    for (const entry of entries) {
+        const contentHeight = Math.max(1, entry.metadata.sourceContentHeight);
+        const scale = Math.min(
+            targetContentHeight / contentHeight,
+            targetWidth / entry.metadata.sourceFrameWidth,
+            targetHeight / entry.metadata.sourceFrameHeight,
+        );
+        const scaledFrameWidth = Math.max(1, Math.round(entry.metadata.sourceFrameWidth * scale));
+        const scaledFrameHeight = Math.max(1, Math.round(entry.metadata.sourceFrameHeight * scale));
+        const scaledContentWidth = Math.max(1, Math.round(entry.metadata.sourceContentWidth * scale));
+        const scaledContentHeight = Math.max(1, Math.round(entry.metadata.sourceContentHeight * scale));
+
+        const frames = await Promise.all(
+            entry.frames.map(async (frame) => ({
+                ...frame,
+                buffer: await padFrameBuffer(
+                    await scaleFrameBuffer(frame.buffer, scaledFrameWidth, scaledFrameHeight),
+                    targetWidth,
+                    targetHeight,
+                ),
+            })),
+        );
+
+        normalized.push({
+            ...entry,
+            frames,
+            metadata: {
+                ...entry.metadata,
+                frameWidth: targetWidth,
+                frameHeight: targetHeight,
+                contentWidth: scaledContentWidth,
+                contentHeight: scaledContentHeight,
+            },
+        });
+    }
+
+    return normalized;
 }
 
 async function packEntityAtlas(entityName, animationEntries) {
@@ -393,6 +530,43 @@ async function main() {
         }
         decodedByEntity.get(decoded.entity).push(decoded);
         console.log(`  Collected ${decoded.animation} for ${decoded.entity}.`);
+    }
+
+    const heroEntries = [...decodedByEntity.entries()].filter(([entityName]) => HERO_ENTITIES.has(entityName));
+    if (heroEntries.length > 0) {
+        const heroFrameWidth = Math.max(
+            ...heroEntries.flatMap(([, entries]) => entries.map((entry) => entry.metadata.frameWidth)),
+        );
+        const heroFrameHeight = Math.max(
+            ...heroEntries.flatMap(([, entries]) => entries.map((entry) => entry.metadata.frameHeight)),
+        );
+        const heroContentHeight = median(
+            heroEntries.flatMap(([, entries]) => entries.map((entry) => entry.metadata.sourceContentHeight)),
+        );
+
+        console.log(`Normalizing hero frames to ${heroFrameWidth}x${heroFrameHeight} with content height ${heroContentHeight}...`);
+        for (const [entityName, entries] of heroEntries) {
+            decodedByEntity.set(
+                entityName,
+                await normalizeAnimationEntries(entries, heroFrameWidth, heroFrameHeight, heroContentHeight),
+            );
+        }
+    }
+
+    for (const [entityName, entries] of decodedByEntity.entries()) {
+        if (HERO_ENTITIES.has(entityName)) {
+            continue;
+        }
+
+        const frameWidth = Math.max(...entries.map((entry) => entry.metadata.frameWidth));
+        const frameHeight = Math.max(...entries.map((entry) => entry.metadata.frameHeight));
+        const contentHeight = median(entries.map((entry) => entry.metadata.sourceContentHeight));
+
+        console.log(`Normalizing ${entityName} frames to ${frameWidth}x${frameHeight} with content height ${contentHeight}...`);
+        decodedByEntity.set(
+            entityName,
+            await normalizeAnimationEntries(entries, frameWidth, frameHeight, contentHeight),
+        );
     }
 
     const manifest = { entities: {}, skipped };
