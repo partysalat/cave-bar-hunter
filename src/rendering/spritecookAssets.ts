@@ -48,6 +48,10 @@ export function spriteCookAssetUrl(file: string): string {
     return resolvedUrl;
 }
 
+export function hasSpriteCookAssetUrl(file: string): boolean {
+    return Boolean(SPRITECOOK_URLS[`/assets/spritecook/${file}`]);
+}
+
 export function listSpriteCookAssets(node: unknown = spriteCookCatalog, path: string[] = []): SpriteCookAssetEntry[] {
     if (!isRecord(node)) {
         return [];
@@ -56,11 +60,13 @@ export function listSpriteCookAssets(node: unknown = spriteCookCatalog, path: st
     const assets: SpriteCookAssetEntry[] = [];
 
     if (typeof node.file === 'string') {
-        assets.push({
-            key: spriteCookAssetKey(path),
-            file: node.file,
-            path: [...path],
-        });
+        if (hasSpriteCookAssetUrl(node.file)) {
+            assets.push({
+                key: spriteCookAssetKey(path),
+                file: node.file,
+                path: [...path],
+            });
+        }
     }
 
     for (const [childKey, childValue] of Object.entries(node)) {
