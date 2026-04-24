@@ -30,7 +30,7 @@ const SPRITECOOK_DIR = path.join(PROJECT_ROOT, 'assets', 'spritecook');
 const OUTPUT_DIR = path.join(PROJECT_ROOT, 'assets', 'generated', 'spritecook');
 const ENTITY_OUTPUT_DIR = path.join(OUTPUT_DIR, 'entities');
 const TEMP_DIR_PREFIX = path.join(os.tmpdir(), 'cave-bar-hunter-spritecook-');
-const HERO_ENTITIES = new Set(['red', 'blue', 'yellow', 'green']);
+const HUMANOID_ENTITIES = new Set(['red', 'blue', 'yellow', 'green', 'bartender']);
 const MIN_EDGE_MARGIN_SCALE = 0.8;
 const spriteCookManifest = JSON.parse(
     fs.readFileSync(path.join(SPRITECOOK_DIR, 'manifest.json'), 'utf8'),
@@ -400,13 +400,23 @@ async function scaleFrameBuffer(buffer, targetWidth, targetHeight) {
         .toBuffer();
 }
 
-async function normalizeAnimationEntries(entries, targetWidth, targetHeight, targetContentHeight, referenceEdgeMargin) {
+async function normalizeAnimationEntries(
+    entries,
+    targetWidth,
+    targetHeight,
+    targetContentHeight,
+    referenceEdgeMargin,
+    zeroEdgeMarginFallback = 0,
+) {
     const normalized = [];
 
     for (const entry of entries) {
         const contentHeight = Math.max(1, entry.metadata.sourceContentHeight);
+        const effectiveEdgeMargin = entry.metadata.edgeMargin === 0 && zeroEdgeMarginFallback > 0
+            ? zeroEdgeMarginFallback
+            : entry.metadata.edgeMargin;
         const marginRatio = referenceEdgeMargin > 0
-            ? entry.metadata.edgeMargin / referenceEdgeMargin
+            ? effectiveEdgeMargin / referenceEdgeMargin
             : 1;
         const boundedMarginScale = MIN_EDGE_MARGIN_SCALE + ((1 - MIN_EDGE_MARGIN_SCALE) * marginRatio);
         const adjustedTargetContentHeight = Math.max(1, Math.round(targetContentHeight * boundedMarginScale));
@@ -545,38 +555,44 @@ async function main() {
         console.log(`  Collected ${decoded.animation} for ${decoded.entity}.`);
     }
 
-    const heroEntries = [...decodedByEntity.entries()].filter(([entityName]) => HERO_ENTITIES.has(entityName));
-    if (heroEntries.length > 0) {
-        const heroFrameWidth = Math.max(
-            ...heroEntries.flatMap(([, entries]) => entries.map((entry) => entry.metadata.frameWidth)),
+    const humanoidEntries = [...decodedByEntity.entries()].filter(([entityName]) => HUMANOID_ENTITIES.has(entityName));
+    if (humanoidEntries.length > 0) {
+        const humanoidFrameWidth = Math.max(
+            ...humanoidEntries.flatMap(([, entries]) => entries.map((entry) => entry.metadata.frameWidth)),
         );
-        const heroFrameHeight = Math.max(
-            ...heroEntries.flatMap(([, entries]) => entries.map((entry) => entry.metadata.frameHeight)),
+        const humanoidFrameHeight = Math.max(
+            ...humanoidEntries.flatMap(([, entries]) => entries.map((entry) => entry.metadata.frameHeight)),
         );
-        const heroContentHeight = median(
-            heroEntries.flatMap(([, entries]) => entries.map((entry) => entry.metadata.sourceContentHeight)),
+        const humanoidContentHeight = median(
+            humanoidEntries.flatMap(([, entries]) => entries.map((entry) => entry.metadata.sourceContentHeight)),
         );
-        const heroReferenceEdgeMargin = max(
-            heroEntries.flatMap(([, entries]) => entries.map((entry) => entry.metadata.edgeMargin)),
+        const humanoidReferenceEdgeMargin = max(
+            humanoidEntries.flatMap(([, entries]) => entries.map((entry) => entry.metadata.edgeMargin)),
+        );
+        const humanoidZeroEdgeMarginFallback = Math.min(
+            ...humanoidEntries
+                .flatMap(([, entries]) => entries.map((entry) => entry.metadata.edgeMargin))
+                .filter((edgeMargin) => edgeMargin > 0),
         );
 
-        console.log(`Normalizing hero frames to ${heroFrameWidth}x${heroFrameHeight} with content height ${heroContentHeight} and reference edge margin ${heroReferenceEdgeMargin}...`);
-        for (const [entityName, entries] of heroEntries) {
+        console.log(`Normalizing humanoid frames to ${humanoidFrameWidth}x${humanoidFrameHeight} with content height ${humanoidContentHeight}, reference edge margin ${humanoidReferenceEdgeMargin}, and zero-margin fallback ${humanoidZeroEdgeMarginFallback}...`);
+        for (const [entityName, entries] of humanoidEntries) {
             decodedByEntity.set(
                 entityName,
                 await normalizeAnimationEntries(
                     entries,
-                    heroFrameWidth,
-                    heroFrameHeight,
-                    heroContentHeight,
-                    heroReferenceEdgeMargin,
+                    humanoidFrameWidth,
+                    humanoidFrameHeight,
+                    humanoidContentHeight,
+                    humanoidReferenceEdgeMargin,
+                    humanoidZeroEdgeMarginFallback,
                 ),
             );
         }
     }
 
     for (const [entityName, entries] of decodedByEntity.entries()) {
-        if (HERO_ENTITIES.has(entityName)) {
+        if (HUMANOID_ENTITIES.has(entityName)) {
             continue;
         }
 
