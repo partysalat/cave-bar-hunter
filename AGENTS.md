@@ -33,6 +33,13 @@ bd close <id>         # Complete work
 bd sync               # Sync with git
 ```
 
+## SpriteCook Atlases
+
+- Animated SpriteCook `.webp` clips are converted with `npm run build:spritesheets`.
+- The converter writes combined entity atlases to `assets/generated/spritecook/entities/` and a summary manifest to `assets/generated/spritecook/manifest.json`.
+- If animation work touches `assets/spritecook/` or `assets/spritecook/manifest.json`, rerun `npm run build:spritesheets` before handing off.
+- The generated manifest also records skipped/bad source clips, so check it when an animation seems to be missing at runtime.
+
 ## Beads Working Notes
 
 - If `bd` appears to hang or tries to re-import stale git-backed state, prefer direct mode commands:

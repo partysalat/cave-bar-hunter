@@ -13,7 +13,7 @@ const config: Phaser.Types.Core.GameConfig = {
     width: GAME_WIDTH,
     height: GAME_HEIGHT,
     backgroundColor: '#050806',
-    parent: undefined,
+    parent: 'game-root',
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
@@ -22,6 +22,9 @@ const config: Phaser.Types.Core.GameConfig = {
     },
     audio: {
         noAudio: true,
+    },
+    dom: {
+        createContainer: true,
     },
     scene: [BootScene, PreloadScene, HuntScene, CaveBarScene],
 };

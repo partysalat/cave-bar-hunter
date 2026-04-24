@@ -4,6 +4,8 @@ import type { PlayerAction } from '../core/types.js';
 type TextLike = {
     setText?: (value: string) => TextLike;
     setVisible?: (visible: boolean) => TextLike;
+    setScrollFactor?: (x: number, y?: number) => TextLike;
+    setDepth?: (depth: number) => TextLike;
     destroy?: () => void;
     text?: string;
     visible?: boolean;
@@ -18,6 +20,8 @@ type SceneLike = {
 function makeText(scene: SceneLike, x: number, y: number, value: string): TextLike {
     const text = scene.add?.text?.(x, y, value, {});
     if (text) {
+        text.setScrollFactor?.(0, 0);
+        text.setDepth?.(200);
         return text;
     }
 

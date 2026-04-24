@@ -26,8 +26,8 @@ type SceneLike = {
         gamepad?: {
             on?: (event: string, handler: (pad: GamepadLike) => void) => void;
             off?: (event: string, handler: (pad: GamepadLike) => void) => void;
-        };
-        keyboard?: KeyboardLike;
+        } | null;
+        keyboard?: KeyboardLike | null;
     };
 };
 

@@ -38,7 +38,7 @@ export class RoundStateMachine {
 
     start(): void {
         this.actions.clear();
-        this.transitionTo('plan');
+        this.transitionTo('plan', true);
     }
 
     submitAction(playerId: PlayerId, action: PlayerAction): void {
@@ -74,6 +74,10 @@ export class RoundStateMachine {
         }
 
         this.transitionTo('dodge_qte');
+    }
+
+    beginPlan(): void {
+        this.transitionTo('plan');
     }
 
     openStaggerWindow(): void {
@@ -115,14 +119,23 @@ export class RoundStateMachine {
         return this.phase;
     }
 
-    private transitionTo(nextPhase: RoundPhase): void {
+    private transitionTo(nextPhase: RoundPhase, forceEmit = false): void {
         if (this.phase === nextPhase) {
+            if (nextPhase === 'plan') {
+                this.actions.clear();
+            }
             this.remainingMs = this.getDurationFor(nextPhase);
+            if (forceEmit) {
+                this.bus.emit(EVENTS.ROUND_PHASE_CHANGED, { phase: nextPhase, previousPhase: nextPhase });
+            }
             return;
         }
 
         const previousPhase = this.phase;
         this.phase = nextPhase;
+        if (nextPhase === 'plan') {
+            this.actions.clear();
+        }
         this.remainingMs = this.getDurationFor(nextPhase);
         this.bus.emit(EVENTS.ROUND_PHASE_CHANGED, { phase: nextPhase, previousPhase });
     }
