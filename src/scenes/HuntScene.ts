@@ -47,7 +47,7 @@ export class HuntScene extends Phaser.Scene {
         });
 
         const dino = this.add
-            .image(width * 0.76, height * 0.62, spriteCookAssetKey(['enemies', 'dilophosaurus', 'still']))
+            .image(width * 0.76, height * 0.62, spriteCookAssetKey(['players', 'enemies', 'dilophosaurus', 'still']))
             .setScale(0.48)
             .setDepth(55);
 

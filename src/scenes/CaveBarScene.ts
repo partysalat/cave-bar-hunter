@@ -14,29 +14,29 @@ export class CaveBarScene extends Phaser.Scene {
         this.cameras.main.setBackgroundColor('#130f12');
 
         this.add
-            .tileSprite(0, 0, width, height, spriteCookAssetKey(['cavebar', 'tiles', 'wall-far']))
+            .tileSprite(0, 0, width, height, spriteCookAssetKey(['players', 'cavebar', 'tiles', 'wall-far']))
             .setOrigin(0, 0)
             .setScrollFactor(0.2)
             .setAlpha(0.65);
 
         this.add
-            .tileSprite(0, height * 0.42, width, height * 0.58, spriteCookAssetKey(['cavebar', 'tiles', 'floor']))
+            .tileSprite(0, height * 0.42, width, height * 0.58, spriteCookAssetKey(['players', 'cavebar', 'tiles', 'floor']))
             .setOrigin(0, 0)
             .setScrollFactor(1)
             .setAlpha(0.95);
 
         this.add
-            .image(width * 0.5, height * 0.58, spriteCookAssetKey(['cavebar', 'props', 'scoreboard']))
+            .image(width * 0.5, height * 0.58, spriteCookAssetKey(['players', 'cavebar', 'props', 'scoreboard']))
             .setScale(0.9)
             .setDepth(20);
 
         this.add
-            .image(width * 0.25, height * 0.67, spriteCookAssetKey(['cavebar', 'props', 'bar-counter']))
+            .image(width * 0.25, height * 0.67, spriteCookAssetKey(['players', 'cavebar', 'props', 'bar-counter']))
             .setScale(0.92)
             .setDepth(18);
 
         this.add
-            .image(width * 0.76, height * 0.67, spriteCookAssetKey(['cavebar', 'props', 'exit-arch']))
+            .image(width * 0.76, height * 0.67, spriteCookAssetKey(['players', 'cavebar', 'props', 'exit-arch']))
             .setScale(0.85)
             .setDepth(18);
 
