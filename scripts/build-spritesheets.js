@@ -31,6 +31,7 @@ const OUTPUT_DIR = path.join(PROJECT_ROOT, 'assets', 'generated', 'spritecook');
 const ENTITY_OUTPUT_DIR = path.join(OUTPUT_DIR, 'entities');
 const TEMP_DIR_PREFIX = path.join(os.tmpdir(), 'cave-bar-hunter-spritecook-');
 const HERO_ENTITIES = new Set(['red', 'blue', 'yellow', 'green']);
+const MIN_EDGE_MARGIN_SCALE = 0.8;
 const spriteCookManifest = JSON.parse(
     fs.readFileSync(path.join(SPRITECOOK_DIR, 'manifest.json'), 'utf8'),
 );
@@ -258,6 +259,7 @@ function makeAnimationMetadata(asset, animatedInfo, metadataNode) {
     return {
         key: asset.path.join('.'),
         sourceFile: asset.file,
+        edgeMargin: typeof metadataNode.edge_margin === 'number' ? metadataNode.edge_margin : 0,
         frameWidth: animatedInfo.canvasWidth,
         frameHeight: animatedInfo.canvasHeight,
         sourceFrameWidth: animatedInfo.canvasWidth,
@@ -384,6 +386,10 @@ function median(values) {
     return sorted[middle];
 }
 
+function max(values) {
+    return values.reduce((currentMax, value) => Math.max(currentMax, value), 0);
+}
+
 async function scaleFrameBuffer(buffer, targetWidth, targetHeight) {
     return sharp(buffer)
         .resize(targetWidth, targetHeight, {
@@ -394,13 +400,18 @@ async function scaleFrameBuffer(buffer, targetWidth, targetHeight) {
         .toBuffer();
 }
 
-async function normalizeAnimationEntries(entries, targetWidth, targetHeight, targetContentHeight) {
+async function normalizeAnimationEntries(entries, targetWidth, targetHeight, targetContentHeight, referenceEdgeMargin) {
     const normalized = [];
 
     for (const entry of entries) {
         const contentHeight = Math.max(1, entry.metadata.sourceContentHeight);
+        const marginRatio = referenceEdgeMargin > 0
+            ? entry.metadata.edgeMargin / referenceEdgeMargin
+            : 1;
+        const boundedMarginScale = MIN_EDGE_MARGIN_SCALE + ((1 - MIN_EDGE_MARGIN_SCALE) * marginRatio);
+        const adjustedTargetContentHeight = Math.max(1, Math.round(targetContentHeight * boundedMarginScale));
         const scale = Math.min(
-            targetContentHeight / contentHeight,
+            adjustedTargetContentHeight / contentHeight,
             targetWidth / entry.metadata.sourceFrameWidth,
             targetHeight / entry.metadata.sourceFrameHeight,
         );
@@ -429,6 +440,8 @@ async function normalizeAnimationEntries(entries, targetWidth, targetHeight, tar
                 frameHeight: targetHeight,
                 contentWidth: scaledContentWidth,
                 contentHeight: scaledContentHeight,
+                normalizedTargetContentHeight: adjustedTargetContentHeight,
+                normalizationReferenceEdgeMargin: referenceEdgeMargin,
             },
         });
     }
@@ -543,12 +556,21 @@ async function main() {
         const heroContentHeight = median(
             heroEntries.flatMap(([, entries]) => entries.map((entry) => entry.metadata.sourceContentHeight)),
         );
+        const heroReferenceEdgeMargin = max(
+            heroEntries.flatMap(([, entries]) => entries.map((entry) => entry.metadata.edgeMargin)),
+        );
 
-        console.log(`Normalizing hero frames to ${heroFrameWidth}x${heroFrameHeight} with content height ${heroContentHeight}...`);
+        console.log(`Normalizing hero frames to ${heroFrameWidth}x${heroFrameHeight} with content height ${heroContentHeight} and reference edge margin ${heroReferenceEdgeMargin}...`);
         for (const [entityName, entries] of heroEntries) {
             decodedByEntity.set(
                 entityName,
-                await normalizeAnimationEntries(entries, heroFrameWidth, heroFrameHeight, heroContentHeight),
+                await normalizeAnimationEntries(
+                    entries,
+                    heroFrameWidth,
+                    heroFrameHeight,
+                    heroContentHeight,
+                    heroReferenceEdgeMargin,
+                ),
             );
         }
     }
@@ -561,11 +583,18 @@ async function main() {
         const frameWidth = Math.max(...entries.map((entry) => entry.metadata.frameWidth));
         const frameHeight = Math.max(...entries.map((entry) => entry.metadata.frameHeight));
         const contentHeight = median(entries.map((entry) => entry.metadata.sourceContentHeight));
+        const referenceEdgeMargin = max(entries.map((entry) => entry.metadata.edgeMargin));
 
-        console.log(`Normalizing ${entityName} frames to ${frameWidth}x${frameHeight} with content height ${contentHeight}...`);
+        console.log(`Normalizing ${entityName} frames to ${frameWidth}x${frameHeight} with content height ${contentHeight} and reference edge margin ${referenceEdgeMargin}...`);
         decodedByEntity.set(
             entityName,
-            await normalizeAnimationEntries(entries, frameWidth, frameHeight, contentHeight),
+            await normalizeAnimationEntries(
+                entries,
+                frameWidth,
+                frameHeight,
+                contentHeight,
+                referenceEdgeMargin,
+            ),
         );
     }
 
