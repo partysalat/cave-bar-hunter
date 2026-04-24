@@ -1,6 +1,11 @@
 import Phaser from 'phaser';
 
-import { listSpriteCookAssets, spriteCookAssetUrl } from '../rendering/spritecookAssets.js';
+import {
+    ensureGeneratedSpriteCookAnimations,
+    listGeneratedSpriteCookEntities,
+    listSpriteCookStaticAssets,
+    spriteCookAssetUrl,
+} from '../rendering/spritecookAssets.js';
 import { SCENE_KEYS } from './sceneKeys.js';
 
 export class PreloadScene extends Phaser.Scene {
@@ -13,7 +18,9 @@ export class PreloadScene extends Phaser.Scene {
 
     preload(): void {
         const { width, height } = this.scale;
-        const assets = listSpriteCookAssets();
+        const staticAssets = listSpriteCookStaticAssets();
+        const generatedEntities = listGeneratedSpriteCookEntities();
+        const queuedAssets = staticAssets.length + generatedEntities.length;
 
         this.cameras.main.setBackgroundColor('#08120a');
 
@@ -34,15 +41,19 @@ export class PreloadScene extends Phaser.Scene {
             .setOrigin(0.5);
 
         this.statusText = this.add
-            .text(width / 2, height / 2 + 34, `${assets.length} files queued`, {
+            .text(width / 2, height / 2 + 34, `${queuedAssets} files queued`, {
                 color: '#9ad28a',
                 fontFamily: 'monospace',
                 fontSize: '14px',
             })
             .setOrigin(0.5);
 
-        for (const asset of assets) {
+        for (const asset of staticAssets) {
             this.load.image(asset.key, spriteCookAssetUrl(asset.file));
+        }
+
+        for (const entity of generatedEntities) {
+            this.load.atlas(entity.atlasKey, entity.imageUrl, entity.atlasData);
         }
 
         this.load.on(Phaser.Loader.Events.PROGRESS, (value: number) => {
@@ -55,6 +66,7 @@ export class PreloadScene extends Phaser.Scene {
     }
 
     create(): void {
+        ensureGeneratedSpriteCookAnimations(this.anims);
         this.time.delayedCall(75, () => {
             this.scene.start(SCENE_KEYS.HUNT);
         });

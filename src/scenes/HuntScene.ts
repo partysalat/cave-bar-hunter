@@ -12,9 +12,12 @@ import SessionManager, { type SessionPlayerState } from '../logic/SessionManager
 import StaggerSystem from '../logic/StaggerSystem.js';
 import { AttackZoneResolver } from '../logic/dino/AttackZoneResolver.js';
 import { DilophosaurusAI } from '../logic/dino/DilophosaurusAI.js';
-import { AnimatedDomSprite } from '../rendering/AnimatedDomSprite.js';
 import { ArenaRenderer } from '../rendering/ArenaRenderer.js';
-import { spriteCookAssetKey, spriteCookAssetUrl } from '../rendering/spritecookAssets.js';
+import {
+    getGeneratedSpriteCookAnimation,
+    spriteCookAssetKey,
+    spriteCookEntityAtlasKey,
+} from '../rendering/spritecookAssets.js';
 import HUD from '../ui/HUD.js';
 import { SCENE_KEYS } from './sceneKeys.js';
 
@@ -32,16 +35,6 @@ const DEFAULT_PLAYER_HEALTH = 4;
 const DEFAULT_DINO_HEALTH = 30;
 const ACTION_ORDER = ['attack', 'brace', 'aimed_head', 'aimed_legs', 'reposition', 'revive'] as const;
 type ActionChoice = typeof ACTION_ORDER[number];
-const RED_IDLE_ANIMATION_FRAMES = [
-    { file: 'extracted/red-idle/frame-1.webp', x: 0, y: 0, width: 106, height: 106, duration: 125 },
-    { file: 'extracted/red-idle/frame-2.webp', x: 28, y: 12, width: 49, height: 94, duration: 125 },
-    { file: 'extracted/red-idle/frame-3.webp', x: 28, y: 10, width: 50, height: 96, duration: 125 },
-    { file: 'extracted/red-idle/frame-4.webp', x: 26, y: 12, width: 49, height: 87, duration: 125 },
-    { file: 'extracted/red-idle/frame-5.webp', x: 26, y: 10, width: 53, height: 96, duration: 125 },
-    { file: 'extracted/red-idle/frame-6.webp', x: 26, y: 12, width: 50, height: 94, duration: 125 },
-    { file: 'extracted/red-idle/frame-7.webp', x: 26, y: 16, width: 53, height: 87, duration: 125 },
-    { file: 'extracted/red-idle/frame-8.webp', x: 28, y: 12, width: 50, height: 88, duration: 125 },
-] as const;
 
 function createDefaultPlayerState(): Record<PlayerId, PlayerRuntimeState> {
     return {
@@ -105,8 +98,7 @@ export class HuntScene extends Phaser.Scene {
     private attackZoneResolver?: AttackZoneResolver;
     private dinosaurAI?: DilophosaurusAI;
     private playerState = createDefaultPlayerState();
-    private playerSprites = new Map<PlayerId, Phaser.GameObjects.Image>();
-    private animatedPlayerSprites = new Map<PlayerId, AnimatedDomSprite>();
+    private playerSprites = new Map<PlayerId, Phaser.GameObjects.Sprite>();
     private previousInputs: Array<LogicalInputState> = PLAYER_IDS.map(() => ({
         left: false,
         right: false,
@@ -164,43 +156,49 @@ export class HuntScene extends Phaser.Scene {
         this.arena.create();
 
         const playerSprites = [
-            { key: spriteCookAssetKey(['players', 'red', 'idle']), playerId: 0 },
-            { key: spriteCookAssetKey(['players', 'blue', 'idle']), playerId: 1 },
-            { key: spriteCookAssetKey(['players', 'yellow', 'idle']), playerId: 2 },
-            { key: spriteCookAssetKey(['players', 'green', 'idle']), playerId: 3 },
+            { entity: 'red', playerId: 0 },
+            { entity: 'blue', playerId: 1 },
+            { entity: 'yellow', playerId: 2 },
+            { entity: 'green', playerId: 3 },
         ] as const;
 
         for (const player of playerSprites) {
             const position = this.positioningSystem.getPosition(player.playerId);
             const point = this.toScreenPosition(position);
-            if (player.playerId === 0) {
-                const animatedSprite = new AnimatedDomSprite(this, point.x, point.y, {
-                    width: 106,
-                    height: 106,
-                    scale: 0.42,
-                    depth: 40 + player.playerId,
-                    frames: RED_IDLE_ANIMATION_FRAMES.map((frame) => ({
-                        ...frame,
-                        url: spriteCookAssetUrl(frame.file),
-                    })),
-                });
-                this.animatedPlayerSprites.set(player.playerId, animatedSprite);
+            const animation = getGeneratedSpriteCookAnimation(player.entity, 'idle');
+            const initialFrame = animation?.data.frames[0];
+            const sprite = this.add
+                .sprite(
+                    point.x,
+                    point.y,
+                    animation?.entity.atlasKey ?? spriteCookEntityAtlasKey(player.entity),
+                    initialFrame,
+                )
+                .setScale(0.42)
+                .setDepth(40 + player.playerId);
+
+            if (animation) {
+                sprite.play(animation.key);
             }
 
-            const sprite = this.add
-                .image(point.x, point.y, player.key)
-                .setScale(0.42)
-                .setDepth(40 + player.playerId)
-                .setVisible(player.playerId !== 0);
             this.playerSprites.set(player.playerId, sprite);
         }
 
         const dinoX = width * 0.76;
         const dinoY = height * 0.62;
-        this.add
-            .image(dinoX, dinoY, spriteCookAssetKey(['players', 'enemies', 'dilophosaurus', 'still']))
+        const dinoAnimation = getGeneratedSpriteCookAnimation('dilophosaurus', 'idle');
+        const dinoSprite = this.add
+            .sprite(
+                dinoX,
+                dinoY,
+                dinoAnimation?.entity.atlasKey ?? spriteCookAssetKey(['players', 'enemies', 'dilophosaurus', 'still']),
+                dinoAnimation?.data.frames[0],
+            )
             .setScale(0.48)
             .setDepth(55);
+        if (dinoAnimation) {
+            dinoSprite.play(dinoAnimation.key);
+        }
 
         this.add
             .text(dinoX, dinoY - 72, 'Dilophosaurus', {
@@ -261,7 +259,6 @@ export class HuntScene extends Phaser.Scene {
             this.input.keyboard?.off('keydown-C', onGoToCaveBar);
             this.inputManager?.destroy();
             this.hud?.destroy();
-            this.animatedPlayerSprites.forEach((sprite) => sprite.destroy());
         });
 
         this.syncHudFromState();
@@ -561,10 +558,6 @@ export class HuntScene extends Phaser.Scene {
             }
             const position = this.positioningSystem.getPosition(playerId);
             const target = this.toScreenPosition(position);
-            const animatedSprite = this.animatedPlayerSprites.get(playerId);
-            if (animatedSprite) {
-                animatedSprite.setPosition(target.x, target.y);
-            }
             this.tweens.add({
                 targets: sprite,
                 x: target.x,

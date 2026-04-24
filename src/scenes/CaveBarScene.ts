@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 
 import SessionManager from '../logic/SessionManager.js';
-import { spriteCookAssetKey } from '../rendering/spritecookAssets.js';
+import { getGeneratedSpriteCookAnimation, spriteCookAssetKey } from '../rendering/spritecookAssets.js';
 import { SCENE_KEYS } from './sceneKeys.js';
 
 export class CaveBarScene extends Phaser.Scene {
@@ -44,15 +44,33 @@ export class CaveBarScene extends Phaser.Scene {
             .setScale(0.92)
             .setDepth(18);
 
-        this.add
-            .image(width * 0.36, height * 0.73, spriteCookAssetKey(['players', 'red', 'idle']))
+        const hunterAnimation = getGeneratedSpriteCookAnimation('red', 'idle');
+        const hunterSprite = this.add
+            .sprite(
+                width * 0.36,
+                height * 0.73,
+                hunterAnimation?.entity.atlasKey ?? spriteCookAssetKey(['players', 'red', 'idle']),
+                hunterAnimation?.data.frames[0],
+            )
             .setScale(0.46)
             .setDepth(24);
+        if (hunterAnimation) {
+            hunterSprite.play(hunterAnimation.key);
+        }
 
-        this.add
-            .image(width * 0.56, height * 0.55, spriteCookAssetKey(['players', 'cavebar', 'bartender', 'still']))
+        const bartenderAnimation = getGeneratedSpriteCookAnimation('bartender', 'idle');
+        const bartenderSprite = this.add
+            .sprite(
+                width * 0.56,
+                height * 0.55,
+                bartenderAnimation?.entity.atlasKey ?? spriteCookAssetKey(['players', 'cavebar', 'bartender', 'still']),
+                bartenderAnimation?.data.frames[0],
+            )
             .setScale(0.42)
             .setDepth(22);
+        if (bartenderAnimation) {
+            bartenderSprite.play(bartenderAnimation.key);
+        }
 
         this.add
             .image(width * 0.76, height * 0.67, spriteCookAssetKey(['players', 'cavebar', 'props', 'exit-arch']))

@@ -23,9 +23,6 @@ const config: Phaser.Types.Core.GameConfig = {
     audio: {
         noAudio: true,
     },
-    dom: {
-        createContainer: true,
-    },
     scene: [BootScene, PreloadScene, HuntScene, CaveBarScene],
 };
 
