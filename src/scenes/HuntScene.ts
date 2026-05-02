@@ -4,7 +4,6 @@ import { EventBus } from '../core/EventBus.js';
 import { EVENTS, type RoundPhase } from '../core/events.js';
 import type { AttackDeclaration, AttackingPlayer, PlayerAction, PlayerId, Position, RoundResult, WeakPoint, WeaponType } from '../core/types.js';
 import InputManager, { type LogicalInputState } from '../input/InputManager.js';
-import ActionResolver from '../logic/ActionResolver.js';
 import {
     createHuntRoundLoop,
     type HuntLoopPlayerState,
@@ -17,7 +16,6 @@ import PositioningSystem from '../logic/PositioningSystem.js';
 import ScoringSystem from '../logic/ScoringSystem.js';
 import SessionManager, { type SessionPlayerState } from '../logic/SessionManager.js';
 import StaggerSystem from '../logic/StaggerSystem.js';
-import { AttackZoneResolver } from '../logic/dino/AttackZoneResolver.js';
 import { ArenaRenderer } from '../rendering/ArenaRenderer.js';
 import { ARENA_LAYOUT } from '../rendering/arenaLayout.js';
 import { positionToScreen } from '../rendering/positionToScreen.js';
@@ -123,11 +121,9 @@ export class HuntScene extends Phaser.Scene {
     private inputManager?: InputManager;
     private huntLoop?: HuntRoundLoop;
     private positioningSystem?: PositioningSystem;
-    private actionResolver?: ActionResolver;
     private staggerSystem?: StaggerSystem;
     private scoringSystem?: ScoringSystem;
     private sessionManager!: SessionManager;
-    private attackZoneResolver?: AttackZoneResolver;
     private playerState = createDefaultPlayerState();
     private playerSprites = new Map<PlayerId, Phaser.GameObjects.Sprite>();
     private previousInputs: Array<LogicalInputState> = PLAYER_IDS.map(() => ({
@@ -181,7 +177,6 @@ export class HuntScene extends Phaser.Scene {
             })),
             dinoHealth: this.dinoHealth,
         });
-        this.actionResolver = new ActionResolver();
         this.staggerSystem = new StaggerSystem(this.bus);
         this.scoringSystem = new ScoringSystem(this.bus, {
             initialTotals: {
@@ -191,7 +186,6 @@ export class HuntScene extends Phaser.Scene {
                 3: this.playerState[3].score,
             },
         });
-        this.attackZoneResolver = new AttackZoneResolver();
         this.inputManager = new InputManager(this);
         this.hud = new HUD(this, this.bus);
         this.hud.setActivePlayers(PLAYER_IDS);
@@ -440,7 +434,7 @@ export class HuntScene extends Phaser.Scene {
     }
 
     private resolveCurrentRound(): void {
-        if (!this.huntLoop || !this.positioningSystem || !this.actionResolver || !this.currentTelegraph) {
+        if (!this.huntLoop || !this.positioningSystem || !this.currentTelegraph) {
             return;
         }
 
@@ -448,91 +442,10 @@ export class HuntScene extends Phaser.Scene {
         if (snapshot.phase.kind !== 'resolve') {
             return;
         }
-
-        const playerActions: Partial<Record<PlayerId, PlayerAction>> = {};
-        for (const playerId of PLAYER_IDS) {
-            const player = this.playerState[playerId];
-            if (player.downed) {
-                continue;
-            }
-
-            playerActions[playerId] = snapshot.players[playerId].submittedAction ?? selectedAction(
-                ACTION_ORDER[player.selectedIndex],
-                this.positioningSystem.getPosition(playerId),
-            );
-        }
-
-        // Apply weapon switches before resolve so activeWeapon is current
-        for (const playerId of PLAYER_IDS) {
-            if (playerActions[playerId]?.type === 'switch_weapon') {
-                const current = this.playerState[playerId].activeWeapon;
-                this.playerState[playerId].activeWeapon = current === 'club' ? 'bow' : 'club';
-                this.bus.emit(EVENTS.WEAPON_SWITCHED, {
-                    playerId,
-                    newWeapon: this.playerState[playerId].activeWeapon,
-                });
-            }
-        }
-
-        const result = this.actionResolver.resolveRound({
-            playerActions,
-            positioningSystem: this.positioningSystem,
-            attackDeclaration: this.currentTelegraph,
-            playerState: this.toResolverState(),
+        this.applyHuntLoopUpdate(this.huntLoop.advance({
+            type: 'resolve_submitted_actions',
             staggerActive: this.bonusDamageRound,
-        });
-
-        this.bus.emit(EVENTS.ROUND_RESOLVED, { result });
-
-        // Stagger window: apply damage immediately (no QTE this round)
-        if (this.bonusDamageRound) {
-            const killed = this.applyRoundResult(result);
-            if (killed) {
-                this.savePlayerState();
-                this.scene.start(SCENE_KEYS.CAVE_BAR, { sessionManager: this.sessionManager });
-                return;
-            }
-            this.bonusDamageRound = false;
-            this.staggerSystem?.consumeStaggerWindow();
-            this.beginNextLoopRound();
-            return;
-        }
-
-        // Store result for deferred application after QTE
-        this.pendingRoundResult = result;
-        this.attackingPlayers = result.attackingPlayers;
-        this.attackQteResponded.clear();
-        this.attackQteResults.clear();
-        this.bowTargets.clear();
-        this.attackQteElapsedMs = 0;
-
-        this.qteAffected = this.attackZoneResolver?.getAffectedPlayers(this.currentTelegraph, this.getCurrentPositions()) ?? [];
-        this.qteResponded.clear();
-        this.qteElapsedMs = 0;
-
-        if (this.attackingPlayers.length > 0) {
-            this.bus.emit(EVENTS.ATTACK_QTE_START, { attackingPlayers: this.attackingPlayers });
-        }
-
-        if (this.qteAffected.length > 0) {
-            this.bus.emit(EVENTS.QTE_START, {
-                affectedPlayerIds: this.qteAffected,
-                qteType: this.currentTelegraph.qteType,
-            });
-        }
-
-        if (this.attackingPlayers.length === 0 && this.qteAffected.length === 0) {
-            this.finalizeQteRound();
-            this.beginNextLoopRound();
-            return;
-        }
-
-        const previousPhase = this.currentPhase;
-        this.currentPhase = 'attack_and_dodge_qte';
-        this.bus.emit(EVENTS.ROUND_PHASE_CHANGED, {
-            phase: 'attack_and_dodge_qte',
-            previousPhase,
-        });
+        }));
     }
 
     private applyRoundResult(result: RoundResult, damageMultipliers?: Map<PlayerId, number>): boolean {
@@ -717,28 +630,6 @@ export class HuntScene extends Phaser.Scene {
         );
     }
 
-    private toResolverState() {
-        return {
-            0: { health: this.playerState[0].health, downed: this.playerState[0].downed, activeWeapon: this.playerState[0].activeWeapon },
-            1: { health: this.playerState[1].health, downed: this.playerState[1].downed, activeWeapon: this.playerState[1].activeWeapon },
-            2: { health: this.playerState[2].health, downed: this.playerState[2].downed, activeWeapon: this.playerState[2].activeWeapon },
-            3: { health: this.playerState[3].health, downed: this.playerState[3].downed, activeWeapon: this.playerState[3].activeWeapon },
-        };
-    }
-
-    private getCurrentPositions(): Partial<Record<PlayerId, Position>> {
-        if (!this.positioningSystem) {
-            return {};
-        }
-
-        return {
-            0: this.positioningSystem.getPosition(0),
-            1: this.positioningSystem.getPosition(1),
-            2: this.positioningSystem.getPosition(2),
-            3: this.positioningSystem.getPosition(3),
-        };
-    }
-
     private syncHudFromState(): void {
         if (!this.hud || !this.positioningSystem) {
             return;
@@ -829,6 +720,56 @@ export class HuntScene extends Phaser.Scene {
                 continue;
             }
 
+            if (emission.type === 'weapon_switched') {
+                this.bus.emit(EVENTS.WEAPON_SWITCHED, {
+                    playerId: emission.playerId,
+                    newWeapon: emission.newWeapon,
+                });
+                continue;
+            }
+
+            if (emission.type === 'round_resolved') {
+                this.pendingRoundResult = emission.result;
+                this.attackingPlayers = emission.result.attackingPlayers;
+                this.qteAffected = [];
+                this.attackQteResponded.clear();
+                this.attackQteResults.clear();
+                this.bowTargets.clear();
+                this.attackQteElapsedMs = 0;
+                this.qteResponded.clear();
+                this.qteElapsedMs = 0;
+                this.bus.emit(EVENTS.ROUND_RESOLVED, { result: emission.result });
+
+                if (this.bonusDamageRound) {
+                    const killed = this.applyRoundResult(emission.result);
+                    this.pendingRoundResult = undefined;
+                    if (killed) {
+                        this.savePlayerState();
+                        this.scene.start(SCENE_KEYS.CAVE_BAR, { sessionManager: this.sessionManager });
+                        return;
+                    }
+                    this.bonusDamageRound = false;
+                    this.staggerSystem?.consumeStaggerWindow();
+                    this.beginNextLoopRound();
+                }
+                continue;
+            }
+
+            if (emission.type === 'attack_qte_opened') {
+                this.attackingPlayers = emission.attackers;
+                this.bus.emit(EVENTS.ATTACK_QTE_START, { attackingPlayers: emission.attackers });
+                continue;
+            }
+
+            if (emission.type === 'dodge_qte_opened') {
+                this.qteAffected = emission.affectedPlayers;
+                this.bus.emit(EVENTS.QTE_START, {
+                    affectedPlayerIds: emission.affectedPlayers,
+                    qteType: emission.qteType,
+                });
+                continue;
+            }
+
             if (emission.type === 'phase_changed') {
                 const phase = mapLoopPhase(emission.to);
                 const previousPhase =
@@ -864,9 +805,14 @@ export class HuntScene extends Phaser.Scene {
             this.playerState[playerId].score = next.score;
             this.playerState[playerId].downed = next.downed;
             this.playerState[playerId].activeWeapon = next.activeWeapon;
+            if (this.positioningSystem) {
+                this.positioningSystem.setPosition(playerId, next.position);
+            }
         }
 
         this.dinoHealth = snapshot.dino.health;
         this.currentTelegraph = snapshot.dino.currentTelegraph ?? this.currentTelegraph;
+        this.syncPlayerSprites();
+        this.syncHudFromState();
     }
 }

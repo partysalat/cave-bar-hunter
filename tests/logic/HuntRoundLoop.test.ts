@@ -153,4 +153,51 @@ describe('HuntRoundLoop', () => {
             { type: 'telegraph_announced', telegraph: nextRound.snapshot.dino.currentTelegraph! },
         ]);
     });
+
+    it('resolves submitted actions and opens QTE phases from the loop seam', () => {
+        const loop = createHuntRoundLoop({
+            playerIds: [0, 1],
+        });
+
+        loop.advance({ type: 'begin_hunt' });
+        loop.advance({ type: 'submit_planned_action', playerId: 0, action: { type: 'attack' } });
+        loop.advance({ type: 'submit_planned_action', playerId: 1, action: { type: 'aimed_strike', target: 'head' } });
+        loop.advance({ type: 'tick', deltaMs: 500 });
+
+        const resolved = loop.advance({ type: 'resolve_submitted_actions' });
+
+        expect(resolved.ok).toBe(true);
+        if (!resolved.ok) {
+            return;
+        }
+
+        expect(resolved.snapshot.phase.kind).toBe('attack_qte');
+        expect(resolved.snapshot.pending.attackingPlayers).toEqual([
+            { playerId: 0, weaponType: 'club', action: 'attack' },
+            { playerId: 1, weaponType: 'club', action: 'aimed_strike' },
+        ]);
+        expect(resolved.emissions).toEqual([
+            {
+                type: 'round_resolved',
+                result: {
+                    damageDealt: { 0: 3, 1: 3, 2: 0, 3: 0 },
+                    weakPointHits: [{ playerId: 1, weakPoint: 'head', damage: 3 }],
+                    staggerTriggered: false,
+                    playersHit: [],
+                    attackingPlayers: [
+                        { playerId: 0, weaponType: 'club', action: 'attack' },
+                        { playerId: 1, weaponType: 'club', action: 'aimed_strike' },
+                    ],
+                },
+            },
+            { type: 'phase_changed', from: 'resolve', to: 'attack_qte' },
+            {
+                type: 'attack_qte_opened',
+                attackers: [
+                    { playerId: 0, weaponType: 'club', action: 'attack' },
+                    { playerId: 1, weaponType: 'club', action: 'aimed_strike' },
+                ],
+            },
+        ]);
+    });
 });

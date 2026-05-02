@@ -5,10 +5,13 @@ import type {
     PlayerId,
     Position,
     QteType,
+    RoundResult,
     WeakPoint,
     WeaponType,
 } from '../core/types.js';
+import ActionResolver from './ActionResolver.js';
 import PositioningSystem from './PositioningSystem.js';
+import { AttackZoneResolver } from './dino/AttackZoneResolver.js';
 import { DilophosaurusAI } from './dino/DilophosaurusAI.js';
 import type { SessionPlayerState } from './SessionManager.js';
 
@@ -58,6 +61,8 @@ export type HuntEmission =
     | { type: 'phase_changed'; from: HuntPhase['kind']; to: HuntPhase['kind'] }
     | { type: 'telegraph_announced'; telegraph: AttackDeclaration }
     | { type: 'planned_action_submitted'; playerId: PlayerId; action: PlayerAction }
+    | { type: 'weapon_switched'; playerId: PlayerId; newWeapon: WeaponType }
+    | { type: 'round_resolved'; result: RoundResult }
     | { type: 'attack_qte_opened'; attackers: AttackingPlayer[] }
     | { type: 'dodge_qte_opened'; affectedPlayers: PlayerId[]; qteType: QteType }
     | { type: 'stagger_window_opened'; sourceWeakPoint: WeakPoint }
@@ -80,6 +85,7 @@ export type HuntCommand =
     | { type: 'begin_hunt' }
     | { type: 'tick'; deltaMs: number }
     | { type: 'submit_planned_action'; playerId: PlayerId; action: PlayerAction }
+    | { type: 'resolve_submitted_actions'; staggerActive?: boolean }
     | { type: 'begin_next_round'; players: Partial<Record<PlayerId, HuntRoundPlayerStateInput>> }
     | { type: 'submit_attack_qte'; playerId: PlayerId; weakPoint?: WeakPoint }
     | { type: 'submit_dodge_qte'; playerId: PlayerId }
@@ -247,6 +253,8 @@ class HuntRoundLoopImpl implements HuntRoundLoop {
     private readonly planDurationMs: number;
     private readonly submitDurationMs: number;
     private readonly positioning: PositioningSystem;
+    private readonly actionResolver = new ActionResolver();
+    private readonly attackZoneResolver = new AttackZoneResolver();
     private readonly dinosaurAI = new DilophosaurusAI();
     private readonly sessionState: SessionPlayerState[];
 
@@ -287,6 +295,8 @@ class HuntRoundLoopImpl implements HuntRoundLoop {
                 return this.tick(command.deltaMs);
             case 'submit_planned_action':
                 return this.submitPlannedAction(command.playerId, command.action);
+            case 'resolve_submitted_actions':
+                return this.resolveSubmittedActions(command.staggerActive ?? false);
             case 'begin_next_round':
                 return this.beginNextRound(command.players);
             case 'submit_attack_qte':
@@ -416,9 +426,15 @@ class HuntRoundLoopImpl implements HuntRoundLoop {
     }
 
     private beginNextRound(players: Partial<Record<PlayerId, HuntRoundPlayerStateInput>>): HuntUpdate {
-        if (this.snapshot.phase.kind !== 'resolve') {
-            return this.fail('phase_mismatch', 'begin_next_round is only valid after the Hunt Round Loop reaches resolve.');
+        if (
+            this.snapshot.phase.kind !== 'resolve' &&
+            this.snapshot.phase.kind !== 'attack_qte' &&
+            this.snapshot.phase.kind !== 'dodge_qte'
+        ) {
+            return this.fail('phase_mismatch', 'begin_next_round is only valid after resolve or QTE phases.');
         }
+
+        const previousPhase = this.snapshot.phase.kind;
 
         for (const playerId of this.playerIds) {
             const next = players[playerId];
@@ -450,9 +466,86 @@ class HuntRoundLoopImpl implements HuntRoundLoop {
         this.snapshot.pending.affectedPlayers = [];
 
         return this.success([
-            { type: 'phase_changed', from: 'resolve', to: 'plan' },
+            { type: 'phase_changed', from: previousPhase, to: 'plan' },
             { type: 'telegraph_announced', telegraph },
         ]);
+    }
+
+    private resolveSubmittedActions(staggerActive: boolean): HuntUpdate {
+        if (this.snapshot.phase.kind !== 'resolve') {
+            return this.fail('phase_mismatch', 'resolve_submitted_actions is only valid during resolve.');
+        }
+
+        const telegraph = this.snapshot.phase.telegraph;
+        const playerActions: Partial<Record<PlayerId, PlayerAction>> = {};
+        const emissions: HuntEmission[] = [];
+
+        for (const playerId of this.playerIds) {
+            const action = this.snapshot.players[playerId].submittedAction;
+            if (!action || this.snapshot.players[playerId].downed) {
+                continue;
+            }
+
+            playerActions[playerId] = action;
+            if (action.type === 'switch_weapon') {
+                const current = this.snapshot.players[playerId].activeWeapon;
+                const nextWeapon = current === 'club' ? 'bow' : 'club';
+                this.snapshot.players[playerId].activeWeapon = nextWeapon;
+                emissions.push({ type: 'weapon_switched', playerId, newWeapon: nextWeapon });
+            }
+        }
+
+        const result = this.actionResolver.resolveRound({
+            playerActions,
+            positioningSystem: this.positioning,
+            attackDeclaration: telegraph,
+            playerState: this.toResolverState(),
+            staggerActive,
+        });
+        this.syncPositionsFromSystem();
+        this.snapshot.pending.attackingPlayers = result.attackingPlayers.map((attacker) => ({ ...attacker }));
+        this.snapshot.pending.affectedPlayers = this.attackZoneResolver.getAffectedPlayers(telegraph, this.currentPositions());
+
+        emissions.push({ type: 'round_resolved', result });
+
+        const hasAttackQte = this.snapshot.pending.attackingPlayers.length > 0;
+        const hasDodgeQte = this.snapshot.pending.affectedPlayers.length > 0;
+        if (hasAttackQte || hasDodgeQte) {
+            this.snapshot.phase = hasAttackQte
+                ? {
+                    kind: 'attack_qte',
+                    telegraph,
+                    deadlineMs: 2200,
+                    attackers: this.snapshot.pending.attackingPlayers.map((attacker) => ({ ...attacker })),
+                }
+                : {
+                    kind: 'dodge_qte',
+                    telegraph,
+                    deadlineMs: 2200,
+                    affectedPlayers: [...this.snapshot.pending.affectedPlayers],
+                    qteType: telegraph.qteType,
+                };
+            emissions.push({
+                type: 'phase_changed',
+                from: 'resolve',
+                to: this.snapshot.phase.kind,
+            });
+            if (hasAttackQte) {
+                emissions.push({
+                    type: 'attack_qte_opened',
+                    attackers: this.snapshot.pending.attackingPlayers.map((attacker) => ({ ...attacker })),
+                });
+            }
+            if (hasDodgeQte) {
+                emissions.push({
+                    type: 'dodge_qte_opened',
+                    affectedPlayers: [...this.snapshot.pending.affectedPlayers],
+                    qteType: telegraph.qteType,
+                });
+            }
+        }
+
+        return this.success(emissions);
     }
 
     private transitionToSubmit(): HuntUpdate {
@@ -483,6 +576,37 @@ class HuntRoundLoopImpl implements HuntRoundLoop {
             positions[playerId] = this.positioning.getPosition(playerId);
         }
         return positions;
+    }
+
+    private syncPositionsFromSystem(): void {
+        for (const playerId of this.playerIds) {
+            this.snapshot.players[playerId].position = this.positioning.getPosition(playerId);
+        }
+    }
+
+    private toResolverState(): Record<PlayerId, { health: number; downed: boolean; activeWeapon: WeaponType }> {
+        return {
+            0: {
+                health: this.snapshot.players[0].health,
+                downed: this.snapshot.players[0].downed,
+                activeWeapon: this.snapshot.players[0].activeWeapon,
+            },
+            1: {
+                health: this.snapshot.players[1].health,
+                downed: this.snapshot.players[1].downed,
+                activeWeapon: this.snapshot.players[1].activeWeapon,
+            },
+            2: {
+                health: this.snapshot.players[2].health,
+                downed: this.snapshot.players[2].downed,
+                activeWeapon: this.snapshot.players[2].activeWeapon,
+            },
+            3: {
+                health: this.snapshot.players[3].health,
+                downed: this.snapshot.players[3].downed,
+                activeWeapon: this.snapshot.players[3].activeWeapon,
+            },
+        };
     }
 
     private success(emissions: HuntEmission[]): HuntUpdate {

@@ -15,7 +15,7 @@ After this work, the Hunt in Dense Jungle will no longer depend on `src/scenes/H
 - [x] (2026-05-02 09:24Z) Wrote the first `src/logic/HuntRoundLoop.ts` API skeleton with a Phaser-free snapshot/command interface and a minimal working slice for `begin_hunt`, planning submissions, and timer-driven plan-to-submit transitions.
 - [x] (2026-05-02 09:24Z) Added `tests/logic/HuntRoundLoop.test.ts` to lock the initial seam behavior with pure logic tests.
 - [ ] (2026-05-02 19:55Z) Partially integrated `HuntScene` with `HuntRoundLoop`. The scene now reads telegraph plus `plan -> submit -> resolve` cadence from the loop and submits planned actions through the loop seam. Remaining: browser validation and moving the later attack/dodge QTE ownership out of the scene.
-- [ ] Move resolve, attack QTE, dodge QTE, stagger window, scoring, and Cave Bar handoff sequencing behind `HuntRoundLoop`.
+- [ ] (2026-05-02 20:05Z) Partially moved resolve and QTE opening behind `HuntRoundLoop`. The loop now owns submitted-action resolution, weapon switching during resolve, reposition side effects, and attack/dodge QTE opening. Remaining: move live QTE input/result handling, scoring, stagger aftermath, damage application, and Hunt-end handoff fully behind the seam.
 - [ ] Retire direct Hunt cadence state from `src/scenes/HuntScene.ts` after the adapter path proves out.
 
 ## Surprises & Discoveries
@@ -31,6 +31,9 @@ After this work, the Hunt in Dense Jungle will no longer depend on `src/scenes/H
 
 - Observation: the current playable Hunt still needs a scene-local `attack_and_dodge_qte` overlay even after the early cadence moves into `HuntRoundLoop`, because the loop currently stops at `resolve`.
   Evidence: `src/scenes/HuntScene.ts` now bridges loop emissions into `plan`, `submit`, and `resolve`, but still uses scene timers and input handling for `attack_and_dodge_qte`.
+
+- Observation: `ActionResolver` and `AttackZoneResolver` can move into `HuntRoundLoop` without bringing Phaser along, because they only depend on submitted actions, telegraphs, positions, and player state.
+  Evidence: `src/logic/HuntRoundLoop.ts` now uses both modules directly to emit `round_resolved`, `attack_qte_opened`, and `dodge_qte_opened`, and the focused loop tests cover that behavior.
 
 ## Decision Log
 
@@ -50,9 +53,13 @@ After this work, the Hunt in Dense Jungle will no longer depend on `src/scenes/H
   Rationale: after resolve and QTE handling, the scene still temporarily owns the latest health, score, weapon, and position changes. Passing that state back into the loop is the smallest safe bridge that lets telegraph selection and the next planning round stay behind the loop seam.
   Date/Author: 2026-05-02 / Codex
 
+- Decision: move submitted-action resolution and QTE opening into `HuntRoundLoop` before moving scoring and damage aftermath.
+  Rationale: this slices the migration at a real seam. The loop now decides who attacked, who must dodge, and when the Hunt enters QTE, while the scene temporarily continues to own the scoring and health fallout until the next milestone.
+  Date/Author: 2026-05-02 / Codex
+
 ## Outcomes & Retrospective
 
-The first milestone is complete, and the second milestone is partially complete. The repository now contains a named Hunt Round Loop seam, a self-contained plan for the larger extraction, a tested Phaser-free module skeleton, and a first adapter bridge that makes `HuntScene` consume the loop for telegraph plus `plan -> submit -> resolve`. The main remaining work is moving resolve aftermath, QTE ownership, stagger handling, scoring, and Hunt-end handoff fully behind `src/logic/HuntRoundLoop.ts`.
+The first milestone is complete, and the second and third milestones are both partially complete. The repository now contains a named Hunt Round Loop seam, a self-contained plan for the larger extraction, a tested Phaser-free module skeleton, an adapter bridge that makes `HuntScene` consume the loop for telegraph plus `plan -> submit -> resolve`, and a deeper loop that also owns submitted-action resolution and QTE opening. The main remaining work is moving QTE result handling, damage/scoring fallout, stagger aftermath, and Hunt-end handoff fully behind `src/logic/HuntRoundLoop.ts`.
 
 ## Context and Orientation
 
@@ -68,7 +75,7 @@ Start by keeping the new seam small but real. Define `src/logic/HuntRoundLoop.ts
 
 Do not move the full Hunt at once. In the first milestone, `HuntRoundLoop` should own only the beginning of the cadence: idle to plan, tracking planned actions, and transitioning from plan to submit when either the round timer expires or all eligible hunters have submitted. This is enough to verify that the seam is viable and that the module, not `HuntScene`, can own time and early round state.
 
-Once this seam is stable, the next milestone should route `HuntScene` through `HuntRoundLoop`. The scene should stop owning player health, score, selected actions, telegraph state, and round timers directly. Instead, it should translate `InputManager` output into Hunt commands and render from the returned snapshot and emissions. This bridge is now partially in place for telegraph and `plan -> submit -> resolve`. Only after that adapter path is working should later milestones move resolve aftermath, attack QTE, dodge QTE, stagger, scoring, and Cave Bar handoff behind the seam.
+Once this seam is stable, the next milestone should route `HuntScene` through `HuntRoundLoop`. The scene should stop owning player health, score, selected actions, telegraph state, and round timers directly. Instead, it should translate `InputManager` output into Hunt commands and render from the returned snapshot and emissions. This bridge is now partially in place for telegraph plus `plan -> submit -> resolve`, and the loop also owns submitted-action resolution plus QTE opening. Only after that adapter path is working should later milestones move QTE result handling, resolve aftermath, stagger, scoring, and Cave Bar handoff behind the seam.
 
 ## Concrete Steps
 
@@ -95,13 +102,13 @@ Expected proof from the focused test command is a passing suite that mentions `t
 
     ./node_modules/.bin/vitest run tests/logic/HuntRoundLoop.test.ts tests/logic/ActionResolver.test.ts tests/logic/RoundStateMachine.test.ts tests/ui/HUD.test.js
 
-This broader focused suite proves that the new bridge keeps the loop contract, the existing resolver behavior, and the HUD event flow compatible while the Hunt remains mid-migration.
+This broader focused suite proves that the new bridge keeps the loop contract, the existing resolver behavior, and the HUD event flow compatible while the Hunt remains mid-migration. After the resolve-migration slice, keep extending `tests/logic/HuntRoundLoop.test.ts` whenever new loop-owned QTE or handoff behavior moves behind the seam.
 
 ## Validation and Acceptance
 
 The first milestone is acceptable when a pure logic test can instantiate `HuntRoundLoop`, begin a Hunt, receive an initial telegraph, inspect a plan-phase snapshot, submit planned actions, and observe the plan phase close without touching Phaser. A contributor should be able to run `./node_modules/.bin/vitest run tests/logic/HuntRoundLoop.test.ts` and see all tests pass.
 
-The broader extraction will be acceptable later when `npm run dev` still opens a playable Dense Jungle Hunt, but `src/scenes/HuntScene.ts` is visibly thinner and most Hunt cadence state has moved into `src/logic/HuntRoundLoop.ts`. The current adapter checkpoint is acceptable when the focused logic and HUD suites stay green and `HuntScene` no longer decides telegraph selection or `plan -> submit -> resolve` timing on its own. Browser proof is still required before the adapter milestone can be declared fully done.
+The broader extraction will be acceptable later when `npm run dev` still opens a playable Dense Jungle Hunt, but `src/scenes/HuntScene.ts` is visibly thinner and most Hunt cadence state has moved into `src/logic/HuntRoundLoop.ts`. The current adapter checkpoint is acceptable when the focused logic and HUD suites stay green and `HuntScene` no longer decides telegraph selection, `plan -> submit -> resolve` timing, or submitted-action resolution on its own. Browser proof is still required before the adapter milestone can be declared fully done.
 
 ## Idempotence and Recovery
 
@@ -155,3 +162,5 @@ It must not depend on:
 Revision note: Created this ExecPlan alongside the initial `HuntRoundLoop` scaffold so future work can continue from a checked-in seam instead of a chat-only design.
 
 Revision note: Updated the plan after wiring `HuntScene` into the loop for telegraph plus `plan -> submit -> resolve`. This is intentionally recorded as a partial adapter milestone because attack/dodge QTE ownership still remains in the scene.
+
+Revision note: Updated the plan again after moving submitted-action resolution and QTE opening into `HuntRoundLoop` while leaving QTE result handling and scoring fallout in the scene for the next slice.
