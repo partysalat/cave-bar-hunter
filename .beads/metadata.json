@@ -1,4 +1,7 @@
 {
-  "database": "beads.db",
-  "jsonl_export": "issues.jsonl"
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "cave_bar_hunter",
+  "project_id": "9ca42cf9-2733-49ca-8b7f-eb953b8fa24e"
 }
