@@ -6,7 +6,7 @@ export interface RoundStateMachineOptions {
     playerIds?: PlayerId[];
     planDurationMs?: number;
     submitDurationMs?: number;
-    dodgeQteDurationMs?: number;
+    attackAndDodgeQteDurationMs?: number;
     staggerWindowDurationMs?: number;
 }
 
@@ -31,7 +31,7 @@ export class RoundStateMachine {
         this.durations = {
             plan: options.planDurationMs ?? 8000,
             submit: options.submitDurationMs ?? 500,
-            dodge_qte: options.dodgeQteDurationMs ?? 3000,
+            attack_and_dodge_qte: options.attackAndDodgeQteDurationMs ?? 3000,
             stagger_window: options.staggerWindowDurationMs ?? 3000,
         };
     }
@@ -68,12 +68,12 @@ export class RoundStateMachine {
         this.transitionTo('resolve');
     }
 
-    beginDodgeQte(): void {
+    beginAttackAndDodgeQte(): void {
         if (this.phase !== 'resolve') {
-            throw new Error(`Cannot begin dodge QTE while in ${this.phase} phase.`);
+            throw new Error(`Cannot begin attack/dodge QTE while in ${this.phase} phase.`);
         }
 
-        this.transitionTo('dodge_qte');
+        this.transitionTo('attack_and_dodge_qte');
     }
 
     beginPlan(): void {
@@ -106,7 +106,7 @@ export class RoundStateMachine {
                 continue;
             }
 
-            if (this.phase === 'dodge_qte' || this.phase === 'stagger_window') {
+            if (this.phase === 'attack_and_dodge_qte' || this.phase === 'stagger_window') {
                 this.transitionTo('plan');
                 continue;
             }

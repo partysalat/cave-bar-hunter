@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 
 import { EventBus } from '../core/EventBus.js';
 import { EVENTS, type RoundPhase } from '../core/events.js';
-import type { AttackDeclaration, PlayerAction, PlayerId, Position } from '../core/types.js';
+import type { AttackDeclaration, AttackingPlayer, PlayerAction, PlayerId, Position, RoundResult, WeakPoint, WeaponType } from '../core/types.js';
 import InputManager, { type LogicalInputState } from '../input/InputManager.js';
 import ActionResolver from '../logic/ActionResolver.js';
 import PositioningSystem from '../logic/PositioningSystem.js';
@@ -13,11 +13,15 @@ import StaggerSystem from '../logic/StaggerSystem.js';
 import { AttackZoneResolver } from '../logic/dino/AttackZoneResolver.js';
 import { DilophosaurusAI } from '../logic/dino/DilophosaurusAI.js';
 import { ArenaRenderer } from '../rendering/ArenaRenderer.js';
+import { ARENA_LAYOUT } from '../rendering/arenaLayout.js';
+import { positionToScreen } from '../rendering/positionToScreen.js';
+import { PositionRingRenderer } from '../rendering/PositionRingRenderer.js';
 import {
     getGeneratedSpriteCookAnimation,
     spriteCookAssetKey,
     spriteCookEntityAtlasKey,
 } from '../rendering/spritecookAssets.js';
+import { TelegraphRenderer } from '../rendering/TelegraphRenderer.js';
 import HUD from '../ui/HUD.js';
 import { SCENE_KEYS } from './sceneKeys.js';
 
@@ -33,15 +37,15 @@ type HuntSceneData = {
 const PLAYER_IDS: PlayerId[] = [0, 1, 2, 3];
 const DEFAULT_PLAYER_HEALTH = 4;
 const DEFAULT_DINO_HEALTH = 30;
-const ACTION_ORDER = ['attack', 'brace', 'aimed_head', 'aimed_legs', 'reposition', 'revive'] as const;
+const ACTION_ORDER = ['attack', 'brace', 'aimed_head', 'aimed_legs', 'reposition', 'revive', 'switch_weapon'] as const;
 type ActionChoice = typeof ACTION_ORDER[number];
 
 function createDefaultPlayerState(): Record<PlayerId, PlayerRuntimeState> {
     return {
-        0: { playerId: 0, health: DEFAULT_PLAYER_HEALTH, score: 0, downed: false, selectedIndex: 0 },
-        1: { playerId: 1, health: DEFAULT_PLAYER_HEALTH, score: 0, downed: false, selectedIndex: 0 },
-        2: { playerId: 2, health: DEFAULT_PLAYER_HEALTH, score: 0, downed: false, selectedIndex: 0 },
-        3: { playerId: 3, health: DEFAULT_PLAYER_HEALTH, score: 0, downed: false, selectedIndex: 0 },
+        0: { playerId: 0, health: DEFAULT_PLAYER_HEALTH, score: 0, downed: false, selectedIndex: 0, activeWeapon: 'club' as WeaponType },
+        1: { playerId: 1, health: DEFAULT_PLAYER_HEALTH, score: 0, downed: false, selectedIndex: 0, activeWeapon: 'club' as WeaponType },
+        2: { playerId: 2, health: DEFAULT_PLAYER_HEALTH, score: 0, downed: false, selectedIndex: 0, activeWeapon: 'club' as WeaponType },
+        3: { playerId: 3, health: DEFAULT_PLAYER_HEALTH, score: 0, downed: false, selectedIndex: 0, activeWeapon: 'club' as WeaponType },
     };
 }
 
@@ -81,6 +85,8 @@ function selectedAction(choice: ActionChoice, position: Position): PlayerAction 
             };
         case 'revive':
             return { type: 'revive' };
+        case 'switch_weapon':
+            return { type: 'switch_weapon' };
     }
 }
 
@@ -115,6 +121,15 @@ export class HuntScene extends Phaser.Scene {
     private qteResponded = new Set<PlayerId>();
     private qteAffected: PlayerId[] = [];
     private bonusDamageRound = false;
+    private pendingRoundResult?: RoundResult;
+    private attackQteElapsedMs = 0;
+    private attackingPlayers: AttackingPlayer[] = [];
+    private attackQteResponded = new Set<PlayerId>();
+    private attackQteResults = new Map<PlayerId, { critical: boolean; weakPoint: WeakPoint | null }>();
+    private bowTargets = new Map<PlayerId, WeakPoint | null>();
+    private ringRenderer?: PositionRingRenderer;
+    private telegraphRenderer?: TelegraphRenderer;
+
     constructor() {
         super({ key: SCENE_KEYS.HUNT });
     }
@@ -146,7 +161,7 @@ export class HuntScene extends Phaser.Scene {
         this.roundStateMachine = new RoundStateMachine(this.bus, {
             planDurationMs: 6000,
             submitDurationMs: 500,
-            dodgeQteDurationMs: 2200,
+            attackAndDodgeQteDurationMs: 2200,
         });
         this.inputManager = new InputManager(this);
         this.hud = new HUD(this, this.bus);
@@ -154,6 +169,9 @@ export class HuntScene extends Phaser.Scene {
 
         this.arena = new ArenaRenderer(this);
         this.arena.create();
+        this.ringRenderer = new PositionRingRenderer(this);
+        this.ringRenderer.create(PLAYER_IDS);
+        this.telegraphRenderer = new TelegraphRenderer(this);
 
         const playerSprites = [
             { entity: 'red', playerId: 0 },
@@ -184,8 +202,8 @@ export class HuntScene extends Phaser.Scene {
             this.playerSprites.set(player.playerId, sprite);
         }
 
-        const dinoX = width * 0.76;
-        const dinoY = height * 0.62;
+        const dinoX = width * ARENA_LAYOUT.dinoX;
+        const dinoY = height * ARENA_LAYOUT.dinoY;
         const dinoAnimation = getGeneratedSpriteCookAnimation('dilophosaurus', 'idle');
         const dinoSprite = this.add
             .sprite(
@@ -248,6 +266,7 @@ export class HuntScene extends Phaser.Scene {
             .setScrollFactor(0);
 
         this.bus.on(EVENTS.ROUND_PHASE_CHANGED, (data) => this.handlePhaseChanged(data.phase, data.previousPhase));
+        this.bus.on(EVENTS.DINO_TELEGRAPH, ({ attack }) => this.telegraphRenderer?.show(attack));
 
         const onGoToCaveBar = (): void => {
             this.savePlayerState();
@@ -258,10 +277,13 @@ export class HuntScene extends Phaser.Scene {
         this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
             this.input.keyboard?.off('keydown-C', onGoToCaveBar);
             this.inputManager?.destroy();
+            this.ringRenderer?.destroy();
+            this.telegraphRenderer?.destroy();
             this.hud?.destroy();
         });
 
         this.syncHudFromState();
+        this.syncPlayerSprites();
         this.currentTelegraph = this.dinosaurAI.selectTelegraph(this.getCurrentPositions());
         this.bus.emit(EVENTS.DINO_HEALTH_CHANGED, { amount: 0, newHealth: this.dinoHealth });
         this.bus.emit(EVENTS.DINO_TELEGRAPH, { attack: this.currentTelegraph });
@@ -276,8 +298,9 @@ export class HuntScene extends Phaser.Scene {
         const inputs = this.inputManager.update();
         const phase = this.roundStateMachine.getPhase();
 
-        if (phase === 'dodge_qte') {
+        if (phase === 'attack_and_dodge_qte') {
             this.qteElapsedMs += delta;
+            this.attackQteElapsedMs += delta;
         }
 
         for (const playerId of PLAYER_IDS) {
@@ -286,8 +309,9 @@ export class HuntScene extends Phaser.Scene {
 
             if (phase === 'plan') {
                 this.handlePlanningInput(playerId, input, previous);
-            } else if (phase === 'dodge_qte') {
+            } else if (phase === 'attack_and_dodge_qte') {
                 this.handleQteInput(playerId, input, previous);
+                this.handleAttackQteInput(playerId, input, previous);
             }
 
             this.previousInputs[playerId] = { ...input };
@@ -337,9 +361,53 @@ export class HuntScene extends Phaser.Scene {
         }
     }
 
+    private handleAttackQteInput(playerId: PlayerId, input: LogicalInputState, previous: LogicalInputState): void {
+        const attacker = this.attackingPlayers.find((a) => a.playerId === playerId);
+        if (!attacker || this.attackQteResponded.has(playerId)) {
+            return;
+        }
+
+        if (attacker.weaponType === 'club') {
+            if (input.jumpPressed && !previous.jumpPressed) {
+                this.attackQteResponded.add(playerId);
+                const elapsed = this.attackQteElapsedMs;
+                const critical = elapsed >= 562 && elapsed <= 937;
+                this.attackQteResults.set(playerId, { critical, weakPoint: null });
+                this.bus.emit(EVENTS.ATTACK_QTE_RESULT, {
+                    playerId,
+                    weaponType: 'club' as const,
+                    critical,
+                    weakPoint: null,
+                });
+            }
+        } else {
+            if (input.up && !previous.up) {
+                this.bowTargets.set(playerId, 'head');
+            }
+            if (input.down && !previous.down) {
+                this.bowTargets.set(playerId, 'legs');
+            }
+            if (input.jumpPressed && !previous.jumpPressed) {
+                this.attackQteResponded.add(playerId);
+                const weakPoint = this.bowTargets.get(playerId) ?? null;
+                this.attackQteResults.set(playerId, { critical: weakPoint !== null, weakPoint });
+                this.bus.emit(EVENTS.ATTACK_QTE_RESULT, {
+                    playerId,
+                    weaponType: 'bow' as const,
+                    critical: weakPoint !== null,
+                    weakPoint,
+                });
+            }
+        }
+    }
+
     private handlePhaseChanged(phase: RoundPhase, previousPhase: RoundPhase): void {
-        if (previousPhase === 'dodge_qte' && phase === 'plan') {
+        if (previousPhase === 'attack_and_dodge_qte' && phase === 'plan') {
             this.finalizeQteRound();
+        }
+
+        if (phase === 'resolve' || (phase === 'plan' && previousPhase !== 'plan')) {
+            this.telegraphRenderer?.clear();
         }
 
         if (phase === 'resolve') {
@@ -379,6 +447,18 @@ export class HuntScene extends Phaser.Scene {
             );
         }
 
+        // Apply weapon switches before resolve so activeWeapon is current
+        for (const playerId of PLAYER_IDS) {
+            if (playerActions[playerId]?.type === 'switch_weapon') {
+                const current = this.playerState[playerId].activeWeapon;
+                this.playerState[playerId].activeWeapon = current === 'club' ? 'bow' : 'club';
+                this.bus.emit(EVENTS.WEAPON_SWITCHED, {
+                    playerId,
+                    newWeapon: this.playerState[playerId].activeWeapon,
+                });
+            }
+        }
+
         const result = this.actionResolver.resolveRound({
             playerActions,
             positioningSystem: this.positioningSystem,
@@ -389,16 +469,74 @@ export class HuntScene extends Phaser.Scene {
 
         this.bus.emit(EVENTS.ROUND_RESOLVED, { result });
 
+        // Stagger window: apply damage immediately (no QTE this round)
+        if (this.bonusDamageRound) {
+            const killed = this.applyRoundResult(result);
+            if (killed) {
+                this.savePlayerState();
+                this.scene.start(SCENE_KEYS.CAVE_BAR, { sessionManager: this.sessionManager });
+                return;
+            }
+            this.bonusDamageRound = false;
+            this.staggerSystem?.consumeStaggerWindow();
+            this.roundStateMachine.beginPlan();
+            return;
+        }
+
+        // Store result for deferred application after QTE
+        this.pendingRoundResult = result;
+        this.attackingPlayers = result.attackingPlayers;
+        this.attackQteResponded.clear();
+        this.attackQteResults.clear();
+        this.bowTargets.clear();
+        this.attackQteElapsedMs = 0;
+
+        this.qteAffected = this.attackZoneResolver?.getAffectedPlayers(this.currentTelegraph, this.getCurrentPositions()) ?? [];
+        this.qteResponded.clear();
+        this.qteElapsedMs = 0;
+
+        if (this.attackingPlayers.length > 0) {
+            this.bus.emit(EVENTS.ATTACK_QTE_START, { attackingPlayers: this.attackingPlayers });
+        }
+
+        if (this.qteAffected.length > 0) {
+            this.bus.emit(EVENTS.QTE_START, {
+                affectedPlayerIds: this.qteAffected,
+                qteType: this.currentTelegraph.qteType,
+            });
+        }
+
+        if (this.attackingPlayers.length === 0 && this.qteAffected.length === 0) {
+            this.finalizeQteRound();
+            this.roundStateMachine.beginPlan();
+            return;
+        }
+
+        this.roundStateMachine.beginAttackAndDodgeQte();
+    }
+
+    private applyRoundResult(result: RoundResult, damageMultipliers?: Map<PlayerId, number>): boolean {
+        const multipliers = damageMultipliers ?? new Map();
+        const finalWeakPointHits = [...result.weakPointHits];
+
         let totalDamage = 0;
         for (const playerId of PLAYER_IDS) {
-            const damage = result.damageDealt[playerId];
-            if (damage > 0) {
+            const base = result.damageDealt[playerId];
+            if (base > 0) {
+                const multiplier = multipliers.get(playerId) ?? 1;
+                const damage = base * multiplier;
                 totalDamage += damage;
                 this.scoringSystem?.awardDamage(playerId, damage);
+                if (multiplier !== 1) {
+                    const hit = finalWeakPointHits.find((h) => h.playerId === playerId);
+                    if (hit) {
+                        hit.damage = damage;
+                    }
+                }
             }
         }
 
-        for (const weakPointHit of result.weakPointHits) {
+        for (const weakPointHit of finalWeakPointHits) {
             this.scoringSystem?.awardWeakPointHit(weakPointHit.playerId);
             const triggered = this.staggerSystem?.applyWeakPointDamage(weakPointHit.weakPoint, weakPointHit.damage) ?? false;
             if (triggered) {
@@ -412,33 +550,7 @@ export class HuntScene extends Phaser.Scene {
         this.syncHudFromState();
         this.syncPlayerSprites();
 
-        if (this.dinoHealth <= 0) {
-            this.savePlayerState();
-            this.scene.start(SCENE_KEYS.CAVE_BAR, { sessionManager: this.sessionManager });
-            return;
-        }
-
-        if (this.bonusDamageRound) {
-            this.bonusDamageRound = false;
-            this.staggerSystem?.consumeStaggerWindow();
-            this.roundStateMachine.beginPlan();
-            return;
-        }
-
-        this.qteAffected = this.attackZoneResolver?.getAffectedPlayers(this.currentTelegraph, this.getCurrentPositions()) ?? [];
-        this.qteResponded.clear();
-        this.qteElapsedMs = 0;
-
-        if (this.qteAffected.length === 0) {
-            this.roundStateMachine.beginPlan();
-            return;
-        }
-
-        this.bus.emit(EVENTS.QTE_START, {
-            affectedPlayerIds: this.qteAffected,
-            qteType: this.currentTelegraph.qteType,
-        });
-        this.roundStateMachine.beginDodgeQte();
+        return this.dinoHealth <= 0;
     }
 
     private finalizeQteRound(): void {
@@ -446,11 +558,71 @@ export class HuntScene extends Phaser.Scene {
             return;
         }
 
+        if (this.pendingRoundResult) {
+            const result = this.pendingRoundResult;
+            const damageMultipliers = new Map<PlayerId, number>();
+
+            const finalWeakPointHits = result.weakPointHits.filter((hit) => {
+                const attacker = this.attackingPlayers.find((a) => a.playerId === hit.playerId);
+                if (!attacker) return true;
+
+                const qteResult = this.attackQteResults.get(hit.playerId);
+                if (attacker.weaponType === 'club') {
+                    return qteResult?.critical === true;
+                }
+                return qteResult?.weakPoint === hit.weakPoint;
+            });
+
+            // Bow attack landing on a zone adds a bonus weak point hit
+            for (const attacker of this.attackingPlayers) {
+                if (attacker.weaponType !== 'bow' || attacker.action !== 'attack') continue;
+                const qteResult = this.attackQteResults.get(attacker.playerId);
+                if (qteResult?.weakPoint) {
+                    finalWeakPointHits.push({
+                        playerId: attacker.playerId,
+                        weakPoint: qteResult.weakPoint,
+                        damage: result.damageDealt[attacker.playerId],
+                    });
+                }
+            }
+
+            // Club crit doubles damage
+            for (const attacker of this.attackingPlayers) {
+                if (attacker.weaponType !== 'club') continue;
+                const qteResult = this.attackQteResults.get(attacker.playerId);
+                if (qteResult?.critical) {
+                    damageMultipliers.set(attacker.playerId, 2);
+                }
+            }
+
+            const modifiedResult: RoundResult = { ...result, weakPointHits: finalWeakPointHits };
+            const killed = this.applyRoundResult(modifiedResult, damageMultipliers);
+            this.pendingRoundResult = undefined;
+
+            if (killed) {
+                this.savePlayerState();
+                this.scene.start(SCENE_KEYS.CAVE_BAR, { sessionManager: this.sessionManager });
+                return;
+            }
+
+            // Stagger triggered during finalize: skip dodge damage
+            if (this.bonusDamageRound) {
+                this.qteAffected = [];
+                this.qteResponded.clear();
+                this.qteElapsedMs = 0;
+                this.attackingPlayers = [];
+                this.attackQteResponded.clear();
+                this.attackQteResults.clear();
+                this.bowTargets.clear();
+                this.attackQteElapsedMs = 0;
+                return;
+            }
+        }
+
         for (const playerId of this.qteAffected) {
             if (this.qteResponded.has(playerId)) {
                 continue;
             }
-
             this.bus.emit(EVENTS.QTE_RESULT, { playerId, success: false, perfect: false });
             this.applyPlayerDamage(playerId, this.currentTelegraph.damage);
         }
@@ -458,6 +630,11 @@ export class HuntScene extends Phaser.Scene {
         this.qteAffected = [];
         this.qteResponded.clear();
         this.qteElapsedMs = 0;
+        this.attackingPlayers = [];
+        this.attackQteResponded.clear();
+        this.attackQteResults.clear();
+        this.bowTargets.clear();
+        this.attackQteElapsedMs = 0;
     }
 
     private applyPlayerDamage(playerId: PlayerId, amount: number): void {
@@ -482,6 +659,7 @@ export class HuntScene extends Phaser.Scene {
                 health: player.health,
                 score: player.score,
                 downed: player.health <= 0,
+                activeWeapon: player.activeWeapon,
             };
         }
     }
@@ -492,16 +670,17 @@ export class HuntScene extends Phaser.Scene {
                 playerId,
                 health: this.playerState[playerId].health,
                 score: this.playerState[playerId].score,
+                activeWeapon: this.playerState[playerId].activeWeapon,
             })),
         );
     }
 
     private toResolverState() {
         return {
-            0: { health: this.playerState[0].health, downed: this.playerState[0].downed },
-            1: { health: this.playerState[1].health, downed: this.playerState[1].downed },
-            2: { health: this.playerState[2].health, downed: this.playerState[2].downed },
-            3: { health: this.playerState[3].health, downed: this.playerState[3].downed },
+            0: { health: this.playerState[0].health, downed: this.playerState[0].downed, activeWeapon: this.playerState[0].activeWeapon },
+            1: { health: this.playerState[1].health, downed: this.playerState[1].downed, activeWeapon: this.playerState[1].activeWeapon },
+            2: { health: this.playerState[2].health, downed: this.playerState[2].downed, activeWeapon: this.playerState[2].activeWeapon },
+            3: { health: this.playerState[3].health, downed: this.playerState[3].downed, activeWeapon: this.playerState[3].activeWeapon },
         };
     }
 
@@ -565,23 +744,13 @@ export class HuntScene extends Phaser.Scene {
                 duration: 180,
                 ease: 'sine.out',
             });
+            this.ringRenderer?.update(playerId, target, position.zone === 'close');
         }
     }
 
     private toScreenPosition(position: Position): { x: number; y: number } {
         const { width, height } = this.scale;
-        const flankX = {
-            left: width * 0.22,
-            center: width * 0.38,
-            right: width * 0.54,
-        }[position.flank];
-        const zoneY = {
-            close: height * 0.72,
-            mid: height * 0.62,
-            far: height * 0.52,
-        }[position.zone];
-
-        return { x: flankX, y: zoneY };
+        return positionToScreen(position, width, height);
     }
 
     private syncScoresFromSystem(): void {

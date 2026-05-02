@@ -8,6 +8,17 @@
 
 **Tech Stack:** Phaser 3, TypeScript, Vitest
 
+## Implementation Status
+
+- [x] Shared arena layout constants and `positionToScreen` mapping are implemented in `src/rendering/arenaLayout.ts` and `src/rendering/positionToScreen.ts`.
+- [x] `ArenaRenderer` now presents the hunt as a flat side-view lane grid with vertical distance bands, horizontal seams, lane anchors, and foreground jungle props.
+- [x] `PositionRingRenderer` is implemented and wired into `HuntScene` so every hunter has a persistent occupancy ring that pulses faster in the close column.
+- [x] `TelegraphRenderer` is implemented and wired to `EVENTS.DINO_TELEGRAPH`; `bite` now renders as a left-pointing cone and `spit` renders as a row sweep before transitioning into the pulsing danger glow.
+- [x] Added targeted Vitest coverage for `positionToScreen`, `playerRingColor`, and `telegraphCellRects`.
+- [x] Validation run on 2026-04-26: targeted rendering tests passed and `npm run build` succeeded.
+- [ ] Visual browser verification is still pending in this thread because the in-app browser tools were not available here.
+- [ ] Full `npx vitest run` still reports pre-existing failures in legacy suites that import missing files such as `src/systems/CameraController.js`, `src/systems/CombatSystem.js`, and `src/entities/Player.js`. This implementation did not modify those paths.
+
 ---
 
 ## Layout Constants

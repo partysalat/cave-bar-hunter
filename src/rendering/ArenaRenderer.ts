@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 
 import { spriteCookAssetKey } from './spritecookAssets.js';
+import { ARENA_LAYOUT } from './arenaLayout.js';
 
 export interface ArenaRendererResult {
     background: Phaser.GameObjects.GameObject[];
@@ -11,115 +12,165 @@ export class ArenaRenderer {
 
     create(): ArenaRendererResult {
         const { width, height } = this.scene.scale;
-        const canopyHeight = height * 0.46;
-        const midBandTop = height * 0.43;
-        const midBandHeight = height * 0.18;
-        const groundTop = height * 0.72;
-        const groundHeight = height * 0.28;
-        const floorTileY = height * 0.9;
-        const floorTileScale = 1.08;
-        const floorTileXFractions = [-0.05, 0.075, 0.2, 0.325, 0.45, 0.575, 0.7, 0.825] as const;
-        const lianaY = height * 0.26;
-        const rearTreeY = height * 0.72;
-        const frontTreeY = height * 0.82;
-        const rearBushY = height * 0.73;
-        const frontBushY = height * 0.84;
-        const rearTreeScale = 1.08;
-        const rearBushScale = 0.78;
-        const frontTreeScale = 0.94;
-        const frontBushScale = 1.02;
-        const floorTileKey = spriteCookAssetKey(['players', 'arenas', 'dense-jungle', 'tiles', 'floor']);
+        const gridLeft = width * ARENA_LAYOUT.gridLeft;
+        const gridRight = width * ARENA_LAYOUT.gridRight;
+        const gridTop = height * ARENA_LAYOUT.gridTop;
+        const gridBottom = height * ARENA_LAYOUT.gridBottom;
+        const farBoundary = width * ARENA_LAYOUT.farBoundary;
+        const closeBoundary = width * ARENA_LAYOUT.closeBoundary;
+        const seam1 = height * ARENA_LAYOUT.seam1Y;
+        const seam2 = height * ARENA_LAYOUT.seam2Y;
 
         const background: Phaser.GameObjects.GameObject[] = [];
 
         background.push(
             this.scene.add
-                .rectangle(width / 2, height / 2, width, height, 0x06110a, 1)
+                .rectangle(width / 2, height / 2, width, height, 0x060f09, 1)
                 .setDepth(0),
         );
 
-        const canopy = this.scene.add
-            .tileSprite(0, 0, width, canopyHeight, spriteCookAssetKey(['players', 'arenas', 'dense-jungle', 'tiles', 'canopy']))
-            .setOrigin(0, 0)
-            .setScrollFactor(0.3)
-            .setAlpha(0.92)
-            .setDepth(2);
+        background.push(
+            this.scene.add
+                .tileSprite(
+                    0,
+                    0,
+                    width,
+                    height * 0.28,
+                    spriteCookAssetKey(['players', 'arenas', 'dense-jungle', 'tiles', 'canopy']),
+                )
+                .setOrigin(0, 0)
+                .setAlpha(0.88)
+                .setDepth(2),
+        );
 
-        const undergrowthBand = this.scene.add
-            .rectangle(width / 2, midBandTop + midBandHeight / 2, width, midBandHeight, 0x102a16, 0.88)
-            .setDepth(4)
-            .setScrollFactor(0.6);
+        background.push(
+            this.scene.add
+                .rectangle(
+                    (gridLeft + farBoundary) / 2,
+                    (gridTop + gridBottom) / 2,
+                    farBoundary - gridLeft,
+                    gridBottom - gridTop,
+                    0x08160c,
+                    1,
+                )
+                .setDepth(1),
+        );
+        background.push(
+            this.scene.add
+                .rectangle(
+                    (farBoundary + closeBoundary) / 2,
+                    (gridTop + gridBottom) / 2,
+                    closeBoundary - farBoundary,
+                    gridBottom - gridTop,
+                    0x0d1f10,
+                    1,
+                )
+                .setDepth(1),
+        );
+        background.push(
+            this.scene.add
+                .rectangle(
+                    (closeBoundary + gridRight) / 2,
+                    (gridTop + gridBottom) / 2,
+                    gridRight - closeBoundary,
+                    gridBottom - gridTop,
+                    0x1a140a,
+                    1,
+                )
+                .setDepth(1),
+        );
 
-        const groundBand = this.scene.add
-            .rectangle(width / 2, groundTop + groundHeight / 2, width, groundHeight, 0x07140b, 0.98)
-            .setDepth(8)
-            .setScrollFactor(1);
+        const columnDividers = this.scene.add.graphics().setDepth(6);
+        columnDividers.lineStyle(3, 0x1e3a1e, 0.6);
+        columnDividers.lineBetween(farBoundary, gridTop, farBoundary, gridBottom);
+        columnDividers.lineBetween(closeBoundary, gridTop, closeBoundary, gridBottom);
+        background.push(columnDividers);
 
-        background.push(canopy, undergrowthBand, groundBand);
+        const seams = this.scene.add.graphics().setDepth(7);
+        seams.lineStyle(2, 0x2a3a22, 0.5);
+        seams.lineBetween(gridLeft, seam1, gridRight, seam1);
+        seams.lineBetween(gridLeft, seam2, gridRight, seam2);
+        background.push(seams);
 
-        for (const fraction of floorTileXFractions) {
+        background.push(
+            this.scene.add
+                .image(
+                    gridLeft,
+                    height * 0.34,
+                    spriteCookAssetKey(['players', 'arenas', 'dense-jungle', 'props', 'tree']),
+                )
+                .setOrigin(0.5, 0.5)
+                .setScale(0.55)
+                .setAlpha(0.85)
+                .setDepth(8),
+        );
+        background.push(
+            this.scene.add
+                .image(
+                    gridLeft + 18,
+                    height * 0.56 + 8,
+                    spriteCookAssetKey(['players', 'arenas', 'dense-jungle', 'props', 'bush']),
+                )
+                .setOrigin(0.5, 0.85)
+                .setScale(0.78)
+                .setAlpha(0.92)
+                .setDepth(8),
+        );
+        background.push(
+            this.scene.add
+                .image(
+                    gridLeft - 8,
+                    height * 0.76 + 4,
+                    spriteCookAssetKey(['players', 'arenas', 'dense-jungle', 'props', 'bush']),
+                )
+                .setOrigin(0.5, 0.9)
+                .setScale(0.62)
+                .setAlpha(0.88)
+                .setDepth(8),
+        );
+        background.push(
+            this.scene.add
+                .image(
+                    gridLeft + 20,
+                    height * 0.76 - 10,
+                    spriteCookAssetKey(['players', 'arenas', 'dense-jungle', 'props', 'liana']),
+                )
+                .setScale(0.48)
+                .setAlpha(0.82)
+                .setDepth(8),
+        );
+
+        for (const xFraction of [0.22, 0.58] as const) {
             background.push(
                 this.scene.add
-                    .image(width * fraction, floorTileY, floorTileKey)
-                    .setOrigin(0, 1)
-                    .setScale(floorTileScale)
-                    .setAlpha(0.96)
-                    .setDepth(9)
-                    .setScrollFactor(1),
+                    .image(
+                        width * xFraction,
+                        height * 0.26,
+                        spriteCookAssetKey(['players', 'arenas', 'dense-jungle', 'props', 'liana']),
+                    )
+                    .setScale(0.96)
+                    .setAlpha(0.85)
+                    .setDepth(7),
             );
         }
 
-        const midPropLayout = [
-            { key: ['players', 'arenas', 'dense-jungle', 'props', 'tree'], x: width * 0.03, y: rearTreeY, scale: rearTreeScale, alpha: 0.58, depth: 5 },
-            { key: ['players', 'arenas', 'dense-jungle', 'props', 'tree'], x: width * 0.22, y: rearTreeY, scale: rearTreeScale, alpha: 0.64, depth: 5 },
-            { key: ['players', 'arenas', 'dense-jungle', 'props', 'tree'], x: width * 0.41, y: rearTreeY, scale: rearTreeScale, alpha: 0.62, depth: 6 },
-            { key: ['players', 'arenas', 'dense-jungle', 'props', 'liana'], x: width * 0.4, y: lianaY, scale: 1.02, alpha: 0.9, depth: 7 },
-            { key: ['players', 'arenas', 'dense-jungle', 'props', 'liana'], x: width * 0.62, y: lianaY, scale: 0.94, alpha: 0.82, depth: 7 },
-            { key: ['players', 'arenas', 'dense-jungle', 'props', 'tree'], x: width * 0.6, y: rearTreeY, scale: rearTreeScale, alpha: 0.64, depth: 6 },
-            { key: ['players', 'arenas', 'dense-jungle', 'props', 'tree'], x: width * 0.79, y: rearTreeY, scale: rearTreeScale, alpha: 0.6, depth: 5 },
-            { key: ['players', 'arenas', 'dense-jungle', 'props', 'tree'], x: width * 0.98, y: rearTreeY, scale: rearTreeScale, alpha: 0.58, depth: 5 },
-            { key: ['players', 'arenas', 'dense-jungle', 'props', 'bush'], x: width * 0.12, y: rearBushY, scale: rearBushScale, alpha: 0.74, depth: 7 },
-            { key: ['players', 'arenas', 'dense-jungle', 'props', 'bush'], x: width * 0.31, y: rearBushY, scale: rearBushScale, alpha: 0.7, depth: 7 },
-            { key: ['players', 'arenas', 'dense-jungle', 'props', 'bush'], x: width * 0.52, y: rearBushY, scale: rearBushScale, alpha: 0.72, depth: 7 },
-            { key: ['players', 'arenas', 'dense-jungle', 'props', 'bush'], x: width * 0.72, y: rearBushY, scale: rearBushScale, alpha: 0.7, depth: 7 },
-            { key: ['players', 'arenas', 'dense-jungle', 'props', 'bush'], x: width * 0.91, y: rearBushY, scale: rearBushScale, alpha: 0.74, depth: 7 },
-        ] as const;
-
-        for (const prop of midPropLayout) {
+        for (const prop of [
+            { xFraction: 0.18, depth: 22 },
+            { xFraction: 0.50, depth: 22 },
+            { xFraction: 0.82, depth: 22 },
+        ] as const) {
             background.push(
                 this.scene.add
-                    .image(prop.x, prop.y, spriteCookAssetKey(prop.key))
+                    .image(
+                        gridLeft + (gridRight - gridLeft) * prop.xFraction,
+                        gridBottom,
+                        spriteCookAssetKey(['players', 'arenas', 'dense-jungle', 'props', 'bush']),
+                    )
                     .setOrigin(0.5, 1)
-                    .setScale(prop.scale)
-                    .setAlpha(prop.alpha)
-                    .setDepth(prop.depth)
-                    .setScrollFactor(0.6),
+                    .setScale(0.9)
+                    .setDepth(prop.depth),
             );
         }
-
-        const propLayout = [
-            { key: ['players', 'arenas', 'dense-jungle', 'props', 'tree'], x: width * 0.07, y: frontTreeY, scale: frontTreeScale, depth: 18 },
-            { key: ['players', 'arenas', 'dense-jungle', 'props', 'tree'], x: width * 0.34, y: frontTreeY, scale: frontTreeScale, depth: 18 },
-            { key: ['players', 'arenas', 'dense-jungle', 'props', 'bush'], x: width * 0.2, y: frontBushY, scale: frontBushScale, depth: 20 },
-            { key: ['players', 'arenas', 'dense-jungle', 'props', 'bush'], x: width * 0.53, y: frontBushY, scale: frontBushScale, depth: 20 },
-            { key: ['players', 'arenas', 'dense-jungle', 'props', 'bush'], x: width * 0.78, y: frontBushY, scale: frontBushScale, depth: 20 },
-            { key: ['players', 'arenas', 'dense-jungle', 'props', 'tree'], x: width * 0.93, y: frontTreeY, scale: frontTreeScale, depth: 18 },
-        ] as const;
-
-        for (const prop of propLayout) {
-            background.push(
-                this.scene.add
-                    .image(prop.x, prop.y, spriteCookAssetKey(prop.key))
-                    .setOrigin(0.5, 1)
-                    .setScale(prop.scale)
-                    .setDepth(prop.depth)
-                    .setScrollFactor(1),
-            );
-        }
-
-        this.scene.add
-            .rectangle(width / 2, height / 2, width, height, 0x06110a, 0.08)
-            .setDepth(1);
 
         return { background };
     }

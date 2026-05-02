@@ -1,9 +1,10 @@
-import type { PlayerId } from '../core/types.js';
+import type { PlayerId, WeaponType } from '../core/types.js';
 
 export interface SessionPlayerState {
     playerId: PlayerId;
     health: number;
     score: number;
+    activeWeapon: WeaponType;
 }
 
 export class SessionManager {
@@ -14,6 +15,7 @@ export class SessionManager {
             this.playerState.set(player.playerId, {
                 health: player.health,
                 score: player.score,
+                activeWeapon: player.activeWeapon,
             });
         }
     }
@@ -25,6 +27,7 @@ export class SessionManager {
                 playerId,
                 health: state.health,
                 score: state.score,
+                activeWeapon: state.activeWeapon,
             }));
     }
 }

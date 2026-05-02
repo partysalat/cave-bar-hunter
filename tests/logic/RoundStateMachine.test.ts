@@ -45,8 +45,8 @@ describe('RoundStateMachine', () => {
         machine.start();
         machine.forceSubmit();
         machine.beginResolve();
-        machine.beginDodgeQte();
+        machine.beginAttackAndDodgeQte();
 
-        expect(machine.getPhase()).toBe('dodge_qte');
+        expect(machine.getPhase()).toBe('attack_and_dodge_qte');
     });
 });

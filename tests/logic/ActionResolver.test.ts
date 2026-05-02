@@ -96,4 +96,61 @@ describe('ActionResolver', () => {
         expect(result.damageDealt[2]).toBe(0);
         expect(result.playersHit).toEqual([1]);
     });
+
+    it('populates attackingPlayers with weaponType from playerState', () => {
+        const resolver = new ActionResolver();
+        const positioning = new PositioningSystem();
+
+        const result = resolver.resolveRound({
+            playerActions: {
+                0: { type: 'attack' },
+                1: { type: 'aimed_strike', target: 'head' },
+                2: { type: 'brace' },
+            },
+            positioningSystem: positioning,
+            attackDeclaration: {
+                type: 'bite',
+                affectedZones: [{ zone: 'close', flank: 'center' }],
+                qteType: 'smash',
+                damage: 6,
+            },
+            playerState: {
+                0: { health: 4, downed: false, activeWeapon: 'bow' },
+                1: { health: 4, downed: false, activeWeapon: 'club' },
+                2: { health: 4, downed: false },
+                3: { health: 4, downed: false },
+            },
+        });
+
+        expect(result.attackingPlayers).toEqual([
+            { playerId: 0, weaponType: 'bow', action: 'attack' },
+            { playerId: 1, weaponType: 'club', action: 'aimed_strike' },
+        ]);
+    });
+
+    it('excludes downed players from attackingPlayers', () => {
+        const resolver = new ActionResolver();
+        const positioning = new PositioningSystem();
+
+        const result = resolver.resolveRound({
+            playerActions: {
+                0: { type: 'attack' },
+            },
+            positioningSystem: positioning,
+            attackDeclaration: {
+                type: 'bite',
+                affectedZones: [],
+                qteType: 'smash',
+                damage: 6,
+            },
+            playerState: {
+                0: { health: 0, downed: true },
+                1: { health: 4, downed: false },
+                2: { health: 4, downed: false },
+                3: { health: 4, downed: false },
+            },
+        });
+
+        expect(result.attackingPlayers).toEqual([]);
+    });
 });

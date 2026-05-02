@@ -6,24 +6,34 @@ describe('SessionManager', () => {
         const session = new SessionManager();
 
         session.savePlayerState([
-            { playerId: 0, health: 3, score: 18 },
-            { playerId: 2, health: 1, score: 9 },
+            { playerId: 0, health: 3, score: 18, activeWeapon: 'club' },
+            { playerId: 2, health: 1, score: 9, activeWeapon: 'bow' },
         ]);
 
         expect(session.loadPlayerState()).toEqual([
-            { playerId: 0, health: 3, score: 18 },
-            { playerId: 2, health: 1, score: 9 },
+            { playerId: 0, health: 3, score: 18, activeWeapon: 'club' },
+            { playerId: 2, health: 1, score: 9, activeWeapon: 'bow' },
         ]);
     });
 
     it('overwrites an existing snapshot for the same player', () => {
         const session = new SessionManager();
 
-        session.savePlayerState([{ playerId: 1, health: 2, score: 4 }]);
-        session.savePlayerState([{ playerId: 1, health: 4, score: 11 }]);
+        session.savePlayerState([{ playerId: 1, health: 2, score: 4, activeWeapon: 'club' }]);
+        session.savePlayerState([{ playerId: 1, health: 4, score: 11, activeWeapon: 'bow' }]);
 
         expect(session.loadPlayerState()).toEqual([
-            { playerId: 1, health: 4, score: 11 },
+            { playerId: 1, health: 4, score: 11, activeWeapon: 'bow' },
+        ]);
+    });
+
+    it('persists activeWeapon across save/load', () => {
+        const session = new SessionManager();
+
+        session.savePlayerState([{ playerId: 0, health: 4, score: 0, activeWeapon: 'bow' }]);
+
+        expect(session.loadPlayerState()).toEqual([
+            { playerId: 0, health: 4, score: 0, activeWeapon: 'bow' },
         ]);
     });
 });

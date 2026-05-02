@@ -112,7 +112,7 @@ export default class HUD {
     private handlePhaseChanged(data: { phase: RoundPhase; previousPhase: RoundPhase }): void {
         this.panels.forEach((panel) => panel.setPhase(data.phase));
 
-        if (data.phase !== 'dodge_qte') {
+        if (data.phase !== 'attack_and_dodge_qte') {
             this.qtePrompt.hide();
         }
     }

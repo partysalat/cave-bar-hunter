@@ -1,10 +1,11 @@
-import type { AttackDeclaration, PlayerAction, PlayerId, RoundResult, WeakPoint } from '../core/types.js';
+import type { AttackDeclaration, AttackingPlayer, PlayerAction, PlayerId, RoundResult, WeakPoint, WeaponType } from '../core/types.js';
 import PositioningSystem from './PositioningSystem.js';
 
 export interface ResolverPlayerState {
     health: number;
     downed: boolean;
     braced?: boolean;
+    activeWeapon?: WeaponType;
 }
 
 export interface ResolveRoundInput {
@@ -49,6 +50,7 @@ export class ActionResolver {
         const { playerActions, positioningSystem, playerState, staggerActive = false } = input;
         const damageDealt = emptyDamageRecord();
         const weakPointHits: RoundResult['weakPointHits'] = [];
+        const attackingPlayers: AttackingPlayer[] = [];
         const revivedPlayers = new Set<PlayerId>();
         const braceMap = new Map<PlayerId, boolean>();
 
@@ -76,6 +78,9 @@ export class ActionResolver {
             const multiplier = staggerActive ? 3 : 1;
             const damage = zoneDamage(position.zone) * multiplier;
             damageDealt[playerId] += damage;
+
+            const weaponType = playerState[playerId]?.activeWeapon ?? 'club';
+            attackingPlayers.push({ playerId, weaponType, action: action.type as 'attack' | 'aimed_strike' });
 
             if (action.type === 'aimed_strike') {
                 weakPointHits.push({
@@ -118,6 +123,7 @@ export class ActionResolver {
             weakPointHits,
             staggerTriggered: false,
             playersHit,
+            attackingPlayers,
         };
     }
 }
