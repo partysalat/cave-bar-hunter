@@ -63,8 +63,11 @@ export type HuntEmission =
     | { type: 'planned_action_submitted'; playerId: PlayerId; action: PlayerAction }
     | { type: 'weapon_switched'; playerId: PlayerId; newWeapon: WeaponType }
     | { type: 'round_resolved'; result: RoundResult }
+    | { type: 'attack_qte_result'; playerId: PlayerId; weaponType: WeaponType; critical: boolean; weakPoint: WeakPoint | null }
+    | { type: 'dodge_qte_result'; playerId: PlayerId; success: boolean; perfect: boolean }
     | { type: 'attack_qte_opened'; attackers: AttackingPlayer[] }
     | { type: 'dodge_qte_opened'; affectedPlayers: PlayerId[]; qteType: QteType }
+    | { type: 'qte_round_finished'; result: RoundResult; failedDodges: PlayerId[]; perfectDodges: PlayerId[] }
     | { type: 'stagger_window_opened'; sourceWeakPoint: WeakPoint }
     | { type: 'hunt_ended'; outcome: 'dilophosaurus_defeated' | 'party_wiped' | 'retreated_to_cave_bar' };
 
@@ -89,6 +92,7 @@ export type HuntCommand =
     | { type: 'begin_next_round'; players: Partial<Record<PlayerId, HuntRoundPlayerStateInput>> }
     | { type: 'submit_attack_qte'; playerId: PlayerId; weakPoint?: WeakPoint }
     | { type: 'submit_dodge_qte'; playerId: PlayerId }
+    | { type: 'complete_qte_round' }
     | { type: 'ack_hunt_end' };
 
 export type HuntUpdate =
@@ -257,6 +261,9 @@ class HuntRoundLoopImpl implements HuntRoundLoop {
     private readonly attackZoneResolver = new AttackZoneResolver();
     private readonly dinosaurAI = new DilophosaurusAI();
     private readonly sessionState: SessionPlayerState[];
+    private pendingRoundResult?: RoundResult;
+    private attackQteResults = new Map<PlayerId, { critical: boolean; weakPoint: WeakPoint | null }>();
+    private dodgeQteResults = new Map<PlayerId, { success: boolean; perfect: boolean }>();
 
     private snapshot: HuntSnapshot = {
         round: 0,
@@ -299,8 +306,12 @@ class HuntRoundLoopImpl implements HuntRoundLoop {
                 return this.resolveSubmittedActions(command.staggerActive ?? false);
             case 'begin_next_round':
                 return this.beginNextRound(command.players);
+            case 'complete_qte_round':
+                return this.completeQteRound();
             case 'submit_attack_qte':
+                return this.submitAttackQte(command.playerId, command.weakPoint ?? null);
             case 'submit_dodge_qte':
+                return this.submitDodgeQte(command.playerId);
             case 'ack_hunt_end':
                 return this.fail('phase_mismatch', `Command ${command.type} is not implemented in the scaffold yet.`);
         }
@@ -464,6 +475,9 @@ class HuntRoundLoopImpl implements HuntRoundLoop {
         this.snapshot.dino.currentTelegraph = telegraph;
         this.snapshot.pending.attackingPlayers = [];
         this.snapshot.pending.affectedPlayers = [];
+        this.pendingRoundResult = undefined;
+        this.attackQteResults.clear();
+        this.dodgeQteResults.clear();
 
         return this.success([
             { type: 'phase_changed', from: previousPhase, to: 'plan' },
@@ -503,6 +517,9 @@ class HuntRoundLoopImpl implements HuntRoundLoop {
             staggerActive,
         });
         this.syncPositionsFromSystem();
+        this.pendingRoundResult = result;
+        this.attackQteResults.clear();
+        this.dodgeQteResults.clear();
         this.snapshot.pending.attackingPlayers = result.attackingPlayers.map((attacker) => ({ ...attacker }));
         this.snapshot.pending.affectedPlayers = this.attackZoneResolver.getAffectedPlayers(telegraph, this.currentPositions());
 
@@ -546,6 +563,137 @@ class HuntRoundLoopImpl implements HuntRoundLoop {
         }
 
         return this.success(emissions);
+    }
+
+    private submitAttackQte(playerId: PlayerId, weakPoint: WeakPoint | null): HuntUpdate {
+        if (this.snapshot.phase.kind !== 'attack_qte') {
+            return this.fail('phase_mismatch', 'submit_attack_qte is only valid during attack_qte.');
+        }
+
+        const attacker = this.snapshot.phase.attackers.find((candidate) => candidate.playerId === playerId);
+        if (!attacker) {
+            return this.fail('player_not_eligible', `Player ${playerId} is not an active attacker in this QTE.`);
+        }
+
+        if (this.attackQteResults.has(playerId)) {
+            return this.fail('player_already_committed', `Player ${playerId} already submitted an attack QTE result.`);
+        }
+
+        let result: { critical: boolean; weakPoint: WeakPoint | null };
+        if (attacker.weaponType === 'club') {
+            const elapsed = 2200 - this.snapshot.phase.deadlineMs;
+            result = {
+                critical: elapsed >= 562 && elapsed <= 937,
+                weakPoint: null,
+            };
+        } else {
+            result = {
+                critical: weakPoint !== null,
+                weakPoint,
+            };
+        }
+
+        this.attackQteResults.set(playerId, result);
+        return this.success([{
+            type: 'attack_qte_result',
+            playerId,
+            weaponType: attacker.weaponType,
+            critical: result.critical,
+            weakPoint: result.weakPoint,
+        }]);
+    }
+
+    private submitDodgeQte(playerId: PlayerId): HuntUpdate {
+        if (this.snapshot.phase.kind !== 'attack_qte' && this.snapshot.phase.kind !== 'dodge_qte') {
+            return this.fail('phase_mismatch', 'submit_dodge_qte is only valid during active QTE phases.');
+        }
+
+        if (!this.snapshot.pending.affectedPlayers.includes(playerId)) {
+            return this.fail('player_not_eligible', `Player ${playerId} is not targeted by the current dodge QTE.`);
+        }
+
+        if (this.dodgeQteResults.has(playerId)) {
+            return this.fail('player_already_committed', `Player ${playerId} already submitted a dodge QTE result.`);
+        }
+
+        const deadlineMs = this.snapshot.phase.deadlineMs;
+        const elapsed = 2200 - deadlineMs;
+        const result = {
+            success: true,
+            perfect: elapsed <= 700,
+        };
+        this.dodgeQteResults.set(playerId, result);
+        return this.success([{
+            type: 'dodge_qte_result',
+            playerId,
+            success: true,
+            perfect: result.perfect,
+        }]);
+    }
+
+    private completeQteRound(): HuntUpdate {
+        if (this.snapshot.phase.kind !== 'attack_qte' && this.snapshot.phase.kind !== 'dodge_qte') {
+            return this.fail('phase_mismatch', 'complete_qte_round is only valid during QTE phases.');
+        }
+
+        if (!this.pendingRoundResult) {
+            return this.fail('phase_mismatch', 'complete_qte_round requires a pending round result.');
+        }
+
+        const result = this.pendingRoundResult;
+        const finalWeakPointHits = result.weakPointHits.filter((hit) => {
+            const attacker = result.attackingPlayers.find((candidate) => candidate.playerId === hit.playerId);
+            if (!attacker) {
+                return true;
+            }
+
+            const qteResult = this.attackQteResults.get(hit.playerId);
+            if (attacker.weaponType === 'club') {
+                return qteResult?.critical === true;
+            }
+
+            return qteResult?.weakPoint === hit.weakPoint;
+        });
+
+        const damageDealt = { ...result.damageDealt };
+        for (const attacker of result.attackingPlayers) {
+            const qteResult = this.attackQteResults.get(attacker.playerId);
+            if (attacker.weaponType === 'club' && qteResult?.critical) {
+                damageDealt[attacker.playerId] *= 2;
+                const hit = finalWeakPointHits.find((candidate) => candidate.playerId === attacker.playerId);
+                if (hit) {
+                    hit.damage = damageDealt[attacker.playerId];
+                }
+            }
+
+            if (attacker.weaponType === 'bow' && attacker.action === 'attack' && qteResult?.weakPoint) {
+                finalWeakPointHits.push({
+                    playerId: attacker.playerId,
+                    weakPoint: qteResult.weakPoint,
+                    damage: damageDealt[attacker.playerId],
+                });
+            }
+        }
+
+        const failedDodges = this.snapshot.pending.affectedPlayers.filter((playerId) => {
+            return this.dodgeQteResults.get(playerId)?.success !== true;
+        });
+        const perfectDodges = this.snapshot.pending.affectedPlayers.filter((playerId) => {
+            return this.dodgeQteResults.get(playerId)?.perfect === true;
+        });
+
+        const finalResult: RoundResult = {
+            ...result,
+            damageDealt,
+            weakPointHits: finalWeakPointHits,
+        };
+
+        return this.success([{
+            type: 'qte_round_finished',
+            result: finalResult,
+            failedDodges,
+            perfectDodges,
+        }]);
     }
 
     private transitionToSubmit(): HuntUpdate {

@@ -200,4 +200,66 @@ describe('HuntRoundLoop', () => {
             },
         ]);
     });
+
+    it('records attack and dodge QTE submissions and finalizes the round from the loop seam', () => {
+        const loop = createHuntRoundLoop({
+            playerIds: [0],
+        });
+
+        loop.advance({ type: 'begin_hunt' });
+        loop.advance({ type: 'submit_planned_action', playerId: 0, action: { type: 'attack' } });
+        loop.advance({ type: 'tick', deltaMs: 500 });
+        loop.advance({ type: 'resolve_submitted_actions' });
+
+        const attackQte = loop.advance({ type: 'submit_attack_qte', playerId: 0 });
+        const dodgeQte = loop.advance({ type: 'submit_dodge_qte', playerId: 0 });
+        const finished = loop.advance({ type: 'complete_qte_round' });
+
+        expect(attackQte.ok).toBe(true);
+        if (attackQte.ok) {
+            expect(attackQte.emissions).toEqual([
+                {
+                    type: 'attack_qte_result',
+                    playerId: 0,
+                    weaponType: 'club',
+                    critical: false,
+                    weakPoint: null,
+                },
+            ]);
+        }
+
+        expect(dodgeQte.ok).toBe(true);
+        if (dodgeQte.ok) {
+            expect(dodgeQte.emissions).toEqual([
+                {
+                    type: 'dodge_qte_result',
+                    playerId: 0,
+                    success: true,
+                    perfect: true,
+                },
+            ]);
+        }
+
+        expect(finished.ok).toBe(true);
+        if (!finished.ok) {
+            return;
+        }
+
+        expect(finished.emissions).toEqual([
+            {
+                type: 'qte_round_finished',
+                result: {
+                    damageDealt: { 0: 3, 1: 0, 2: 0, 3: 0 },
+                    weakPointHits: [],
+                    staggerTriggered: false,
+                    playersHit: [],
+                    attackingPlayers: [
+                        { playerId: 0, weaponType: 'club', action: 'attack' },
+                    ],
+                },
+                failedDodges: [],
+                perfectDodges: [0],
+            },
+        ]);
+    });
 });

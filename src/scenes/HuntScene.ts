@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 
 import { EventBus } from '../core/EventBus.js';
 import { EVENTS, type RoundPhase } from '../core/events.js';
-import type { AttackDeclaration, AttackingPlayer, PlayerAction, PlayerId, Position, RoundResult, WeakPoint, WeaponType } from '../core/types.js';
+import type { AttackDeclaration, AttackingPlayer, PlayerAction, PlayerId, Position, RoundResult, WeaponType } from '../core/types.js';
 import InputManager, { type LogicalInputState } from '../input/InputManager.js';
 import {
     createHuntRoundLoop,
@@ -139,15 +139,10 @@ export class HuntScene extends Phaser.Scene {
     private currentTelegraph?: AttackDeclaration;
     private dinoHealth = DEFAULT_DINO_HEALTH;
     private qteElapsedMs = 0;
-    private qteResponded = new Set<PlayerId>();
     private qteAffected: PlayerId[] = [];
     private bonusDamageRound = false;
-    private pendingRoundResult?: RoundResult;
     private attackQteElapsedMs = 0;
     private attackingPlayers: AttackingPlayer[] = [];
-    private attackQteResponded = new Set<PlayerId>();
-    private attackQteResults = new Map<PlayerId, { critical: boolean; weakPoint: WeakPoint | null }>();
-    private bowTargets = new Map<PlayerId, WeakPoint | null>();
     private ringRenderer?: PositionRingRenderer;
     private telegraphRenderer?: TelegraphRenderer;
     private currentPhase: RoundPhase = 'plan';
@@ -379,56 +374,43 @@ export class HuntScene extends Phaser.Scene {
     }
 
     private handleQteInput(playerId: PlayerId, input: LogicalInputState, previous: LogicalInputState): void {
-        if (!this.qteAffected.includes(playerId) || this.qteResponded.has(playerId)) {
+        if (!this.qteAffected.includes(playerId) || !this.huntLoop) {
             return;
         }
 
         if (input.jumpPressed && !previous.jumpPressed) {
-            this.qteResponded.add(playerId);
-            const perfect = this.qteElapsedMs <= 700;
-            this.bus.emit(EVENTS.QTE_RESULT, { playerId, success: true, perfect });
-            if (perfect) {
-                this.scoringSystem?.awardPerfectDodge(playerId);
-            }
+            this.applyHuntLoopUpdate(this.huntLoop.advance({
+                type: 'submit_dodge_qte',
+                playerId,
+            }));
         }
     }
 
     private handleAttackQteInput(playerId: PlayerId, input: LogicalInputState, previous: LogicalInputState): void {
+        if (!this.huntLoop) {
+            return;
+        }
+
         const attacker = this.attackingPlayers.find((a) => a.playerId === playerId);
-        if (!attacker || this.attackQteResponded.has(playerId)) {
+        if (!attacker) {
             return;
         }
 
         if (attacker.weaponType === 'club') {
             if (input.jumpPressed && !previous.jumpPressed) {
-                this.attackQteResponded.add(playerId);
-                const elapsed = this.attackQteElapsedMs;
-                const critical = elapsed >= 562 && elapsed <= 937;
-                this.attackQteResults.set(playerId, { critical, weakPoint: null });
-                this.bus.emit(EVENTS.ATTACK_QTE_RESULT, {
+                this.applyHuntLoopUpdate(this.huntLoop.advance({
+                    type: 'submit_attack_qte',
                     playerId,
-                    weaponType: 'club' as const,
-                    critical,
-                    weakPoint: null,
-                });
+                }));
             }
         } else {
-            if (input.up && !previous.up) {
-                this.bowTargets.set(playerId, 'head');
-            }
-            if (input.down && !previous.down) {
-                this.bowTargets.set(playerId, 'legs');
-            }
             if (input.jumpPressed && !previous.jumpPressed) {
-                this.attackQteResponded.add(playerId);
-                const weakPoint = this.bowTargets.get(playerId) ?? null;
-                this.attackQteResults.set(playerId, { critical: weakPoint !== null, weakPoint });
-                this.bus.emit(EVENTS.ATTACK_QTE_RESULT, {
+                const weakPoint = input.up ? 'head' : input.down ? 'legs' : undefined;
+                this.applyHuntLoopUpdate(this.huntLoop.advance({
+                    type: 'submit_attack_qte',
                     playerId,
-                    weaponType: 'bow' as const,
-                    critical: weakPoint !== null,
                     weakPoint,
-                });
+                }));
             }
         }
     }
@@ -487,86 +469,14 @@ export class HuntScene extends Phaser.Scene {
     }
 
     private finalizeQteRound(): void {
-        if (!this.currentTelegraph) {
+        if (!this.currentTelegraph || !this.huntLoop) {
             return;
         }
 
-        if (this.pendingRoundResult) {
-            const result = this.pendingRoundResult;
-            const damageMultipliers = new Map<PlayerId, number>();
-
-            const finalWeakPointHits = result.weakPointHits.filter((hit) => {
-                const attacker = this.attackingPlayers.find((a) => a.playerId === hit.playerId);
-                if (!attacker) return true;
-
-                const qteResult = this.attackQteResults.get(hit.playerId);
-                if (attacker.weaponType === 'club') {
-                    return qteResult?.critical === true;
-                }
-                return qteResult?.weakPoint === hit.weakPoint;
-            });
-
-            // Bow attack landing on a zone adds a bonus weak point hit
-            for (const attacker of this.attackingPlayers) {
-                if (attacker.weaponType !== 'bow' || attacker.action !== 'attack') continue;
-                const qteResult = this.attackQteResults.get(attacker.playerId);
-                if (qteResult?.weakPoint) {
-                    finalWeakPointHits.push({
-                        playerId: attacker.playerId,
-                        weakPoint: qteResult.weakPoint,
-                        damage: result.damageDealt[attacker.playerId],
-                    });
-                }
-            }
-
-            // Club crit doubles damage
-            for (const attacker of this.attackingPlayers) {
-                if (attacker.weaponType !== 'club') continue;
-                const qteResult = this.attackQteResults.get(attacker.playerId);
-                if (qteResult?.critical) {
-                    damageMultipliers.set(attacker.playerId, 2);
-                }
-            }
-
-            const modifiedResult: RoundResult = { ...result, weakPointHits: finalWeakPointHits };
-            const killed = this.applyRoundResult(modifiedResult, damageMultipliers);
-            this.pendingRoundResult = undefined;
-
-            if (killed) {
-                this.savePlayerState();
-                this.scene.start(SCENE_KEYS.CAVE_BAR, { sessionManager: this.sessionManager });
-                return;
-            }
-
-            // Stagger triggered during finalize: skip dodge damage
-            if (this.bonusDamageRound) {
-                this.qteAffected = [];
-                this.qteResponded.clear();
-                this.qteElapsedMs = 0;
-                this.attackingPlayers = [];
-                this.attackQteResponded.clear();
-                this.attackQteResults.clear();
-                this.bowTargets.clear();
-                this.attackQteElapsedMs = 0;
-                return;
-            }
-        }
-
-        for (const playerId of this.qteAffected) {
-            if (this.qteResponded.has(playerId)) {
-                continue;
-            }
-            this.bus.emit(EVENTS.QTE_RESULT, { playerId, success: false, perfect: false });
-            this.applyPlayerDamage(playerId, this.currentTelegraph.damage);
-        }
-
+        this.applyHuntLoopUpdate(this.huntLoop.advance({ type: 'complete_qte_round' }));
         this.qteAffected = [];
-        this.qteResponded.clear();
         this.qteElapsedMs = 0;
         this.attackingPlayers = [];
-        this.attackQteResponded.clear();
-        this.attackQteResults.clear();
-        this.bowTargets.clear();
         this.attackQteElapsedMs = 0;
     }
 
@@ -729,20 +639,14 @@ export class HuntScene extends Phaser.Scene {
             }
 
             if (emission.type === 'round_resolved') {
-                this.pendingRoundResult = emission.result;
                 this.attackingPlayers = emission.result.attackingPlayers;
                 this.qteAffected = [];
-                this.attackQteResponded.clear();
-                this.attackQteResults.clear();
-                this.bowTargets.clear();
                 this.attackQteElapsedMs = 0;
-                this.qteResponded.clear();
                 this.qteElapsedMs = 0;
                 this.bus.emit(EVENTS.ROUND_RESOLVED, { result: emission.result });
 
                 if (this.bonusDamageRound) {
                     const killed = this.applyRoundResult(emission.result);
-                    this.pendingRoundResult = undefined;
                     if (killed) {
                         this.savePlayerState();
                         this.scene.start(SCENE_KEYS.CAVE_BAR, { sessionManager: this.sessionManager });
@@ -752,6 +656,25 @@ export class HuntScene extends Phaser.Scene {
                     this.staggerSystem?.consumeStaggerWindow();
                     this.beginNextLoopRound();
                 }
+                continue;
+            }
+
+            if (emission.type === 'attack_qte_result') {
+                this.bus.emit(EVENTS.ATTACK_QTE_RESULT, {
+                    playerId: emission.playerId,
+                    weaponType: emission.weaponType,
+                    critical: emission.critical,
+                    weakPoint: emission.weakPoint,
+                });
+                continue;
+            }
+
+            if (emission.type === 'dodge_qte_result') {
+                this.bus.emit(EVENTS.QTE_RESULT, {
+                    playerId: emission.playerId,
+                    success: emission.success,
+                    perfect: emission.perfect,
+                });
                 continue;
             }
 
@@ -767,6 +690,33 @@ export class HuntScene extends Phaser.Scene {
                     affectedPlayerIds: emission.affectedPlayers,
                     qteType: emission.qteType,
                 });
+                continue;
+            }
+
+            if (emission.type === 'qte_round_finished') {
+                for (const playerId of emission.perfectDodges) {
+                    this.scoringSystem?.awardPerfectDodge(playerId);
+                }
+
+                const killed = this.applyRoundResult(emission.result);
+                if (killed) {
+                    this.savePlayerState();
+                    this.scene.start(SCENE_KEYS.CAVE_BAR, { sessionManager: this.sessionManager });
+                    return;
+                }
+
+                if (this.bonusDamageRound) {
+                    this.qteAffected = [];
+                    this.qteElapsedMs = 0;
+                    this.attackingPlayers = [];
+                    this.attackQteElapsedMs = 0;
+                    return;
+                }
+
+                for (const playerId of emission.failedDodges) {
+                    this.bus.emit(EVENTS.QTE_RESULT, { playerId, success: false, perfect: false });
+                    this.applyPlayerDamage(playerId, this.currentTelegraph!.damage);
+                }
                 continue;
             }
 
