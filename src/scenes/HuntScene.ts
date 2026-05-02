@@ -2,20 +2,17 @@ import Phaser from 'phaser';
 
 import { EventBus } from '../core/EventBus.js';
 import { EVENTS, type RoundPhase } from '../core/events.js';
-import type { AttackDeclaration, AttackingPlayer, PlayerAction, PlayerId, Position, RoundResult, WeaponType } from '../core/types.js';
+import type { AttackDeclaration, AttackingPlayer, PlayerAction, PlayerId, Position, WeaponType } from '../core/types.js';
 import InputManager, { type LogicalInputState } from '../input/InputManager.js';
 import {
     createHuntRoundLoop,
     type HuntLoopPlayerState,
     type HuntPhase as HuntLoopPhase,
     type HuntRoundLoop,
-    type HuntRoundPlayerStateInput,
     type HuntUpdate,
 } from '../logic/HuntRoundLoop.js';
 import PositioningSystem from '../logic/PositioningSystem.js';
-import ScoringSystem from '../logic/ScoringSystem.js';
 import SessionManager, { type SessionPlayerState } from '../logic/SessionManager.js';
-import StaggerSystem from '../logic/StaggerSystem.js';
 import { ArenaRenderer } from '../rendering/ArenaRenderer.js';
 import { ARENA_LAYOUT } from '../rendering/arenaLayout.js';
 import { positionToScreen } from '../rendering/positionToScreen.js';
@@ -121,8 +118,6 @@ export class HuntScene extends Phaser.Scene {
     private inputManager?: InputManager;
     private huntLoop?: HuntRoundLoop;
     private positioningSystem?: PositioningSystem;
-    private staggerSystem?: StaggerSystem;
-    private scoringSystem?: ScoringSystem;
     private sessionManager!: SessionManager;
     private playerState = createDefaultPlayerState();
     private playerSprites = new Map<PlayerId, Phaser.GameObjects.Sprite>();
@@ -140,8 +135,6 @@ export class HuntScene extends Phaser.Scene {
     private dinoHealth = DEFAULT_DINO_HEALTH;
     private qteElapsedMs = 0;
     private qteAffected: PlayerId[] = [];
-    private bonusDamageRound = false;
-    private attackQteElapsedMs = 0;
     private attackingPlayers: AttackingPlayer[] = [];
     private ringRenderer?: PositionRingRenderer;
     private telegraphRenderer?: TelegraphRenderer;
@@ -171,15 +164,6 @@ export class HuntScene extends Phaser.Scene {
                 activeWeapon: this.playerState[playerId].activeWeapon,
             })),
             dinoHealth: this.dinoHealth,
-        });
-        this.staggerSystem = new StaggerSystem(this.bus);
-        this.scoringSystem = new ScoringSystem(this.bus, {
-            initialTotals: {
-                0: this.playerState[0].score,
-                1: this.playerState[1].score,
-                2: this.playerState[2].score,
-                3: this.playerState[3].score,
-            },
         });
         this.inputManager = new InputManager(this);
         this.hud = new HUD(this, this.bus);
@@ -315,7 +299,6 @@ export class HuntScene extends Phaser.Scene {
 
         if (phase === 'attack_and_dodge_qte') {
             this.qteElapsedMs += delta;
-            this.attackQteElapsedMs += delta;
         }
 
         for (const playerId of PLAYER_IDS) {
@@ -335,7 +318,6 @@ export class HuntScene extends Phaser.Scene {
         if (phase === 'attack_and_dodge_qte') {
             if (this.qteElapsedMs >= 2200) {
                 this.finalizeQteRound();
-                this.beginNextLoopRound();
             }
             return;
         }
@@ -416,7 +398,7 @@ export class HuntScene extends Phaser.Scene {
     }
 
     private resolveCurrentRound(): void {
-        if (!this.huntLoop || !this.positioningSystem || !this.currentTelegraph) {
+        if (!this.huntLoop) {
             return;
         }
 
@@ -426,50 +408,11 @@ export class HuntScene extends Phaser.Scene {
         }
         this.applyHuntLoopUpdate(this.huntLoop.advance({
             type: 'resolve_submitted_actions',
-            staggerActive: this.bonusDamageRound,
         }));
     }
 
-    private applyRoundResult(result: RoundResult, damageMultipliers?: Map<PlayerId, number>): boolean {
-        const multipliers = damageMultipliers ?? new Map();
-        const finalWeakPointHits = [...result.weakPointHits];
-
-        let totalDamage = 0;
-        for (const playerId of PLAYER_IDS) {
-            const base = result.damageDealt[playerId];
-            if (base > 0) {
-                const multiplier = multipliers.get(playerId) ?? 1;
-                const damage = base * multiplier;
-                totalDamage += damage;
-                this.scoringSystem?.awardDamage(playerId, damage);
-                if (multiplier !== 1) {
-                    const hit = finalWeakPointHits.find((h) => h.playerId === playerId);
-                    if (hit) {
-                        hit.damage = damage;
-                    }
-                }
-            }
-        }
-
-        for (const weakPointHit of finalWeakPointHits) {
-            this.scoringSystem?.awardWeakPointHit(weakPointHit.playerId);
-            const triggered = this.staggerSystem?.applyWeakPointDamage(weakPointHit.weakPoint, weakPointHit.damage) ?? false;
-            if (triggered) {
-                this.bonusDamageRound = true;
-                this.scoringSystem?.awardStaggerContribution(weakPointHit.playerId);
-            }
-        }
-
-        this.dinoHealth = Math.max(0, this.dinoHealth - totalDamage);
-        this.bus.emit(EVENTS.DINO_HEALTH_CHANGED, { amount: -totalDamage, newHealth: this.dinoHealth });
-        this.syncHudFromState();
-        this.syncPlayerSprites();
-
-        return this.dinoHealth <= 0;
-    }
-
     private finalizeQteRound(): void {
-        if (!this.currentTelegraph || !this.huntLoop) {
+        if (!this.huntLoop) {
             return;
         }
 
@@ -477,41 +420,6 @@ export class HuntScene extends Phaser.Scene {
         this.qteAffected = [];
         this.qteElapsedMs = 0;
         this.attackingPlayers = [];
-        this.attackQteElapsedMs = 0;
-    }
-
-    private beginNextLoopRound(): void {
-        if (!this.huntLoop || !this.positioningSystem) {
-            return;
-        }
-
-        const players = PLAYER_IDS.reduce((accumulator, playerId) => {
-            accumulator[playerId] = {
-                health: this.playerState[playerId].health,
-                score: this.playerState[playerId].score,
-                activeWeapon: this.playerState[playerId].activeWeapon,
-                downed: this.playerState[playerId].downed,
-                position: this.positioningSystem!.getPosition(playerId),
-            };
-            return accumulator;
-        }, {} as Partial<Record<PlayerId, HuntRoundPlayerStateInput>>);
-
-        this.applyHuntLoopUpdate(this.huntLoop.advance({
-            type: 'begin_next_round',
-            players,
-        }));
-    }
-
-    private applyPlayerDamage(playerId: PlayerId, amount: number): void {
-        const player = this.playerState[playerId];
-        player.health = Math.max(0, player.health - amount);
-        player.downed = player.health <= 0;
-        this.bus.emit(EVENTS.PLAYER_DAMAGED, { playerId, amount, newHealth: player.health });
-        if (player.downed) {
-            this.bus.emit(EVENTS.PLAYER_DOWNED, { playerId });
-        }
-
-        this.syncScoresFromSystem();
     }
 
     private loadPlayerState(): void {
@@ -544,8 +452,6 @@ export class HuntScene extends Phaser.Scene {
         if (!this.hud || !this.positioningSystem) {
             return;
         }
-
-        this.syncScoresFromSystem();
 
         for (const playerId of PLAYER_IDS) {
             this.syncPlayerPanel(playerId);
@@ -597,17 +503,6 @@ export class HuntScene extends Phaser.Scene {
         return positionToScreen(position, width, height);
     }
 
-    private syncScoresFromSystem(): void {
-        const totals = this.scoringSystem?.getTotals();
-        if (!totals) {
-            return;
-        }
-
-        for (const playerId of PLAYER_IDS) {
-            this.playerState[playerId].score = totals[playerId];
-        }
-    }
-
     private applyHuntLoopUpdate(update: HuntUpdate): void {
         if (!update.ok) {
             return;
@@ -641,21 +536,8 @@ export class HuntScene extends Phaser.Scene {
             if (emission.type === 'round_resolved') {
                 this.attackingPlayers = emission.result.attackingPlayers;
                 this.qteAffected = [];
-                this.attackQteElapsedMs = 0;
                 this.qteElapsedMs = 0;
                 this.bus.emit(EVENTS.ROUND_RESOLVED, { result: emission.result });
-
-                if (this.bonusDamageRound) {
-                    const killed = this.applyRoundResult(emission.result);
-                    if (killed) {
-                        this.savePlayerState();
-                        this.scene.start(SCENE_KEYS.CAVE_BAR, { sessionManager: this.sessionManager });
-                        return;
-                    }
-                    this.bonusDamageRound = false;
-                    this.staggerSystem?.consumeStaggerWindow();
-                    this.beginNextLoopRound();
-                }
                 continue;
             }
 
@@ -694,30 +576,57 @@ export class HuntScene extends Phaser.Scene {
             }
 
             if (emission.type === 'qte_round_finished') {
-                for (const playerId of emission.perfectDodges) {
-                    this.scoringSystem?.awardPerfectDodge(playerId);
-                }
+                continue;
+            }
 
-                const killed = this.applyRoundResult(emission.result);
-                if (killed) {
-                    this.savePlayerState();
-                    this.scene.start(SCENE_KEYS.CAVE_BAR, { sessionManager: this.sessionManager });
-                    return;
-                }
+            if (emission.type === 'points_earned') {
+                this.bus.emit(EVENTS.POINTS_EARNED, {
+                    playerId: emission.playerId,
+                    amount: emission.amount,
+                    reason: emission.reason,
+                });
+                continue;
+            }
 
-                if (this.bonusDamageRound) {
-                    this.qteAffected = [];
-                    this.qteElapsedMs = 0;
-                    this.attackingPlayers = [];
-                    this.attackQteElapsedMs = 0;
-                    return;
-                }
+            if (emission.type === 'dino_health_changed') {
+                this.dinoHealth = emission.newHealth;
+                this.bus.emit(EVENTS.DINO_HEALTH_CHANGED, {
+                    amount: emission.amount,
+                    newHealth: emission.newHealth,
+                });
+                continue;
+            }
 
-                for (const playerId of emission.failedDodges) {
-                    this.bus.emit(EVENTS.QTE_RESULT, { playerId, success: false, perfect: false });
-                    this.applyPlayerDamage(playerId, this.currentTelegraph!.damage);
+            if (emission.type === 'player_damaged') {
+                this.bus.emit(EVENTS.PLAYER_DAMAGED, {
+                    playerId: emission.playerId,
+                    amount: emission.amount,
+                    newHealth: emission.newHealth,
+                });
+                if (this.qteAffected.includes(emission.playerId)) {
+                    this.bus.emit(EVENTS.QTE_RESULT, {
+                        playerId: emission.playerId,
+                        success: false,
+                        perfect: false,
+                    });
                 }
                 continue;
+            }
+
+            if (emission.type === 'player_downed') {
+                this.bus.emit(EVENTS.PLAYER_DOWNED, { playerId: emission.playerId });
+                continue;
+            }
+
+            if (emission.type === 'stagger_window_opened') {
+                this.bus.emit(EVENTS.STAGGER_TRIGGERED, {});
+                continue;
+            }
+
+            if (emission.type === 'hunt_ended') {
+                this.savePlayerState();
+                this.scene.start(SCENE_KEYS.CAVE_BAR, { sessionManager: this.sessionManager });
+                return;
             }
 
             if (emission.type === 'phase_changed') {
@@ -730,14 +639,17 @@ export class HuntScene extends Phaser.Scene {
                 this.currentPhase = phase;
                 this.bus.emit(EVENTS.ROUND_PHASE_CHANGED, { phase, previousPhase });
 
+                if (phase !== 'attack_and_dodge_qte') {
+                    this.qteAffected = [];
+                    this.attackingPlayers = [];
+                    this.qteElapsedMs = 0;
+                }
+
                 if (phase === 'resolve' || (phase === 'plan' && previousPhase !== 'plan')) {
                     this.telegraphRenderer?.clear();
                 }
 
                 if (phase === 'plan') {
-                    if (this.bonusDamageRound) {
-                        this.hud?.qtePrompt.hide();
-                    }
                     this.syncHudFromState();
                 }
 

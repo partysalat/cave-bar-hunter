@@ -245,6 +245,9 @@ describe('HuntRoundLoop', () => {
             return;
         }
 
+        expect(finished.snapshot.phase.kind).toBe('plan');
+        expect(finished.snapshot.players[0].score).toBe(8);
+        expect(finished.snapshot.dino.health).toBe(27);
         expect(finished.emissions).toEqual([
             {
                 type: 'qte_round_finished',
@@ -260,6 +263,45 @@ describe('HuntRoundLoop', () => {
                 failedDodges: [],
                 perfectDodges: [0],
             },
+            { type: 'points_earned', playerId: 0, amount: 3, reason: 'damage' },
+            { type: 'points_earned', playerId: 0, amount: 5, reason: 'perfect_dodge' },
+            { type: 'dino_health_changed', amount: -3, newHealth: 27 },
+            { type: 'phase_changed', from: 'attack_qte', to: 'plan' },
+            { type: 'telegraph_announced', telegraph: finished.snapshot.dino.currentTelegraph! },
+        ]);
+    });
+
+    it('applies non-QTE aftermath directly from resolve when no QTEs are needed', () => {
+        const loop = createHuntRoundLoop({
+            playerIds: [],
+        });
+
+        loop.advance({ type: 'begin_hunt' });
+        loop.advance({ type: 'tick', deltaMs: 6000 });
+        loop.advance({ type: 'tick', deltaMs: 500 });
+
+        const resolved = loop.advance({ type: 'resolve_submitted_actions' });
+
+        expect(resolved.ok).toBe(true);
+        if (!resolved.ok) {
+            return;
+        }
+
+        expect(resolved.snapshot.phase.kind).toBe('hunt_end');
+        expect(resolved.snapshot.dino.health).toBe(30);
+        expect(resolved.emissions).toEqual([
+            {
+                type: 'round_resolved',
+                result: {
+                    damageDealt: { 0: 0, 1: 0, 2: 0, 3: 0 },
+                    weakPointHits: [],
+                    staggerTriggered: false,
+                    playersHit: [],
+                    attackingPlayers: [],
+                },
+            },
+            { type: 'dino_health_changed', amount: -0, newHealth: 30 },
+            { type: 'hunt_ended', outcome: 'party_wiped' },
         ]);
     });
 });

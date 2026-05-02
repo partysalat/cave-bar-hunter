@@ -16,6 +16,7 @@ After this work, the Hunt in Dense Jungle will no longer depend on `src/scenes/H
 - [x] (2026-05-02 09:24Z) Added `tests/logic/HuntRoundLoop.test.ts` to lock the initial seam behavior with pure logic tests.
 - [ ] (2026-05-02 19:55Z) Partially integrated `HuntScene` with `HuntRoundLoop`. The scene now reads telegraph plus `plan -> submit -> resolve` cadence from the loop and submits planned actions through the loop seam. Remaining: browser validation and moving the later attack/dodge QTE ownership out of the scene.
 - [ ] (2026-05-02 20:12Z) Partially moved QTE submissions and QTE-round assembly behind `HuntRoundLoop`. The loop now owns submitted-action resolution, weapon switching during resolve, reposition side effects, attack/dodge QTE opening, attack/dodge QTE submissions, and final QTE-round result assembly. Remaining: move the score/health fallout, stagger aftermath, damage application, and Hunt-end handoff fully behind the seam.
+- [x] (2026-05-02 20:18Z) Moved score/health fallout, stagger aftermath, and Hunt-end emissions behind `HuntRoundLoop`. `HuntScene` now forwards raw input, mirrors snapshots, and bridges loop emissions back into the existing HUD/render/event flow instead of recomputing damage, stagger, or scoring locally.
 - [ ] Retire direct Hunt cadence state from `src/scenes/HuntScene.ts` after the adapter path proves out.
 
 ## Surprises & Discoveries
@@ -37,6 +38,9 @@ After this work, the Hunt in Dense Jungle will no longer depend on `src/scenes/H
 
 - Observation: the attack and dodge QTE interactions can also move behind the loop without changing the player-visible timing window yet, because the scene can continue to own the single 2.2-second overlay while the loop owns the submissions and final assembled result.
   Evidence: `src/logic/HuntRoundLoop.ts` now accepts `submit_attack_qte`, `submit_dodge_qte`, and `complete_qte_round`, while `src/scenes/HuntScene.ts` only forwards inputs and consumes loop emissions.
+
+- Observation: once aftermath moved behind `HuntRoundLoop`, the cleanest adapter boundary was to keep `HuntScene` emitting legacy bus events from loop emissions rather than preserving `ScoringSystem` and `StaggerSystem` as peer coordinators.
+  Evidence: `src/scenes/HuntScene.ts` now translates `points_earned`, `dino_health_changed`, `player_damaged`, `player_downed`, `stagger_window_opened`, and `hunt_ended` emissions back into the HUD/event layer, while the scene-side scoring and stagger helpers have been removed from the Hunt path.
 
 ## Decision Log
 
@@ -173,3 +177,5 @@ Revision note: Updated the plan after wiring `HuntScene` into the loop for teleg
 Revision note: Updated the plan again after moving submitted-action resolution and QTE opening into `HuntRoundLoop` while leaving QTE result handling and scoring fallout in the scene for the next slice.
 
 Revision note: Updated the plan again after moving QTE submissions and final QTE-round assembly into `HuntRoundLoop` while leaving the score and health fallout in the scene for the next slice.
+
+Revision note: Updated the plan again after moving score/health aftermath, stagger progression, and Hunt-end emissions into `HuntRoundLoop`, which leaves `HuntScene` as a much thinner input/render adapter pending browser validation and any final cleanup.

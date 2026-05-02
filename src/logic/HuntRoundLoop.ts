@@ -67,6 +67,10 @@ export type HuntEmission =
     | { type: 'dodge_qte_result'; playerId: PlayerId; success: boolean; perfect: boolean }
     | { type: 'attack_qte_opened'; attackers: AttackingPlayer[] }
     | { type: 'dodge_qte_opened'; affectedPlayers: PlayerId[]; qteType: QteType }
+    | { type: 'points_earned'; playerId: PlayerId; amount: number; reason: string }
+    | { type: 'dino_health_changed'; amount: number; newHealth: number }
+    | { type: 'player_damaged'; playerId: PlayerId; amount: number; newHealth: number }
+    | { type: 'player_downed'; playerId: PlayerId }
     | { type: 'qte_round_finished'; result: RoundResult; failedDodges: PlayerId[]; perfectDodges: PlayerId[] }
     | { type: 'stagger_window_opened'; sourceWeakPoint: WeakPoint }
     | { type: 'hunt_ended'; outcome: 'dilophosaurus_defeated' | 'party_wiped' | 'retreated_to_cave_bar' };
@@ -113,11 +117,14 @@ export interface HuntRoundLoopOptions {
     initialPositions?: Partial<Record<PlayerId, Position>>;
 }
 
+type WeakPointProgress = Record<WeakPoint, { accumulatedDamage: number; threshold: number }>;
+
 const DEFAULT_PLAYER_IDS: PlayerId[] = [0, 1, 2, 3];
 const DEFAULT_PLAYER_HEALTH = 4;
 const DEFAULT_DINO_HEALTH = 30;
 const DEFAULT_PLAN_DURATION_MS = 6000;
 const DEFAULT_SUBMIT_DURATION_MS = 500;
+const DEFAULT_QTE_DURATION_MS = 2200;
 
 function cloneAction(action: PlayerAction | undefined): PlayerAction | undefined {
     if (!action) {
@@ -261,9 +268,14 @@ class HuntRoundLoopImpl implements HuntRoundLoop {
     private readonly attackZoneResolver = new AttackZoneResolver();
     private readonly dinosaurAI = new DilophosaurusAI();
     private readonly sessionState: SessionPlayerState[];
+    private readonly qteDurationMs = DEFAULT_QTE_DURATION_MS;
     private pendingRoundResult?: RoundResult;
     private attackQteResults = new Map<PlayerId, { critical: boolean; weakPoint: WeakPoint | null }>();
     private dodgeQteResults = new Map<PlayerId, { success: boolean; perfect: boolean }>();
+    private weakPointProgress: WeakPointProgress = {
+        head: { accumulatedDamage: 0, threshold: 15 },
+        legs: { accumulatedDamage: 0, threshold: 20 },
+    };
 
     private snapshot: HuntSnapshot = {
         round: 0,
@@ -399,12 +411,40 @@ class HuntRoundLoopImpl implements HuntRoundLoop {
             return this.success([]);
         }
 
+        if (this.snapshot.phase.kind === 'attack_qte') {
+            this.snapshot.phase = {
+                ...this.snapshot.phase,
+                deadlineMs: Math.max(0, this.snapshot.phase.deadlineMs - deltaMs),
+            };
+            return this.success([]);
+        }
+
+        if (this.snapshot.phase.kind === 'dodge_qte') {
+            this.snapshot.phase = {
+                ...this.snapshot.phase,
+                deadlineMs: Math.max(0, this.snapshot.phase.deadlineMs - deltaMs),
+            };
+            return this.success([]);
+        }
+
+        if (this.snapshot.phase.kind === 'stagger_window') {
+            const nextDeadline = Math.max(0, this.snapshot.phase.deadlineMs - deltaMs);
+            this.snapshot.phase = {
+                ...this.snapshot.phase,
+                deadlineMs: nextDeadline,
+            };
+            if (nextDeadline === 0) {
+                return this.transitionToSubmit();
+            }
+            return this.success([]);
+        }
+
         return this.success([]);
     }
 
     private submitPlannedAction(playerId: PlayerId, action: PlayerAction): HuntUpdate {
-        if (this.snapshot.phase.kind !== 'plan') {
-            return this.fail('phase_mismatch', 'submit_planned_action is only valid during the plan phase.');
+        if (this.snapshot.phase.kind !== 'plan' && this.snapshot.phase.kind !== 'stagger_window') {
+            return this.fail('phase_mismatch', 'submit_planned_action is only valid during plan or stagger_window.');
         }
 
         const player = this.snapshot.players[playerId];
@@ -514,7 +554,7 @@ class HuntRoundLoopImpl implements HuntRoundLoop {
             positioningSystem: this.positioning,
             attackDeclaration: telegraph,
             playerState: this.toResolverState(),
-            staggerActive,
+            staggerActive: staggerActive || this.snapshot.dino.staggerOpen,
         });
         this.syncPositionsFromSystem();
         this.pendingRoundResult = result;
@@ -532,13 +572,13 @@ class HuntRoundLoopImpl implements HuntRoundLoop {
                 ? {
                     kind: 'attack_qte',
                     telegraph,
-                    deadlineMs: 2200,
+                    deadlineMs: this.qteDurationMs,
                     attackers: this.snapshot.pending.attackingPlayers.map((attacker) => ({ ...attacker })),
                 }
                 : {
                     kind: 'dodge_qte',
                     telegraph,
-                    deadlineMs: 2200,
+                    deadlineMs: this.qteDurationMs,
                     affectedPlayers: [...this.snapshot.pending.affectedPlayers],
                     qteType: telegraph.qteType,
                 };
@@ -562,6 +602,10 @@ class HuntRoundLoopImpl implements HuntRoundLoop {
             }
         }
 
+        if (!hasAttackQte && !hasDodgeQte) {
+            return this.applyRoundAftermath(result, [], [], emissions, 'resolve');
+        }
+
         return this.success(emissions);
     }
 
@@ -581,7 +625,7 @@ class HuntRoundLoopImpl implements HuntRoundLoop {
 
         let result: { critical: boolean; weakPoint: WeakPoint | null };
         if (attacker.weaponType === 'club') {
-            const elapsed = 2200 - this.snapshot.phase.deadlineMs;
+            const elapsed = this.qteDurationMs - this.snapshot.phase.deadlineMs;
             result = {
                 critical: elapsed >= 562 && elapsed <= 937,
                 weakPoint: null,
@@ -617,7 +661,7 @@ class HuntRoundLoopImpl implements HuntRoundLoop {
         }
 
         const deadlineMs = this.snapshot.phase.deadlineMs;
-        const elapsed = 2200 - deadlineMs;
+        const elapsed = this.qteDurationMs - deadlineMs;
         const result = {
             success: true,
             perfect: elapsed <= 700,
@@ -688,27 +732,28 @@ class HuntRoundLoopImpl implements HuntRoundLoop {
             weakPointHits: finalWeakPointHits,
         };
 
-        return this.success([{
+        return this.applyRoundAftermath(finalResult, failedDodges, perfectDodges, [{
             type: 'qte_round_finished',
             result: finalResult,
             failedDodges,
             perfectDodges,
-        }]);
+        }], this.snapshot.phase.kind);
     }
 
     private transitionToSubmit(): HuntUpdate {
-        if (this.snapshot.phase.kind !== 'plan') {
-            return this.fail('phase_mismatch', 'The scaffold can only enter submit from the plan phase.');
+        if (this.snapshot.phase.kind !== 'plan' && this.snapshot.phase.kind !== 'stagger_window') {
+            return this.fail('phase_mismatch', 'The scaffold can only enter submit from plan or stagger_window.');
         }
 
+        const previousPhase = this.snapshot.phase.kind;
         this.snapshot.phase = {
             kind: 'submit',
-            telegraph: this.snapshot.phase.telegraph,
+            telegraph: this.currentTelegraphForResolution(),
             deadlineMs: this.submitDurationMs,
         };
 
         return this.success([
-            { type: 'phase_changed', from: 'plan', to: 'submit' },
+            { type: 'phase_changed', from: previousPhase, to: 'submit' },
         ]);
     }
 
@@ -755,6 +800,133 @@ class HuntRoundLoopImpl implements HuntRoundLoop {
                 activeWeapon: this.snapshot.players[3].activeWeapon,
             },
         };
+    }
+
+    private currentTelegraphForResolution(): AttackDeclaration {
+        if ('telegraph' in this.snapshot.phase) {
+            return this.snapshot.phase.telegraph;
+        }
+
+        return this.snapshot.dino.currentTelegraph ?? {
+            type: 'bite',
+            affectedZones: [{ zone: 'close', flank: 'center' }],
+            qteType: 'smash',
+            damage: 6,
+        };
+    }
+
+    private applyRoundAftermath(
+        result: RoundResult,
+        failedDodges: PlayerId[],
+        perfectDodges: PlayerId[],
+        leadingEmissions: HuntEmission[],
+        previousPhase: HuntPhase['kind'],
+    ): HuntUpdate {
+        const emissions = [...leadingEmissions];
+        let totalDamage = 0;
+        let staggerSource: WeakPoint | null = null;
+        let staggerContributor: PlayerId | null = null;
+
+        for (const playerId of this.playerIds) {
+            const damage = result.damageDealt[playerId];
+            if (damage > 0) {
+                totalDamage += damage;
+                this.snapshot.players[playerId].score += damage;
+                emissions.push({ type: 'points_earned', playerId, amount: damage, reason: 'damage' });
+            }
+        }
+
+        for (const hit of result.weakPointHits) {
+            this.snapshot.players[hit.playerId].score += 3;
+            emissions.push({ type: 'points_earned', playerId: hit.playerId, amount: 3, reason: 'weak_point_hit' });
+
+            const progress = this.weakPointProgress[hit.weakPoint];
+            progress.accumulatedDamage += hit.damage;
+            if (staggerSource === null && progress.accumulatedDamage >= progress.threshold) {
+                progress.accumulatedDamage -= progress.threshold;
+                progress.threshold = Math.ceil(progress.threshold * 1.5);
+                staggerSource = hit.weakPoint;
+                staggerContributor = hit.playerId;
+            }
+        }
+
+        for (const playerId of perfectDodges) {
+            this.snapshot.players[playerId].score += 5;
+            emissions.push({ type: 'points_earned', playerId, amount: 5, reason: 'perfect_dodge' });
+        }
+
+        this.snapshot.dino.health = Math.max(0, this.snapshot.dino.health - totalDamage);
+        emissions.push({ type: 'dino_health_changed', amount: -totalDamage, newHealth: this.snapshot.dino.health });
+
+        const incomingDamage = this.currentTelegraphForResolution().damage;
+        for (const playerId of failedDodges) {
+            const player = this.snapshot.players[playerId];
+            player.health = Math.max(0, player.health - incomingDamage);
+            player.downed = player.health <= 0;
+            emissions.push({ type: 'player_damaged', playerId, amount: incomingDamage, newHealth: player.health });
+            if (player.downed) {
+                emissions.push({ type: 'player_downed', playerId });
+            }
+        }
+
+        if (staggerSource !== null && staggerContributor !== null) {
+            this.snapshot.players[staggerContributor].score += 3;
+            emissions.push({ type: 'points_earned', playerId: staggerContributor, amount: 3, reason: 'stagger_contribution' });
+            this.snapshot.dino.staggerOpen = true;
+            this.snapshot.phase = {
+                kind: 'stagger_window',
+                deadlineMs: this.planDurationMs,
+                sourceWeakPoint: staggerSource,
+            };
+            emissions.push({ type: 'phase_changed', from: previousPhase, to: 'stagger_window' });
+            emissions.push({ type: 'stagger_window_opened', sourceWeakPoint: staggerSource });
+            this.clearPendingRoundState();
+            this.clearSubmittedActions();
+            return this.success(emissions);
+        }
+
+        if (this.snapshot.dino.health <= 0) {
+            this.snapshot.phase = { kind: 'hunt_end', outcome: 'dilophosaurus_defeated' };
+            emissions.push({ type: 'hunt_ended', outcome: 'dilophosaurus_defeated' });
+            this.clearPendingRoundState();
+            return this.success(emissions);
+        }
+
+        if (this.playerIds.every((playerId) => this.snapshot.players[playerId].downed)) {
+            this.snapshot.phase = { kind: 'hunt_end', outcome: 'party_wiped' };
+            emissions.push({ type: 'hunt_ended', outcome: 'party_wiped' });
+            this.clearPendingRoundState();
+            return this.success(emissions);
+        }
+
+        this.snapshot.dino.staggerOpen = false;
+        this.snapshot.round += 1;
+        const telegraph = this.dinosaurAI.selectTelegraph(this.currentPositions());
+        this.snapshot.phase = {
+            kind: 'plan',
+            telegraph,
+            deadlineMs: this.planDurationMs,
+        };
+        this.snapshot.dino.currentTelegraph = telegraph;
+        emissions.push({ type: 'phase_changed', from: previousPhase, to: 'plan' });
+        emissions.push({ type: 'telegraph_announced', telegraph });
+        this.clearPendingRoundState();
+        this.clearSubmittedActions();
+        return this.success(emissions);
+    }
+
+    private clearPendingRoundState(): void {
+        this.pendingRoundResult = undefined;
+        this.attackQteResults.clear();
+        this.dodgeQteResults.clear();
+        this.snapshot.pending.attackingPlayers = [];
+        this.snapshot.pending.affectedPlayers = [];
+    }
+
+    private clearSubmittedActions(): void {
+        for (const playerId of this.playerIds) {
+            this.snapshot.players[playerId].submittedAction = undefined;
+        }
     }
 
     private success(emissions: HuntEmission[]): HuntUpdate {
