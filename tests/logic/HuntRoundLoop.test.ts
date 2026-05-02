@@ -93,4 +93,64 @@ describe('HuntRoundLoop', () => {
             ]);
         }
     });
+
+    it('begins the next round from resolve using adapter-supplied player state', () => {
+        const loop = createHuntRoundLoop({
+            playerIds: [0, 1],
+            planDurationMs: 10,
+            submitDurationMs: 5,
+        });
+
+        loop.advance({ type: 'begin_hunt' });
+        loop.advance({ type: 'submit_planned_action', playerId: 0, action: { type: 'attack' } });
+        loop.advance({ type: 'submit_planned_action', playerId: 1, action: { type: 'brace' } });
+        loop.advance({ type: 'tick', deltaMs: 5 });
+
+        const nextRound = loop.advance({
+            type: 'begin_next_round',
+            players: {
+                0: {
+                    health: 3,
+                    score: 11,
+                    activeWeapon: 'bow',
+                    downed: false,
+                    position: { zone: 'mid', flank: 'left' },
+                },
+                1: {
+                    health: 0,
+                    score: 7,
+                    activeWeapon: 'club',
+                    downed: true,
+                    position: { zone: 'far', flank: 'center' },
+                },
+            },
+        });
+
+        expect(nextRound.ok).toBe(true);
+        if (!nextRound.ok) {
+            return;
+        }
+
+        expect(nextRound.snapshot.round).toBe(2);
+        expect(nextRound.snapshot.phase.kind).toBe('plan');
+        expect(nextRound.snapshot.players[0]).toMatchObject({
+            health: 3,
+            score: 11,
+            activeWeapon: 'bow',
+            downed: false,
+            position: { zone: 'mid', flank: 'left' },
+        });
+        expect(nextRound.snapshot.players[0].submittedAction).toBeUndefined();
+        expect(nextRound.snapshot.players[1]).toMatchObject({
+            health: 0,
+            score: 7,
+            activeWeapon: 'club',
+            downed: true,
+            position: { zone: 'far', flank: 'center' },
+        });
+        expect(nextRound.emissions).toEqual([
+            { type: 'phase_changed', from: 'resolve', to: 'plan' },
+            { type: 'telegraph_announced', telegraph: nextRound.snapshot.dino.currentTelegraph! },
+        ]);
+    });
 });

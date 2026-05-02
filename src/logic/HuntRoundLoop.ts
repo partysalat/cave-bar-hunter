@@ -31,6 +31,14 @@ export interface HuntLoopPlayerState {
     submittedAction?: PlayerAction;
 }
 
+export interface HuntRoundPlayerStateInput {
+    health: number;
+    score: number;
+    activeWeapon: WeaponType;
+    downed: boolean;
+    position: Position;
+}
+
 export interface HuntSnapshot {
     round: number;
     phase: HuntPhase;
@@ -72,6 +80,7 @@ export type HuntCommand =
     | { type: 'begin_hunt' }
     | { type: 'tick'; deltaMs: number }
     | { type: 'submit_planned_action'; playerId: PlayerId; action: PlayerAction }
+    | { type: 'begin_next_round'; players: Partial<Record<PlayerId, HuntRoundPlayerStateInput>> }
     | { type: 'submit_attack_qte'; playerId: PlayerId; weakPoint?: WeakPoint }
     | { type: 'submit_dodge_qte'; playerId: PlayerId }
     | { type: 'ack_hunt_end' };
@@ -219,6 +228,19 @@ function createPlayerMap(
     return players;
 }
 
+function clonePlayerStateInput(player: HuntRoundPlayerStateInput): HuntRoundPlayerStateInput {
+    return {
+        health: player.health,
+        score: player.score,
+        activeWeapon: player.activeWeapon,
+        downed: player.downed,
+        position: {
+            zone: player.position.zone,
+            flank: player.position.flank,
+        },
+    };
+}
+
 class HuntRoundLoopImpl implements HuntRoundLoop {
     private readonly playerIds: PlayerId[];
     private readonly dinoHealth: number;
@@ -265,6 +287,8 @@ class HuntRoundLoopImpl implements HuntRoundLoop {
                 return this.tick(command.deltaMs);
             case 'submit_planned_action':
                 return this.submitPlannedAction(command.playerId, command.action);
+            case 'begin_next_round':
+                return this.beginNextRound(command.players);
             case 'submit_attack_qte':
             case 'submit_dodge_qte':
             case 'ack_hunt_end':
@@ -389,6 +413,46 @@ class HuntRoundLoopImpl implements HuntRoundLoop {
         }
 
         return this.success(emissions);
+    }
+
+    private beginNextRound(players: Partial<Record<PlayerId, HuntRoundPlayerStateInput>>): HuntUpdate {
+        if (this.snapshot.phase.kind !== 'resolve') {
+            return this.fail('phase_mismatch', 'begin_next_round is only valid after the Hunt Round Loop reaches resolve.');
+        }
+
+        for (const playerId of this.playerIds) {
+            const next = players[playerId];
+            if (!next) {
+                continue;
+            }
+
+            const cloned = clonePlayerStateInput(next);
+            this.positioning.setPosition(playerId, cloned.position);
+            this.snapshot.players[playerId] = {
+                health: cloned.health,
+                score: cloned.score,
+                activeWeapon: cloned.activeWeapon,
+                downed: cloned.downed,
+                position: cloned.position,
+                submittedAction: undefined,
+            };
+        }
+
+        this.snapshot.round += 1;
+        const telegraph = this.dinosaurAI.selectTelegraph(this.currentPositions());
+        this.snapshot.phase = {
+            kind: 'plan',
+            telegraph,
+            deadlineMs: this.planDurationMs,
+        };
+        this.snapshot.dino.currentTelegraph = telegraph;
+        this.snapshot.pending.attackingPlayers = [];
+        this.snapshot.pending.affectedPlayers = [];
+
+        return this.success([
+            { type: 'phase_changed', from: 'resolve', to: 'plan' },
+            { type: 'telegraph_announced', telegraph },
+        ]);
     }
 
     private transitionToSubmit(): HuntUpdate {
