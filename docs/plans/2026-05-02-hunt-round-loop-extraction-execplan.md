@@ -14,10 +14,11 @@ After this work, the Hunt in Dense Jungle will no longer depend on `src/scenes/H
 - [x] (2026-05-02 09:16Z) Added `CONTEXT.md` so the new seam uses repository domain language consistently, including the new term “Hunt Round Loop”.
 - [x] (2026-05-02 09:24Z) Wrote the first `src/logic/HuntRoundLoop.ts` API skeleton with a Phaser-free snapshot/command interface and a minimal working slice for `begin_hunt`, planning submissions, and timer-driven plan-to-submit transitions.
 - [x] (2026-05-02 09:24Z) Added `tests/logic/HuntRoundLoop.test.ts` to lock the initial seam behavior with pure logic tests.
-- [ ] (2026-05-02 19:55Z) Partially integrated `HuntScene` with `HuntRoundLoop`. The scene now reads telegraph plus `plan -> submit -> resolve` cadence from the loop and submits planned actions through the loop seam. Remaining: browser validation and moving the later attack/dodge QTE ownership out of the scene.
-- [ ] (2026-05-02 20:12Z) Partially moved QTE submissions and QTE-round assembly behind `HuntRoundLoop`. The loop now owns submitted-action resolution, weapon switching during resolve, reposition side effects, attack/dodge QTE opening, attack/dodge QTE submissions, and final QTE-round result assembly. Remaining: move the score/health fallout, stagger aftermath, damage application, and Hunt-end handoff fully behind the seam.
+- [x] (2026-05-02 19:55Z) Integrated `HuntScene` with `HuntRoundLoop`. The scene now reads telegraph plus `plan -> submit -> resolve` cadence from the loop and submits planned actions through the loop seam.
+- [x] (2026-05-02 20:12Z) Moved QTE submissions and QTE-round assembly behind `HuntRoundLoop`. The loop now owns submitted-action resolution, weapon switching during resolve, reposition side effects, attack/dodge QTE opening, attack/dodge QTE submissions, and final QTE-round result assembly.
 - [x] (2026-05-02 20:18Z) Moved score/health fallout, stagger aftermath, and Hunt-end emissions behind `HuntRoundLoop`. `HuntScene` now forwards raw input, mirrors snapshots, and bridges loop emissions back into the existing HUD/render/event flow instead of recomputing damage, stagger, or scoring locally.
-- [ ] Retire direct Hunt cadence state from `src/scenes/HuntScene.ts` after the adapter path proves out.
+- [x] (2026-05-03 11:25Z) Retired the remaining scene-owned QTE timeout cadence from `src/scenes/HuntScene.ts`. `HuntRoundLoop` now closes QTE rounds from its own timers, so the scene only forwards input and frame ticks.
+- [x] (2026-05-03 11:28Z) Validated the runtime path with `npm run build`, the focused Vitest/TypeScript suite, and a local Chrome smoke test against `http://127.0.0.1:4173/` that reached the Dense Jungle Hunt scene after asset loading.
 
 ## Surprises & Discoveries
 
@@ -70,7 +71,9 @@ After this work, the Hunt in Dense Jungle will no longer depend on `src/scenes/H
 
 ## Outcomes & Retrospective
 
-The first milestone is complete, and the second and third milestones are both partially complete. The repository now contains a named Hunt Round Loop seam, a self-contained plan for the larger extraction, a tested Phaser-free module skeleton, an adapter bridge that makes `HuntScene` consume the loop for telegraph plus `plan -> submit -> resolve`, and a deeper loop that owns submitted-action resolution, QTE opening, QTE submissions, and final QTE-round assembly. The main remaining work is moving damage/scoring fallout, stagger aftermath, and Hunt-end handoff fully behind `src/logic/HuntRoundLoop.ts`.
+The extraction is complete. The repository now contains a named Hunt Round Loop seam, a self-contained ExecPlan, a tested Phaser-free module that owns Hunt cadence from telegraph through QTE expiry and aftermath, and a much thinner `HuntScene` that acts as a Phaser adapter for input, rendering, and legacy HUD/event bridging. The last direct cadence leak from the scene was the 2.2-second QTE timeout, and moving that timer behind `src/logic/HuntRoundLoop.ts` noticeably simplified the scene-side update loop.
+
+The final proof is both logical and runtime-based: the focused Vitest and TypeScript suites stay green, `npm run build` succeeds, and a local Chrome smoke test against the Vite dev server reached the Dense Jungle Hunt scene after SpriteCook asset loading. If future work deepens this seam again, the next useful direction is likely simplification rather than another large ownership move: trimming now-unused bridge concepts, deciding whether `begin_next_round` is still needed at the loop interface, and keeping browser validation lightweight as the Hunt visuals evolve.
 
 ## Context and Orientation
 
@@ -179,3 +182,5 @@ Revision note: Updated the plan again after moving submitted-action resolution a
 Revision note: Updated the plan again after moving QTE submissions and final QTE-round assembly into `HuntRoundLoop` while leaving the score and health fallout in the scene for the next slice.
 
 Revision note: Updated the plan again after moving score/health aftermath, stagger progression, and Hunt-end emissions into `HuntRoundLoop`, which leaves `HuntScene` as a much thinner input/render adapter pending browser validation and any final cleanup.
+
+Revision note: Updated the plan after finishing the last cleanup and validation pass. `HuntRoundLoop` now owns QTE timeout completion, the focused suites remain green, `npm run build` passes, and a local Chrome smoke test reached the live Dense Jungle Hunt scene.

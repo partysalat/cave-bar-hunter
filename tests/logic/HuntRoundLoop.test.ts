@@ -271,6 +271,47 @@ describe('HuntRoundLoop', () => {
         ]);
     });
 
+    it('finalizes an active QTE round when the loop deadline expires', () => {
+        const loop = createHuntRoundLoop({
+            playerIds: [0],
+        });
+
+        loop.advance({ type: 'begin_hunt' });
+        loop.advance({ type: 'submit_planned_action', playerId: 0, action: { type: 'attack' } });
+        loop.advance({ type: 'tick', deltaMs: 500 });
+        loop.advance({ type: 'resolve_submitted_actions' });
+
+        const expired = loop.advance({ type: 'tick', deltaMs: 2200 });
+
+        expect(expired.ok).toBe(true);
+        if (!expired.ok) {
+            return;
+        }
+
+        expect(expired.snapshot.phase.kind).toBe('hunt_end');
+        expect(expired.emissions).toEqual([
+            {
+                type: 'qte_round_finished',
+                result: {
+                    damageDealt: { 0: 3, 1: 0, 2: 0, 3: 0 },
+                    weakPointHits: [],
+                    staggerTriggered: false,
+                    playersHit: [],
+                    attackingPlayers: [
+                        { playerId: 0, weaponType: 'club', action: 'attack' },
+                    ],
+                },
+                failedDodges: [0],
+                perfectDodges: [],
+            },
+            { type: 'points_earned', playerId: 0, amount: 3, reason: 'damage' },
+            { type: 'dino_health_changed', amount: -3, newHealth: 27 },
+            { type: 'player_damaged', playerId: 0, amount: 6, newHealth: 0 },
+            { type: 'player_downed', playerId: 0 },
+            { type: 'hunt_ended', outcome: 'party_wiped' },
+        ]);
+    });
+
     it('applies non-QTE aftermath directly from resolve when no QTEs are needed', () => {
         const loop = createHuntRoundLoop({
             playerIds: [],

@@ -412,18 +412,26 @@ class HuntRoundLoopImpl implements HuntRoundLoop {
         }
 
         if (this.snapshot.phase.kind === 'attack_qte') {
+            const nextDeadline = Math.max(0, this.snapshot.phase.deadlineMs - deltaMs);
             this.snapshot.phase = {
                 ...this.snapshot.phase,
-                deadlineMs: Math.max(0, this.snapshot.phase.deadlineMs - deltaMs),
+                deadlineMs: nextDeadline,
             };
+            if (nextDeadline === 0) {
+                return this.completeQteRound();
+            }
             return this.success([]);
         }
 
         if (this.snapshot.phase.kind === 'dodge_qte') {
+            const nextDeadline = Math.max(0, this.snapshot.phase.deadlineMs - deltaMs);
             this.snapshot.phase = {
                 ...this.snapshot.phase,
-                deadlineMs: Math.max(0, this.snapshot.phase.deadlineMs - deltaMs),
+                deadlineMs: nextDeadline,
             };
+            if (nextDeadline === 0) {
+                return this.completeQteRound();
+            }
             return this.success([]);
         }
 

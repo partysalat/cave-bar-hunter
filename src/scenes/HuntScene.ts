@@ -133,7 +133,6 @@ export class HuntScene extends Phaser.Scene {
     }));
     private currentTelegraph?: AttackDeclaration;
     private dinoHealth = DEFAULT_DINO_HEALTH;
-    private qteElapsedMs = 0;
     private qteAffected: PlayerId[] = [];
     private attackingPlayers: AttackingPlayer[] = [];
     private ringRenderer?: PositionRingRenderer;
@@ -297,10 +296,6 @@ export class HuntScene extends Phaser.Scene {
         const inputs = this.inputManager.update();
         const phase = this.currentPhase;
 
-        if (phase === 'attack_and_dodge_qte') {
-            this.qteElapsedMs += delta;
-        }
-
         for (const playerId of PLAYER_IDS) {
             const input = inputs[playerId];
             const previous = this.previousInputs[playerId];
@@ -313,13 +308,6 @@ export class HuntScene extends Phaser.Scene {
             }
 
             this.previousInputs[playerId] = { ...input };
-        }
-
-        if (phase === 'attack_and_dodge_qte') {
-            if (this.qteElapsedMs >= 2200) {
-                this.finalizeQteRound();
-            }
-            return;
         }
 
         this.applyHuntLoopUpdate(this.huntLoop.advance({ type: 'tick', deltaMs: delta }));
@@ -409,17 +397,6 @@ export class HuntScene extends Phaser.Scene {
         this.applyHuntLoopUpdate(this.huntLoop.advance({
             type: 'resolve_submitted_actions',
         }));
-    }
-
-    private finalizeQteRound(): void {
-        if (!this.huntLoop) {
-            return;
-        }
-
-        this.applyHuntLoopUpdate(this.huntLoop.advance({ type: 'complete_qte_round' }));
-        this.qteAffected = [];
-        this.qteElapsedMs = 0;
-        this.attackingPlayers = [];
     }
 
     private loadPlayerState(): void {
@@ -536,7 +513,6 @@ export class HuntScene extends Phaser.Scene {
             if (emission.type === 'round_resolved') {
                 this.attackingPlayers = emission.result.attackingPlayers;
                 this.qteAffected = [];
-                this.qteElapsedMs = 0;
                 this.bus.emit(EVENTS.ROUND_RESOLVED, { result: emission.result });
                 continue;
             }
@@ -642,7 +618,6 @@ export class HuntScene extends Phaser.Scene {
                 if (phase !== 'attack_and_dodge_qte') {
                     this.qteAffected = [];
                     this.attackingPlayers = [];
-                    this.qteElapsedMs = 0;
                 }
 
                 if (phase === 'resolve' || (phase === 'plan' && previousPhase !== 'plan')) {
